@@ -7,7 +7,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>BTG Tracker</title>
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1201,67 +1200,143 @@ const TIERS={
 };
 const STAGES=['contacted','interested','contracting'];
 
-// ════════ SUPABASE ════════
+// ════════ SUPABASE — zero dependency fetch client ════════
 const SUPA_URL='https://dtksttiukhskxbcsbplt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0a3N0dGl1a2hza3hiY3NicGx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MzYxNzIsImV4cCI6MjA5MDMxMjE3Mn0.ORJ7kYRHa4kCTJSTRYAzibFGwBDe8DI3oumn5caV5dI';
 const NOTIFY_EMAIL='hilltreon@gmail.com';
-let SB=null;
+let ACCESS_TOKEN=null;
+let REFRESH_TOKEN=null;
+let AUTH_USER=null;
 
-async function initSupabase(){
-  // wait up to 10s for the <script> tag in <head> to finish loading
-  let waited=0;
-  while(!window.supabase){
-    await new Promise(r=>setTimeout(r,100));
-    waited+=100;
-    if(waited>10000){
-      document.getElementById('panel-loading').innerHTML=`
-        <div style="font-size:24px;margin-bottom:10px;">⚠️</div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Connection Failed</div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">Could not load database library. Check internet connection.</div>
-        <button class="btn-login" onclick="location.reload()">Try Again</button>`;
-      return;
-    }
-  }
-  SB=window.supabase.createClient(SUPA_URL,SUPA_KEY);
-  const {data:{session},error}=await SB.auth.getSession();
-  if(error){
-    document.getElementById('panel-loading').innerHTML=`
-      <div style="font-size:24px;margin-bottom:10px;">⚠️</div>
-      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Database Error</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">${error.message}</div>
-      <button class="btn-login" onclick="location.reload()">Try Again</button>`;
-    return;
-  }
-  if(session){
-    await loadUserAndEnter(session.user);
-  } else {
-    showPanel('signin');
-  }
-  SB.auth.onAuthStateChange(async(_,session)=>{
-    if(session) await loadUserAndEnter(session.user);
-  });
+// ── REST helpers ──
+async function sbFetch(path,method='GET',body=null,useAuth=true){
+  const headers={'Content-Type':'application/json','apikey':SUPA_KEY,'Prefer':'return=representation'};
+  if(useAuth&&ACCESS_TOKEN)headers['Authorization']='Bearer '+ACCESS_TOKEN;
+  const res=await fetch(SUPA_URL+path,{method,headers,body:body?JSON.stringify(body):null});
+  if(res.status===204)return{data:null,error:null};
+  const json=await res.json().catch(()=>({}));
+  if(!res.ok)return{data:null,error:json};
+  return{data:json,error:null};
 }
 
-function loadScript(src){
-  return new Promise((res,rej)=>{
-    if(document.querySelector(`script[src="${src}"]`)){
-      if(window.supabase)res();
-      else rej(new Error('Script tag exists but supabase not loaded'));
-      return;
-    }
-    const s=document.createElement('script');s.src=src;
-    const timer=setTimeout(()=>{s.remove();rej(new Error('timeout'));},8000);
-    s.onload=()=>{clearTimeout(timer);res();};
-    s.onerror=()=>{clearTimeout(timer);s.remove();rej(new Error('load error'));};
-    document.head.appendChild(s);
+// ── Auth helpers ──
+async function authFetch(path,body){
+  const res=await fetch(SUPA_URL+'/auth/v1'+path,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SUPA_KEY},
+    body:JSON.stringify(body)
   });
+  const json=await res.json().catch(()=>({}));
+  if(!res.ok)return{data:null,error:json};
+  return{data:json,error:null};
+}
+
+function saveSession(session){
+  if(!session)return;
+  ACCESS_TOKEN=session.access_token;
+  REFRESH_TOKEN=session.refresh_token;
+  AUTH_USER=session.user;
+  localStorage.setItem('btg_session',JSON.stringify({access_token:session.access_token,refresh_token:session.refresh_token,user:session.user}));
+}
+function clearSession(){
+  ACCESS_TOKEN=null;REFRESH_TOKEN=null;AUTH_USER=null;
+  localStorage.removeItem('btg_session');
+}
+function loadSavedSession(){
+  try{
+    const s=JSON.parse(localStorage.getItem('btg_session')||'null');
+    if(s&&s.access_token){ACCESS_TOKEN=s.access_token;REFRESH_TOKEN=s.refresh_token;AUTH_USER=s.user;return s;}
+  }catch(e){}
+  return null;
+}
+
+// ── Thin SB wrapper so existing code works unchanged ──
+const SB={
+  auth:{
+    getSession:async()=>{
+      const s=loadSavedSession();
+      if(!s)return{data:{session:null},error:null};
+      // verify token is still valid by fetching user
+      const res=await fetch(SUPA_URL+'/auth/v1/user',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+s.access_token}});
+      if(res.ok){const u=await res.json();AUTH_USER=u;return{data:{session:s},error:null};}
+      // try refresh
+      const r=await authFetch('/token?grant_type=refresh_token',{refresh_token:s.refresh_token});
+      if(r.data?.access_token){saveSession(r.data);return{data:{session:r.data},error:null};}
+      clearSession();return{data:{session:null},error:null};
+    },
+    signInWithPassword:async({email,password})=>{
+      const {data,error}=await authFetch('/token?grant_type=password',{email,password});
+      if(error)return{error:{message:error.error_description||error.msg||'Invalid login credentials'}};
+      saveSession(data);return{data,error:null};
+    },
+    signUp:async({email,password})=>{
+      const {data,error}=await authFetch('/signup',{email,password});
+      if(error)return{data:null,error:{message:error.error_description||error.msg||error.message||'Signup failed'}};
+      if(data.access_token)saveSession(data);
+      return{data:{user:data.user||data},error:null};
+    },
+    signOut:async()=>{
+      if(ACCESS_TOKEN)await fetch(SUPA_URL+'/auth/v1/logout',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+ACCESS_TOKEN}});
+      clearSession();return{error:null};
+    },
+    resetPasswordForEmail:async(email,opts)=>{
+      const {error}=await authFetch('/recover',{email,redirect_to:opts?.redirectTo||window.location.href});
+      return{error};
+    },
+    updateUser:async(updates)=>{
+      const res=await fetch(SUPA_URL+'/auth/v1/user',{method:'PUT',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+ACCESS_TOKEN},body:JSON.stringify(updates)});
+      const json=await res.json().catch(()=>({}));
+      if(!res.ok)return{error:{message:json.error_description||json.msg||'Update failed'}};
+      return{data:json,error:null};
+    },
+    onAuthStateChange:()=>{}, // handled manually via getSession on load
+  },
+  from:(table)=>({
+    select:(cols='*')=>({
+      eq:(col,val)=>({
+        single:()=>sbFetch(`/rest/v1/${table}?select=${cols}&${col}=eq.${encodeURIComponent(val)}&limit=1`).then(r=>({data:Array.isArray(r.data)?r.data[0]||null:r.data,error:r.error})),
+        limit:(n)=>sbFetch(`/rest/v1/${table}?select=${cols}&${col}=eq.${encodeURIComponent(val)}&limit=${n}`),
+        then:(fn)=>sbFetch(`/rest/v1/${table}?select=${cols}&${col}=eq.${encodeURIComponent(val)}`).then(fn),
+      }),
+      limit:(n)=>sbFetch(`/rest/v1/${table}?select=${cols}&limit=${n}`),
+      then:(fn)=>sbFetch(`/rest/v1/${table}?select=${cols}`).then(fn),
+    }),
+    insert:(body)=>sbFetch(`/rest/v1/${table}`,'POST',Array.isArray(body)?body:[body]),
+    upsert:(body)=>{
+      const h={'Content-Type':'application/json','apikey':SUPA_KEY,'Prefer':'resolution=merge-duplicates,return=minimal'};
+      if(ACCESS_TOKEN)h['Authorization']='Bearer '+ACCESS_TOKEN;
+      return fetch(SUPA_URL+`/rest/v1/${table}`,{method:'POST',headers:h,body:JSON.stringify(Array.isArray(body)?body:[body])}).then(r=>({error:r.ok?null:{message:'upsert failed'}}));
+    },
+    update:(body)=>({
+      eq:(col,val)=>sbFetch(`/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`,'PATCH',body),
+    }),
+    delete:()=>({
+      eq:(col,val)=>sbFetch(`/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`,'DELETE'),
+    }),
+  }),
+  functions:{invoke:async()=>({data:null,error:new Error('edge functions not used')})},
+};
+
+async function initSupabase(){
+  try{
+    const {data:{session}}=await SB.auth.getSession();
+    if(session&&AUTH_USER){
+      await loadUserAndEnter(AUTH_USER);
+    } else {
+      showPanel('signin');
+    }
+  } catch(e){
+    document.getElementById('panel-loading').innerHTML=`
+      <div style="font-size:24px;margin-bottom:10px;">⚠️</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Connection Error</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">${e.message}</div>
+      <button class="btn-login" onclick="location.reload()">Try Again</button>`;
+  }
 }
 
 async function loadUserAndEnter(user){
-  // fetch profile from DB
   const {data:profile}=await SB.from('profiles').select('*').eq('id',user.id).single();
   if(!profile){
-    // profile doesn't exist yet — sign out
     await SB.auth.signOut();
     showPanel('signin');
     setErr('si-err','Account setup incomplete. Contact your director.');
@@ -1271,13 +1346,12 @@ async function loadUserAndEnter(user){
     showPanel('pending');
     return;
   }
-  CU={...profile, email:user.email};
+  CU={...profile,email:user.email};
   enterApp();
 }
 
 async function enterApp(){
   document.getElementById('login-screen').style.display='none';
-  // show loading state
   document.getElementById('app').style.display='flex';
   const ini=CU.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('tb-av').textContent=ini;
@@ -1293,7 +1367,6 @@ async function enterApp(){
   }
   document.getElementById('goals-yr').textContent=new Date().getFullYear();
   updateGreeting();
-  // load all data from Supabase then render
   await loadAllData();
   renderAll();checkFlags();
 }
@@ -1482,23 +1555,23 @@ let DB={agents:[],prod:[],rec:[],contacts:[],appts:[],goals:{},pdfs:[],year:new 
 async function loadAllData(){
   const uid_=CU.id;
   const isDir_=isDirector();
-  // load all tables in parallel
+  const q=(table,cols,filter)=>sbFetch(`/rest/v1/${table}?select=${cols}${filter||''}`);
+  const ownFilter=`&owner_id=eq.${uid_}`;
   const [agRes,prRes,reRes,coRes,apRes,goRes,pdRes]=await Promise.all([
-    SB.from('profiles').select('*'),
-    isDir_?SB.from('prod_records').select('*'):SB.from('prod_records').select('*').eq('owner_id',uid_),
-    isDir_?SB.from('rec_records').select('*'):SB.from('rec_records').select('*').eq('owner_id',uid_),
-    isDir_?SB.from('contacts').select('*'):SB.from('contacts').select('*').eq('owner_id',uid_),
-    isDir_?SB.from('appointments').select('*'):SB.from('appointments').select('*').eq('owner_id',uid_),
-    SB.from('goals').select('*').eq('user_id',uid_),
-    isDir_?SB.from('pdfs').select('id,name,date'):SB.from('pdfs').select('id,name,date').limit(0),
+    q('profiles','*'),
+    q('prod_records','*',isDir_?'':ownFilter),
+    q('rec_records','*',isDir_?'':ownFilter),
+    q('contacts','*',isDir_?'':ownFilter),
+    q('appointments','*',isDir_?'':ownFilter),
+    q('goals','*',`&user_id=eq.${uid_}`),
+    isDir_?q('pdfs','id,name,date'):Promise.resolve({data:[],error:null}),
   ]);
-  // map snake_case DB columns to camelCase for the rest of the app
   DB.agents=(agRes.data||[]).map(mapAgent);
   DB.prod=(prRes.data||[]).map(mapProd);
   DB.rec=(reRes.data||[]).map(mapRec);
   DB.contacts=(coRes.data||[]).map(mapCon);
   DB.appts=(apRes.data||[]).map(mapAppt);
-  DB.goals=goRes.data?.[0]?.data||getDefaultGoals();
+  DB.goals=(goRes.data||[])[0]?.data||getDefaultGoals();
   DB.pdfs=(pdRes.data||[]);
   DB.year=new Date().getFullYear();
 }
