@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>BTG Tracker</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -376,9 +377,12 @@ body{
 .dnav-tab .nbadge{background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:10px;font-family:var(--mono);}
 
 /* MOBILE BOTTOM NAV */
-.mobile-nav{display:none;background:#fff;border-top:1px solid var(--border);padding:6px 4px calc(6px + env(safe-area-inset-bottom));flex-shrink:0;z-index:100;}
+.mobile-nav{display:none;background:#fff;border-top:2px solid var(--border);padding:6px 4px calc(6px + env(safe-area-inset-bottom));flex-shrink:0;z-index:100;position:relative;}
 .mnav-items{display:grid;grid-template-columns:repeat(6,1fr);}
-.mnav-tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;cursor:pointer;border-radius:10px;transition:all .15s;position:relative;}
+.mnav-items.has-agents{grid-template-columns:repeat(7,1fr);}
+.mnav-tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 1px;cursor:pointer;border-radius:10px;transition:all .15s;position:relative;}
+.mni{font-size:18px;line-height:1;}
+.mnl{font-size:8px;font-weight:600;color:var(--text3);letter-spacing:-.1px;text-align:center;}
 .mnav-tab:active{background:var(--bg);}
 .mnav-tab.active .mni{color:var(--navy);}
 .mnav-tab.active .mnl{color:var(--navy);font-weight:700;}
@@ -672,6 +676,7 @@ body{
   .plan-row{grid-template-columns:1fr 80px 32px;}
   .plan-ptype{display:none;}
   .pipe-scroll-hint{display:block;}
+  .vscroll{padding-bottom:80px !important;}
 }
 @media(min-width:768px){
   .kpi-row{grid-template-columns:repeat(5,1fr);}
@@ -694,11 +699,71 @@ body{
     <div class="login-brand">BTG Tracker</div>
     <div class="login-sub">Built To Grow · Agency Platform</div>
   </div>
-  <div class="login-card">
-    <div class="lf"><label>Select Agent</label><select id="ls-agent"></select></div>
-    <div class="lf"><label>Access Code</label><input type="password" id="ls-pass" placeholder="Enter your access code" onkeydown="if(event.key==='Enter')doLogin()"></div>
+
+  <!-- Loading state -->
+  <div class="login-card" id="panel-loading" style="text-align:center;padding:32px;">
+    <div style="font-size:28px;margin-bottom:10px;">⏳</div>
+    <div style="font-size:14px;font-weight:700;color:var(--text);">Loading BTG Tracker...</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:6px;">Connecting to database</div>
+  </div>
+
+  <!-- SIGN IN PANEL -->
+  <div class="login-card" id="panel-signin" style="display:none;">
+    <div class="lf"><label>Email Address</label><input type="email" id="si-email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="lf"><label>Password</label><input type="password" id="si-pass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div id="si-err" style="color:#c0392b;font-size:12px;margin-bottom:8px;display:none;font-weight:600;"></div>
     <button class="btn-login" onclick="doLogin()">Sign In</button>
-    <div class="login-hint">Director code: <strong>btg2025</strong> · Agents: get code from your director</div>
+    <div style="display:flex;justify-content:space-between;margin-top:14px;">
+      <span style="font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;" onclick="showPanel('signup')">Request an account</span>
+      <span style="font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;" onclick="showPanel('forgot')">Forgot password?</span>
+    </div>
+  </div>
+
+  <!-- SIGN UP PANEL -->
+  <div class="login-card" id="panel-signup" style="display:none;">
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;">Request Account Access</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">Your director will be notified and activate your account.</div>
+    <div class="lf"><label>Full Name</label><input type="text" id="su-name" placeholder="First Last"></div>
+    <div class="lf"><label>Email Address</label><input type="email" id="su-email" placeholder="you@email.com"></div>
+    <div class="lf"><label>Password</label><input type="password" id="su-pass" placeholder="Choose a password (min 6 chars)"></div>
+    <div class="lf"><label>Role</label>
+      <select id="su-tier">
+        <option value="Trainee">Trainee</option>
+        <option value="Associate">Associate</option>
+        <option value="Field Associate">Field Associate</option>
+        <option value="Director">Director</option>
+        <option value="Marketing Director">Marketing Director</option>
+        <option value="Senior Director">Senior Director</option>
+        <option value="Executive Director">Executive Director</option>
+      </select>
+    </div>
+    <div id="su-err" style="color:#c0392b;font-size:12px;margin-bottom:8px;display:none;font-weight:600;"></div>
+    <button class="btn-login" onclick="doSignup()">Request Access</button>
+    <div style="text-align:center;margin-top:14px;">
+      <span style="font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;" onclick="showPanel('signin')">← Back to Sign In</span>
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD PANEL -->
+  <div class="login-card" id="panel-forgot" style="display:none;">
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;">Reset Password</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">We'll send a reset link to your email.</div>
+    <div class="lf"><label>Email Address</label><input type="email" id="fp-email" placeholder="you@email.com"></div>
+    <div id="fp-msg" style="font-size:12px;margin-bottom:8px;display:none;font-weight:600;"></div>
+    <button class="btn-login" onclick="doForgot()">Send Reset Link</button>
+    <div style="text-align:center;margin-top:14px;">
+      <span style="font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;" onclick="showPanel('signin')">← Back to Sign In</span>
+    </div>
+  </div>
+
+  <!-- PENDING APPROVAL PANEL -->
+  <div class="login-card" id="panel-pending" style="display:none;">
+    <div style="text-align:center;padding:10px 0;">
+      <div style="font-size:40px;margin-bottom:12px;">⏳</div>
+      <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:8px;">Account Pending Approval</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px;">Your request has been sent to the director. You'll be able to log in once your account is activated.</div>
+      <button class="btn-login" onclick="showPanel('signin')">Back to Sign In</button>
+    </div>
   </div>
 </div>
 
@@ -713,12 +778,13 @@ body{
     </div>
     <div class="tb-right">
       <div class="tb-user">
-        <div class="tb-avatar" id="tb-av"></div>
+        <div class="tb-avatar" id="tb-av" onclick="openProfileModal()" style="cursor:pointer;"></div>
         <div style="display:none" id="tb-info">
           <div class="tb-name" id="tb-name"></div>
           <div class="tb-tier" id="tb-tier"></div>
         </div>
       </div>
+      <button class="tb-signout" onclick="openProfileModal()">⚙ Profile</button>
       <button class="tb-signout" onclick="logout()">Sign Out</button>
     </div>
   </div>
@@ -734,18 +800,6 @@ body{
     <div class="dnav-tab dir-only" data-view="agents" onclick="nav(this)"><span class="tab-icon">👥</span>Agents</div>
   </div>
   <div class="pipe-scroll-hint" id="scroll-hint">← Swipe to see all stages →</div>
-
-  <!-- MOBILE BOTTOM NAV -->
-  <div class="mobile-nav">
-    <div class="mnav-items">
-      <div class="mnav-tab active" data-view="dashboard" onclick="nav(this)"><div class="mni">📊</div><div class="mnl">Dash</div></div>
-      <div class="mnav-tab" data-view="production" onclick="nav(this)"><div class="mni">💼</div><div class="mnl">Production</div></div>
-      <div class="mnav-tab" data-view="recruiting" onclick="nav(this)"><div class="mni">🤝</div><div class="mnl">Recruit</div></div>
-      <div class="mnav-tab" data-view="contacts" onclick="nav(this)"><div class="mni">⭐</div><div class="mnl">Top 25</div></div>
-      <div class="mnav-tab" data-view="appointments" onclick="nav(this)"><div class="mni">📅</div><div class="mnl">Appts<span class="nbadge hidden" id="appt-badge-m">!</span></div></div>
-      <div class="mnav-tab" data-view="goals" onclick="nav(this)"><div class="mni">🎯</div><div class="mnl">Goals</div></div>
-    </div>
-  </div>
 
   <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
 
@@ -908,6 +962,32 @@ body{
         <button class="add-btn" onclick="openAgentModal()">+ Add Agent</button>
       </div>
       <div class="vscroll" style="padding:12px 14px;">
+
+        <!-- HOW TO ADD AGENTS -->
+        <div style="background:linear-gradient(135deg,#1a2340,#1e2a4a);border-radius:14px;padding:20px 22px;margin-bottom:16px;border:1.5px solid rgba(212,136,26,.4);">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+            <div style="width:48px;height:48px;border-radius:12px;background:#d4881a;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👥</div>
+            <div>
+              <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:2px;">How to Add Agents</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.5);">Agents sign up themselves — you approve</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <div style="background:#d4881a;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">1</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.8);">Share <strong style="color:#f5a623;">builttogrowagency.com/tracker.html</strong> with your agent</div>
+            </div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <div style="background:#d4881a;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">2</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.8);">They click <strong style="color:#f5a623;">"Request an account"</strong> and fill in their info</div>
+            </div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <div style="background:#d4881a;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">3</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.8);">You get notified at <strong style="color:#f5a623;">hilltreon@gmail.com</strong> — come back here to approve</div>
+            </div>
+          </div>
+        </div>
+
         <div style="font-size:15px;font-weight:800;margin-bottom:10px;">💰 Commission Structure</div>
         <div class="cs-grid" id="cs-grid"></div>
         <div style="font-size:15px;font-weight:800;margin-bottom:10px;margin-top:6px;">Agent Roster</div>
@@ -916,6 +996,20 @@ body{
     </div>
 
   </div>
+
+  <!-- MOBILE BOTTOM NAV — last child of #app so it always sticks to bottom -->
+  <div class="mobile-nav">
+    <div class="mnav-items" id="mnav-items">
+      <div class="mnav-tab active" data-view="dashboard" onclick="nav(this)"><div class="mni">📊</div><div class="mnl">Dash</div></div>
+      <div class="mnav-tab" data-view="production" onclick="nav(this)"><div class="mni">💼</div><div class="mnl">Production</div></div>
+      <div class="mnav-tab" data-view="recruiting" onclick="nav(this)"><div class="mni">🤝</div><div class="mnl">Recruit</div></div>
+      <div class="mnav-tab" data-view="contacts" onclick="nav(this)"><div class="mni">⭐</div><div class="mnl">Top 25</div></div>
+      <div class="mnav-tab" data-view="appointments" onclick="nav(this)"><div class="mni">📅</div><div class="mnl">Appts<span class="nbadge hidden" id="appt-badge-m">!</span></div></div>
+      <div class="mnav-tab" data-view="goals" onclick="nav(this)"><div class="mni">🎯</div><div class="mnl">Goals</div></div>
+      <div class="mnav-tab dir-only" data-view="agents" onclick="nav(this)"><div class="mni">👥</div><div class="mnl">Agents</div></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- PRODUCTION MODAL -->
@@ -1008,7 +1102,7 @@ body{
     <div class="mbody">
       <input type="hidden" id="ag-id">
       <div class="fr fr2"><div class="fg"><label>First Name</label><input id="ag-fn" placeholder="First"></div><div class="fg"><label>Last Name</label><input id="ag-ln" placeholder="Last"></div></div>
-      <div class="fr fr2"><div class="fg"><label>Email</label><input id="ag-em" placeholder="agent@email.com"></div><div class="fg"><label>Access Code</label><input id="ag-code" placeholder="e.g. agent123"></div></div>
+      <div class="fr"><div class="fg"><label>Email (from signup — read only)</label><input id="ag-em" placeholder="Set when agent signs up" readonly style="opacity:.7;background:#fafafa;"></div></div>
       <div class="fr fr2"><div class="fg"><label>Tier Level</label><select id="ag-tier" onchange="updateTierPct()"><option value="Trainee">Trainee</option><option value="Associate">Associate</option><option value="Field Associate">Field Associate</option><option value="Director">Director</option><option value="Marketing Director">Marketing Director</option><option value="Senior Director">Senior Director</option><option value="Executive Director">Executive Director</option></select></div><div class="fg"><label>Override %</label><input type="number" id="ag-ovr" placeholder="Auto-filled" min="0" max="100"></div></div>
       <div class="tier-info-box" id="tier-info">Select a tier above</div>
       <div class="fr fr3"><div class="fg"><label>License Status</label><select id="ag-lic"><option value="licensed">✅ Licensed</option><option value="studying">📚 Studying</option><option value="unlicensed">○ Not Licensed</option></select></div><div class="fg"><label>States Licensed</label><input id="ag-states" placeholder="TX, FL, GA"></div><div class="fg"><label>Status</label><select id="ag-status"><option value="active">Active</option><option value="pending">Pending</option></select></div></div>
@@ -1057,6 +1151,38 @@ body{
   <div class="cxi danger" onclick="ctxDo('delete')">🗑 Remove</div>
 </div>
 
+<!-- PROFILE MODAL -->
+<div class="overlay" id="ov-profile" onclick="ovCk(event,'ov-profile')">
+  <div class="modal narrow">
+    <div class="modal-drag"></div>
+    <div class="mhdr"><div class="mtitle">My Profile</div><button class="btn-icon" onclick="closeOv('ov-profile')">✕</button></div>
+    <div class="mbody">
+      <div class="fsec">Account Info</div>
+      <div class="fg" style="margin-bottom:12px;"><label>Display Name</label><input type="text" id="prof-name" placeholder="Your name"></div>
+      <div class="fg" style="margin-bottom:16px;"><label>Email Address</label><input type="email" id="prof-email" placeholder="you@email.com"></div>
+      <div class="fsec">Change Password</div>
+      <div class="fg" style="margin-bottom:12px;"><label>New Password</label><input type="password" id="prof-pass" placeholder="Leave blank to keep current"></div>
+      <div class="fg" style="margin-bottom:12px;"><label>Confirm New Password</label><input type="password" id="prof-pass2" placeholder="Repeat new password"></div>
+      <div id="prof-msg" style="font-size:12px;font-weight:600;display:none;padding:8px 12px;border-radius:8px;margin-bottom:8px;"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-outline" onclick="closeOv('ov-profile')">Cancel</button><button class="btn btn-navy" onclick="saveProfile()">Save Changes</button></div>
+  </div>
+</div>
+
+<!-- DIRECTOR: RESET AGENT PASSWORD MODAL -->
+<div class="overlay" id="ov-resetpw" onclick="ovCk(event,'ov-resetpw')">
+  <div class="modal narrow">
+    <div class="modal-drag"></div>
+    <div class="mhdr"><div class="mtitle">Reset Agent Password</div><button class="btn-icon" onclick="closeOv('ov-resetpw')">✕</button></div>
+    <div class="mbody">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">Send a password reset email to this agent.</div>
+      <div class="fg" style="margin-bottom:12px;"><label>Agent Email</label><input type="email" id="rp-email" placeholder="agent@email.com" readonly style="opacity:.7;"></div>
+      <div id="rp-msg" style="font-size:12px;font-weight:600;display:none;padding:8px 12px;border-radius:8px;margin-bottom:8px;"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-outline" onclick="closeOv('ov-resetpw')">Cancel</button><button class="btn btn-navy" onclick="sendAgentReset()">Send Reset Email</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script>
 // ════════ CONSTANTS ════════
@@ -1075,87 +1201,348 @@ const TIERS={
 };
 const STAGES=['contacted','interested','contracting'];
 
-// ════════ DB ════════
-function loadDB(){return JSON.parse(localStorage.getItem('btg_v4')||'null');}
-function saveDB(){localStorage.setItem('btg_v4',JSON.stringify(DB));}
-function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
-function td(){return new Date().toISOString().split('T')[0];}
+// ════════ SUPABASE ════════
+const SUPA_URL='https://dtksttiukhskxbcsbplt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0a3N0dGl1a2hza3hiY3NicGx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MzYxNzIsImV4cCI6MjA5MDMxMjE3Mn0.ORJ7kYRHa4kCTJSTRYAzibFGwBDe8DI3oumn5caV5dI';
+const NOTIFY_EMAIL='hilltreon@gmail.com';
+let SB=null;
 
-let DB=loadDB()||{
-  agents:[{id:'dir1',name:'Director',email:'director@builtogrow.com',code:'btg2025',tier:'Director',ovr:60,lic:'licensed',states:'TX',status:'active',notes:'Agency Director',added:td(),inactiveLog:[]}],
-  prod:[
-    {id:uid(),ownerId:'dir1',name:'Marcus Webb',phone:'(214)555-0192',email:'',state:'TX',stage:'contracting',plans:[{plan:'IUL',premium:320,type:'actual'}],apps:4,points:8500,notes:'Strong referral network. Has 3 kids, very motivated.',added:'2025-01-08'},
-    {id:uid(),ownerId:'dir1',name:'Destiny Cruz',phone:'(305)555-0847',email:'',state:'FL',stage:'interested',plans:[{plan:'Whole Life',premium:185,type:'possible'},{plan:'Final Expense',premium:62,type:'possible'}],apps:1,points:1200,notes:'Interested in combo policy.',added:'2025-01-10'},
-    {id:uid(),ownerId:'dir1',name:'Robert Harmon',phone:'(770)555-1234',email:'',state:'GA',stage:'contacted',plans:[{plan:'Term Life',premium:95,type:'possible'}],apps:0,points:0,notes:'Cold outreach — open to meeting.',added:'2025-01-14'},
-  ],
-  rec:[
-    {id:uid(),ownerId:'dir1',name:'Jordan Price',phone:'(770)555-0321',email:'',state:'GA',stage:'contracting',bg:'Experienced',lines:'IUL, Group',source:'LinkedIn',apps:8,points:5400,notes:'HR background. Motivated to build a team.',added:'2024-12-28'},
-    {id:uid(),ownerId:'dir1',name:'Aaliyah Simmons',phone:'(832)555-0654',email:'',state:'TX',stage:'interested',bg:'New to Industry',lines:'IUL',source:'Referral',apps:0,points:0,notes:'Studying for exam. Very coachable.',added:'2025-01-10'},
-  ],
-  contacts:[
-    {id:uid(),ownerId:'dir1',name:'Trevor Okafor',phone:'(214)555-9921',email:'trevor@email.com',occ:'Real Estate Agent',met:'Networking event',mar:'Married',kids:'2',type:'both',rank:1,quals:'Strong networker. Owns 3 properties. Mentioned financial goals last year.',added:td()},
-    {id:uid(),ownerId:'dir1',name:'Sandra Mills',phone:'(832)555-4412',email:'',occ:'Nurse',met:'Church',mar:'Married',kids:'3',type:'recruit',rank:2,quals:'Natural leader. Wants extra income. Very coachable and follows through.',added:td()},
-    {id:uid(),ownerId:'dir1',name:'Darius Fleming',phone:'(404)555-2211',email:'darius@email.com',occ:'Personal Trainer',met:'Gym',mar:'Single',kids:'0',type:'client',rank:3,quals:'Young, ambitious, currently has no life insurance. Great opportunity.',added:td()},
-  ],
-  appts:[
-    {id:uid(),ownerId:'dir1',name:'Jordan Price',phone:'(770)555-0321',date:'2025-02-14',time:'10:00',type:'recruitment',preNotes:'Discuss override structure and team-building opportunity.',resultNotes:'',outcome:'pending',followup:'',added:td()},
-  ],
-  goals:{
-    monthly_premium:{target:5000,curr:null},
-    active_clients:{target:50,curr:null},
-    prospects:{target:30,curr:null},
-    apps_submitted:{target:50,curr:null},
-    paid_points:{target:75000,curr:null},
-    licensed_agents:{target:15,curr:null},
-    total_agents:{target:100,curr:null},
-    new_agents_year:{target:25,curr:0},
-    retention_rate:{target:40,curr:0},
-  },
-  pdfs:[],
-  year:new Date().getFullYear()
-};
-
-// ════════ AUTH ════════
-let CU=null;
-function buildLoginList(){
-  const sel=document.getElementById('ls-agent');
-  sel.innerHTML='';
-  DB.agents.filter(a=>a.status!=='inactive').forEach(a=>{
-    const o=document.createElement('option');o.value=a.id;
-    o.textContent=a.name+' · '+a.tier;sel.appendChild(o);
+async function initSupabase(){
+  // supabase loaded via <script> in <head> — just check it's ready
+  if(!window.supabase){
+    document.getElementById('panel-loading').innerHTML=`
+      <div style="font-size:24px;margin-bottom:10px;">⚠️</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Could not connect</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">Database library failed to load. Check your internet and try again.</div>
+      <button class="btn-login" onclick="location.reload()">Try Again</button>`;
+    return;
+  }
+  SB=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+  // check if already logged in
+  const {data:{session}}=await SB.auth.getSession();
+  if(session){
+    await loadUserAndEnter(session.user);
+  } else {
+    showPanel('signin');
+  }
+  SB.auth.onAuthStateChange(async(_,session)=>{
+    if(session) await loadUserAndEnter(session.user);
   });
 }
-function doLogin(){
-  const id=document.getElementById('ls-agent').value;
-  const pass=document.getElementById('ls-pass').value.trim();
-  const agent=DB.agents.find(a=>a.id===id);
-  if(!agent||agent.code!==pass){toast('Invalid access code ❌','err');return;}
-  CU=agent;
+
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    if(document.querySelector(`script[src="${src}"]`)){
+      if(window.supabase)res();
+      else rej(new Error('Script tag exists but supabase not loaded'));
+      return;
+    }
+    const s=document.createElement('script');s.src=src;
+    const timer=setTimeout(()=>{s.remove();rej(new Error('timeout'));},8000);
+    s.onload=()=>{clearTimeout(timer);res();};
+    s.onerror=()=>{clearTimeout(timer);s.remove();rej(new Error('load error'));};
+    document.head.appendChild(s);
+  });
+}
+
+async function loadUserAndEnter(user){
+  // fetch profile from DB
+  const {data:profile}=await SB.from('profiles').select('*').eq('id',user.id).single();
+  if(!profile){
+    // profile doesn't exist yet — sign out
+    await SB.auth.signOut();
+    showPanel('signin');
+    setErr('si-err','Account setup incomplete. Contact your director.');
+    return;
+  }
+  if(!profile.approved){
+    showPanel('pending');
+    return;
+  }
+  CU={...profile, email:user.email};
+  enterApp();
+}
+
+async function enterApp(){
   document.getElementById('login-screen').style.display='none';
+  // show loading state
   document.getElementById('app').style.display='flex';
   const ini=CU.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('tb-av').textContent=ini;
   document.getElementById('tb-name').textContent=CU.name;
   document.getElementById('tb-tier').textContent=CU.tier;
-  const isDir=isDirector();
-  document.querySelectorAll('.dir-only').forEach(el=>el.style.display=isDir?'':'none');
-  if(isDir){document.getElementById('p-ag-wrap').style.display='';document.getElementById('apef-wrap').style.display='';}
-  document.getElementById('goals-yr').textContent=DB.year;
-  updateGreeting();buildAgentSelects();renderAll();checkFlags();
+  const isDir_=isDirector();
+  document.querySelectorAll('.dir-only').forEach(el=>el.style.display=isDir_?'':'none');
+  if(isDir_){
+    document.getElementById('p-ag-wrap').style.display='';
+    document.getElementById('apef-wrap').style.display='';
+    const mnavItems=document.getElementById('mnav-items');
+    if(mnavItems)mnavItems.classList.add('has-agents');
+  }
+  document.getElementById('goals-yr').textContent=new Date().getFullYear();
+  updateGreeting();
+  // load all data from Supabase then render
+  await loadAllData();
+  renderAll();checkFlags();
 }
-function logout(){
+
+// ════════ AUTH ACTIONS ════════
+let CU=null;
+
+function showPanel(name){
+  ['loading','signin','signup','forgot','pending'].forEach(p=>{
+    const el=document.getElementById('panel-'+p);
+    if(el)el.style.display=p===name?'':'none';
+  });
+}
+
+async function doLogin(){
+  if(!SB){toast('Loading... please try again in a second.','warn');return;}
+  const email=document.getElementById('si-email').value.trim();
+  const pass=document.getElementById('si-pass').value;
+  if(!email||!pass){setErr('si-err','Please enter your email and password.');return;}
+  setErr('si-err','');
+  const btn=document.querySelector('#panel-signin .btn-login');
+  btn.textContent='Signing in...';btn.disabled=true;
+  const {error}=await SB.auth.signInWithPassword({email,password:pass});
+  btn.textContent='Sign In';btn.disabled=false;
+  if(error){setErr('si-err',error.message==='Invalid login credentials'?'Incorrect email or password. Try again.':error.message);return;}
+}
+
+async function doSignup(){
+  if(!SB){toast('Loading... please try again in a second.','warn');return;}
+  const name=document.getElementById('su-name').value.trim();
+  const email=document.getElementById('su-email').value.trim();
+  const pass=document.getElementById('su-pass').value;
+  const tier=document.getElementById('su-tier').value;
+  if(!name||!email||!pass){setErr('su-err','Please fill in all fields.');return;}
+  if(pass.length<6){setErr('su-err','Password must be at least 6 characters.');return;}
+  setErr('su-err','');
+  const btn=document.querySelector('#panel-signup .btn-login');
+  btn.textContent='Sending request...';btn.disabled=true;
+  // create auth user
+  const {data,error}=await SB.auth.signUp({email,password:pass});
+  if(error){btn.textContent='Request Access';btn.disabled=false;setErr('su-err',error.message);return;}
+  // create profile row (pending approval)
+  await SB.from('profiles').insert({
+    id:data.user.id, name, email, tier,
+    ovr:TIERS[tier]?.pct||30,
+    lic:'unlicensed', status:'pending',
+    is_director:false, approved:false,
+    added:new Date().toISOString().split('T')[0]
+  });
+  // notify director via Supabase edge function or fallback mailto
+  try{
+    await SB.functions.invoke('notify-signup',{body:{name,email,tier}});
+  } catch(e){
+    // fallback: open mailto link
+    window.location.href=`mailto:${NOTIFY_EMAIL}?subject=New BTG Tracker Signup&body=New agent signup:%0A%0AName: ${encodeURIComponent(name)}%0AEmail: ${encodeURIComponent(email)}%0ATier: ${encodeURIComponent(tier)}%0A%0APlease log in to approve this account.`;
+  }
+  btn.textContent='Request Access';btn.disabled=false;
+  if(isDirectorTier){
+    // director approved instantly — send to sign in
+    document.getElementById('si-email').value=email;
+    showPanel('signin');
+    toast('Account created! Sign in now ✓');
+  } else {
+    showPanel('pending');
+  }
+}
+
+async function doForgot(){
+  if(!SB){toast('Loading... please try again in a second.','warn');return;}
+  const email=document.getElementById('fp-email').value.trim();
+  if(!email){setFpMsg('Please enter your email.','#c0392b');return;}
+  const btn=document.querySelector('#panel-forgot .btn-login');
+  btn.textContent='Sending...';btn.disabled=true;
+  const {error}=await SB.auth.resetPasswordForEmail(email,{
+    redirectTo:window.location.origin+window.location.pathname
+  });
+  btn.textContent='Send Reset Link';btn.disabled=false;
+  if(error){setFpMsg(error.message,'#c0392b');}
+  else{setFpMsg('Reset link sent! Check your email.','#1a7f5a');}
+}
+
+async function logout(){
+  await SB.auth.signOut();
   CU=null;
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app').style.display='none';
-  document.getElementById('ls-pass').value='';
-  buildLoginList();
+  showPanel('signin');
+  document.getElementById('si-email').value='';
+  document.getElementById('si-pass').value='';
 }
-function isDirector(){return CU&&['Director','Marketing Director','Senior Director','Executive Director'].includes(CU.tier);}
-function isDir(a){return['Director','Marketing Director','Senior Director','Executive Director'].includes(a.tier);}
 
+function isDirector(){return CU&&['Director','Marketing Director','Senior Director','Executive Director'].includes(CU.tier);}
+function isDir(a){return['Director','Marketing Director','Senior Director','Executive Director'].includes(a.tier||a.tier);}
+// isDir helper
+
+function setErr(id,msg){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.textContent=msg;el.style.display=msg?'block':'none';
+}
+function setFpMsg(msg,color){
+  const el=document.getElementById('fp-msg');
+  if(!el)return;
+  el.textContent=msg;el.style.color=color;
+  el.style.background=color==='#1a7f5a'?'#eaf6f0':'#fdecea';
+  el.style.display='block';
+}
+
+// ════════ PROFILE ════════
+function openProfileModal(){
+  document.getElementById('prof-name').value=CU.name||'';
+  document.getElementById('prof-email').value=CU.email||'';
+  document.getElementById('prof-pass').value='';
+  document.getElementById('prof-pass2').value='';
+  const msg=document.getElementById('prof-msg');
+  msg.style.display='none';
+  document.getElementById('ov-profile').classList.add('open');
+}
+
+async function saveProfile(){
+  const name=document.getElementById('prof-name').value.trim();
+  const email=document.getElementById('prof-email').value.trim();
+  const pass=document.getElementById('prof-pass').value;
+  const pass2=document.getElementById('prof-pass2').value;
+  const msg=document.getElementById('prof-msg');
+  if(!name||!email){showProfMsg('Name and email are required.','err');return;}
+  if(pass&&pass!==pass2){showProfMsg('Passwords do not match.','err');return;}
+  if(pass&&pass.length<6){showProfMsg('Password must be at least 6 characters.','err');return;}
+  // update email if changed
+  if(email!==CU.email){
+    const {error}=await SB.auth.updateUser({email});
+    if(error){showProfMsg(error.message,'err');return;}
+  }
+  // update password if provided
+  if(pass){
+    const {error}=await SB.auth.updateUser({password:pass});
+    if(error){showProfMsg(error.message,'err');return;}
+  }
+  // update profile name
+  await SB.from('profiles').update({name,email}).eq('id',CU.id);
+  CU.name=name;CU.email=email;
+  document.getElementById('tb-name').textContent=name;
+  document.getElementById('tb-av').textContent=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  showProfMsg('Profile updated ✓','ok');
+  setTimeout(()=>closeOv('ov-profile'),1500);
+}
+
+function showProfMsg(msg,type){
+  const el=document.getElementById('prof-msg');
+  el.textContent=msg;
+  el.style.background=type==='ok'?'#eaf6f0':'#fdecea';
+  el.style.color=type==='ok'?'#1a7f5a':'#c0392b';
+  el.style.display='block';
+}
+
+// ════════ DIRECTOR: RESET AGENT PASSWORD ════════
+function openResetPwModal(agentEmail){
+  document.getElementById('rp-email').value=agentEmail;
+  const msg=document.getElementById('rp-msg');msg.style.display='none';
+  document.getElementById('ov-resetpw').classList.add('open');
+}
+
+async function sendAgentReset(){
+  const email=document.getElementById('rp-email').value.trim();
+  const {error}=await SB.auth.resetPasswordForEmail(email,{
+    redirectTo:window.location.origin+window.location.pathname
+  });
+  const msg=document.getElementById('rp-msg');
+  if(error){
+    msg.textContent=error.message;msg.style.background='#fdecea';msg.style.color='#c0392b';
+  } else {
+    msg.textContent='Reset email sent to '+email+' ✓';
+    msg.style.background='#eaf6f0';msg.style.color='#1a7f5a';
+    setTimeout(()=>closeOv('ov-resetpw'),2000);
+  }
+  msg.style.display='block';
+}
+
+// ════════ DB — SUPABASE ASYNC ════════
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
+function td(){return new Date().toISOString().split('T')[0];}
+
+// In-memory cache — loaded fresh on login, updated on every save
+let DB={agents:[],prod:[],rec:[],contacts:[],appts:[],goals:{},pdfs:[],year:new Date().getFullYear()};
+
+async function loadAllData(){
+  const uid_=CU.id;
+  const isDir_=isDirector();
+  // load all tables in parallel
+  const [agRes,prRes,reRes,coRes,apRes,goRes,pdRes]=await Promise.all([
+    SB.from('profiles').select('*'),
+    isDir_?SB.from('prod_records').select('*'):SB.from('prod_records').select('*').eq('owner_id',uid_),
+    isDir_?SB.from('rec_records').select('*'):SB.from('rec_records').select('*').eq('owner_id',uid_),
+    isDir_?SB.from('contacts').select('*'):SB.from('contacts').select('*').eq('owner_id',uid_),
+    isDir_?SB.from('appointments').select('*'):SB.from('appointments').select('*').eq('owner_id',uid_),
+    SB.from('goals').select('*').eq('user_id',uid_),
+    isDir_?SB.from('pdfs').select('id,name,date'):SB.from('pdfs').select('id,name,date').limit(0),
+  ]);
+  // map snake_case DB columns to camelCase for the rest of the app
+  DB.agents=(agRes.data||[]).map(mapAgent);
+  DB.prod=(prRes.data||[]).map(mapProd);
+  DB.rec=(reRes.data||[]).map(mapRec);
+  DB.contacts=(coRes.data||[]).map(mapCon);
+  DB.appts=(apRes.data||[]).map(mapAppt);
+  DB.goals=goRes.data?.[0]?.data||getDefaultGoals();
+  DB.pdfs=(pdRes.data||[]);
+  DB.year=new Date().getFullYear();
+}
+
+function getDefaultGoals(){
+  return{monthly_premium:{target:5000,curr:null},active_clients:{target:50,curr:null},prospects:{target:30,curr:null},apps_submitted:{target:50,curr:null},paid_points:{target:75000,curr:null},licensed_agents:{target:15,curr:null},total_agents:{target:100,curr:null},new_agents_year:{target:25,curr:0},retention_rate:{target:40,curr:0}};
+}
+
+// ── mappers DB → app ──
+function mapAgent(r){return{id:r.id,name:r.name,email:r.email,tier:r.tier,ovr:r.ovr,lic:r.lic,states:r.states,status:r.status,notes:r.notes,added:r.added,inactiveLog:r.inactive_log||[],is_director:r.is_director,approved:r.approved};}
+function mapProd(r){return{id:r.id,ownerId:r.owner_id,name:r.name,phone:r.phone,email:r.email,state:r.state,stage:r.stage,plans:r.plans||[],apps:r.apps,points:r.points,notes:r.notes,added:r.added};}
+function mapRec(r){return{id:r.id,ownerId:r.owner_id,name:r.name,phone:r.phone,email:r.email,state:r.state,stage:r.stage,bg:r.bg,lines:r.lines,source:r.source,apps:r.apps,points:r.points,notes:r.notes,added:r.added};}
+function mapCon(r){return{id:r.id,ownerId:r.owner_id,name:r.name,phone:r.phone,email:r.email,occ:r.occ,met:r.met,mar:r.mar,kids:r.kids,type:r.type,rank:r.rank,quals:r.quals,added:r.added};}
+function mapAppt(r){return{id:r.id,ownerId:r.owner_id,name:r.name,phone:r.phone,date:r.date,time:r.time,type:r.type,preNotes:r.pre_notes,resultNotes:r.result_notes,outcome:r.outcome,followup:r.followup,added:r.added};}
+
+// ── save helpers ──
+async function sbUpsertProd(rec){
+  await SB.from('prod_records').upsert({id:rec.id,owner_id:rec.ownerId,name:rec.name,phone:rec.phone,email:rec.email,state:rec.state,stage:rec.stage,plans:rec.plans,apps:rec.apps,points:rec.points,notes:rec.notes,added:rec.added});
+}
+async function sbUpsertRec(rec){
+  await SB.from('rec_records').upsert({id:rec.id,owner_id:rec.ownerId,name:rec.name,phone:rec.phone,email:rec.email,state:rec.state,stage:rec.stage,bg:rec.bg,lines:rec.lines,source:rec.source,apps:rec.apps,points:rec.points,notes:rec.notes,added:rec.added});
+}
+async function sbUpsertCon(con){
+  await SB.from('contacts').upsert({id:con.id,owner_id:con.ownerId,name:con.name,phone:con.phone,email:con.email,occ:con.occ,met:con.met,mar:con.mar,kids:con.kids,type:con.type,rank:con.rank,quals:con.quals,added:con.added});
+}
+async function sbUpsertAppt(a){
+  await SB.from('appointments').upsert({id:a.id,owner_id:a.ownerId,name:a.name,phone:a.phone,date:a.date,time:a.time,type:a.type,pre_notes:a.preNotes,result_notes:a.resultNotes,outcome:a.outcome,followup:a.followup,added:a.added});
+}
+async function sbSaveGoals(){
+  await SB.from('goals').upsert({user_id:CU.id,data:DB.goals});
+}
+async function sbDeleteProd(id){await SB.from('prod_records').delete().eq('id',id);}
+async function sbDeleteRec(id){await SB.from('rec_records').delete().eq('id',id);}
+async function sbDeleteCon(id){await SB.from('contacts').delete().eq('id',id);}
+async function sbDeleteAppt(id){await SB.from('appointments').delete().eq('id',id);}
+async function sbDeletePdf(id){await SB.from('pdfs').delete().eq('id',id);}
+
+// ── Agent management (director only) ──
+async function sbUpsertAgent(ag){
+  // update profile row in Supabase
+  await SB.from('profiles').update({
+    name:ag.name,tier:ag.tier,ovr:ag.ovr,lic:ag.lic,
+    states:ag.states,status:ag.status,notes:ag.notes,
+    inactive_log:ag.inactiveLog||[]
+  }).eq('id',ag.id);
+}
+async function sbApproveAgent(agentId){
+  await SB.from('profiles').update({approved:true,status:'active'}).eq('id',agentId);
+}
+
+// saveDB is now a no-op — we save directly per operation
+function saveDB(){}
+
+// ════════ AUTH ════════
 function updateGreeting(){
   const h=new Date().getHours();
-  const g=h<12?'Good morning':'h<17'?'Good afternoon':'Good evening';
   const greet=h<12?'Good morning ☀️':h<17?'Good afternoon 👋':'Good evening 🌙';
   document.getElementById('dash-hello').textContent=greet+', '+CU.name.split(' ')[0]+'!';
   document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
@@ -1378,10 +1765,11 @@ function buildCard(r,type){
 function dO(e){e.preventDefault();e.currentTarget.style.background='#f0f4ff';}
 function dL(e){e.currentTarget.style.background='';}
 function dD(e,stage,type){e.preventDefault();e.currentTarget.style.background='';if(dragId&&dragType===type)moveRec(dragId,stage,type);}
-function moveRec(id,stage,type){
+async function moveRec(id,stage,type){
   const arr=type==='prod'?DB.prod:DB.rec;
   const r=arr.find(x=>x.id===id);
-  if(r){r.stage=stage;saveDB();renderPipe(type);toast('Moved to '+stage+' ✓');}
+  if(r){r.stage=stage;renderPipe(type);toast('Moved to '+stage+' ✓');
+    if(type==='prod')await sbUpsertProd(r); else await sbUpsertRec(r);}
 }
 
 // ════════ PROD CRUD ════════
@@ -1413,7 +1801,7 @@ function addPR(cid,ex=null){
     <button class="prm" onclick="this.parentNode.remove()">×</button>`;
   c.appendChild(row);
 }
-function saveProd(){
+async function saveProd(){
   const fn=document.getElementById('p-fn').value.trim();
   if(!fn){toast('First name required ❌','err');return;}
   const name=[fn,document.getElementById('p-ln').value.trim()].filter(Boolean).join(' ');
@@ -1429,10 +1817,10 @@ function saveProd(){
   const rec={id:editId||uid(),ownerId,name,phone:document.getElementById('p-ph').value.trim(),email:document.getElementById('p-em').value.trim(),state:document.getElementById('p-st').value.toUpperCase(),stage:document.getElementById('p-stage').value,plans,apps:parseInt(document.getElementById('p-apps').value)||0,points:parseInt(document.getElementById('p-pts').value)||0,notes:document.getElementById('p-notes').value.trim(),added:td()};
   if(editId){const idx=DB.prod.findIndex(r=>r.id===editId);if(idx>-1){rec.added=DB.prod[idx].added;DB.prod[idx]=rec;}toast('Client updated ✓');}
   else{DB.prod.push(rec);toast('Client added ✓');}
-  closeOv('ov-prod');saveDB();renderAll();
+  closeOv('ov-prod');renderAll();await sbUpsertProd(rec);
 }
 function editProd(id){const r=DB.prod.find(x=>x.id===id);if(r)openProdModal(r);}
-function delProd(id){if(!confirm('Remove this client?'))return;DB.prod=DB.prod.filter(r=>r.id!==id);saveDB();renderAll();toast('Removed','warn');}
+async function delProd(id){if(!confirm('Remove this client?'))return;DB.prod=DB.prod.filter(r=>r.id!==id);renderAll();toast('Removed','warn');await sbDeleteProd(id);}
 
 // ════════ REC CRUD ════════
 function openRecModal(rec=null){
@@ -1460,10 +1848,10 @@ function saveRec(){
   const rec={id:editId||uid(),ownerId:CU.id,name,phone:document.getElementById('r-ph').value.trim(),email:document.getElementById('r-em').value.trim(),state:document.getElementById('r-st').value.toUpperCase(),stage:document.getElementById('r-stage').value,bg:document.getElementById('r-bg').value,lines:document.getElementById('r-lines').value.trim(),source:document.getElementById('r-src').value.trim(),apps:parseInt(document.getElementById('r-apps').value)||0,points:parseInt(document.getElementById('r-pts').value)||0,notes:document.getElementById('r-notes').value.trim(),added:td()};
   if(editId){const idx=DB.rec.findIndex(r=>r.id===editId);if(idx>-1){rec.added=DB.rec[idx].added;DB.rec[idx]=rec;}toast('Prospect updated ✓');}
   else{DB.rec.push(rec);toast('Prospect added ✓');}
-  closeOv('ov-rec');saveDB();renderAll();
+  closeOv('ov-rec');renderAll();await sbUpsertRec(rec);
 }
 function editRec(id){const r=DB.rec.find(x=>x.id===id);if(r)openRecModal(r);}
-function delRec(id){if(!confirm('Remove prospect?'))return;DB.rec=DB.rec.filter(r=>r.id!==id);saveDB();renderAll();toast('Removed','warn');}
+async function delRec(id){if(!confirm('Remove prospect?'))return;DB.rec=DB.rec.filter(r=>r.id!==id);renderAll();toast('Removed','warn');await sbDeleteRec(id);}
 
 // ════════ CONTACTS ════════
 function openConModal(con=null){
@@ -1490,9 +1878,9 @@ function saveCon(){
   const con={id:editId||uid(),ownerId:CU.id,name,phone:document.getElementById('c-ph').value.trim(),email:document.getElementById('c-em').value.trim(),occ:document.getElementById('c-occ').value.trim(),met:document.getElementById('c-met').value.trim(),mar:document.getElementById('c-mar').value,kids:document.getElementById('c-kids').value,type:document.getElementById('c-type').value,rank:parseInt(document.getElementById('c-rank').value)||99,quals:document.getElementById('c-quals').value.trim(),added:td()};
   if(editId){const idx=DB.contacts.findIndex(c=>c.id===editId);if(idx>-1){con.added=DB.contacts[idx].added;DB.contacts[idx]=con;}toast('Contact updated ✓');}
   else{DB.contacts.push(con);toast('Contact added ✓');}
-  closeOv('ov-contact');saveDB();renderContacts();
+  closeOv('ov-contact');renderContacts();await sbUpsertCon(con);
 }
-function delCon(id){if(!confirm('Remove contact?'))return;DB.contacts=DB.contacts.filter(c=>c.id!==id);saveDB();renderContacts();toast('Removed','warn');}
+async function delCon(id){if(!confirm('Remove contact?'))return;DB.contacts=DB.contacts.filter(c=>c.id!==id);renderContacts();toast('Removed','warn');await sbDeleteCon(id);}
 
 function renderContacts(){
   const search=document.getElementById('con-search').value.toLowerCase();
@@ -1566,9 +1954,9 @@ function saveAppt(){
   const appt={id:editId||uid(),ownerId:CU.id,name,phone:document.getElementById('ap-ph').value.trim(),date:document.getElementById('ap-date').value,time:document.getElementById('ap-time').value,type:document.getElementById('ap-type').value,preNotes:document.getElementById('ap-pre').value.trim(),resultNotes:document.getElementById('ap-result').value.trim(),outcome:document.getElementById('ap-outcome').value,followup:document.getElementById('ap-fu').value,added:td()};
   if(editId){const idx=DB.appts.findIndex(a=>a.id===editId);if(idx>-1){appt.added=DB.appts[idx].added;DB.appts[idx]=appt;}toast('Appointment updated ✓');}
   else{DB.appts.push(appt);toast('Appointment scheduled ✓');}
-  closeOv('ov-appt');saveDB();renderAppts();checkFlags();
+  closeOv('ov-appt');renderAppts();checkFlags();await sbUpsertAppt(appt);
 }
-function delAppt(id){if(!confirm('Remove appointment?'))return;DB.appts=DB.appts.filter(a=>a.id!==id);saveDB();renderAppts();checkFlags();toast('Removed','warn');}
+async function delAppt(id){if(!confirm('Remove appointment?'))return;DB.appts=DB.appts.filter(a=>a.id!==id);renderAppts();checkFlags();toast('Removed','warn');await sbDeleteAppt(id);}
 
 function renderAppts(){
   const search=document.getElementById('appt-search').value.toLowerCase();
@@ -1745,16 +2133,21 @@ function saveGoal(){
   const curr=cr===''?null:parseInt(cr);
   if(!DB.goals[key])DB.goals[key]={};
   DB.goals[key].target=target;DB.goals[key].curr=curr;
-  saveDB();closeOv('ov-goal');renderGoals();toast('Goal updated ✓');
+  closeOv('ov-goal');renderGoals();toast('Goal updated ✓');
+  await sbSaveGoals();
 }
 function handlePdf(e){
   Array.from(e.target.files).forEach(f=>{
     const reader=new FileReader();
-    reader.onload=ev=>{DB.pdfs.push({id:uid(),name:f.name,date:td(),data:ev.target.result});saveDB();renderGoals();toast('PDF uploaded ✓');};
+    reader.onload=async ev=>{
+      const pdf={id:uid(),name:f.name,date:td(),data:ev.target.result};
+      DB.pdfs.push(pdf);renderGoals();toast('PDF uploaded ✓');
+      await SB.from('pdfs').insert({id:pdf.id,name:pdf.name,date:pdf.date,data:pdf.data});
+    };
     reader.readAsDataURL(f);
   });e.target.value='';
 }
-function delPdf(id){if(!confirm('Remove PDF?'))return;DB.pdfs=DB.pdfs.filter(p=>p.id!==id);saveDB();renderGoals();}
+async function delPdf(id){if(!confirm('Remove PDF?'))return;DB.pdfs=DB.pdfs.filter(p=>p.id!==id);renderGoals();await sbDeletePdf(id);}
 
 // ════════ AGENTS ════════
 function openAgentModal(agent=null){
@@ -1763,7 +2156,7 @@ function openAgentModal(agent=null){
   document.getElementById('ag-fn').value=agent?agent.name.split(' ')[0]:'';
   document.getElementById('ag-ln').value=agent?agent.name.split(' ').slice(1).join(' '):'';
   document.getElementById('ag-em').value=agent?.email||'';
-  document.getElementById('ag-code').value=agent?.code||'';
+  document.getElementById('ag-em').value=agent?.email||'(set on signup)';
   document.getElementById('ag-tier').value=agent?.tier||'Trainee';
   document.getElementById('ag-ovr').value=agent?.ovr||'';
   document.getElementById('ag-lic').value=agent?.lic||'unlicensed';
@@ -1782,17 +2175,21 @@ function updateTierPct(){
     document.getElementById('ag-ovr').value=info.pct;
   }
 }
-function saveAgent(){
+async function saveAgent(){
   const fn=document.getElementById('ag-fn').value.trim();
   if(!fn){toast('Name required ❌','err');return;}
-  const code=document.getElementById('ag-code').value.trim();
-  if(!code){toast('Access code required ❌','err');return;}
   const name=[fn,document.getElementById('ag-ln').value.trim()].filter(Boolean).join(' ');
   const editId=document.getElementById('ag-id').value;
-  const ag={id:editId||uid(),name,email:document.getElementById('ag-em').value.trim(),code,tier:document.getElementById('ag-tier').value,ovr:parseFloat(document.getElementById('ag-ovr').value)||0,lic:document.getElementById('ag-lic').value,states:document.getElementById('ag-states').value.trim(),status:document.getElementById('ag-status').value,notes:document.getElementById('ag-notes').value.trim(),added:td(),inactiveLog:[]};
-  if(editId){const idx=DB.agents.findIndex(a=>a.id===editId);if(idx>-1){ag.added=DB.agents[idx].added;ag.inactiveLog=DB.agents[idx].inactiveLog||[];DB.agents[idx]=ag;}toast('Agent updated ✓');}
-  else{DB.agents.push(ag);toast('Agent added ✓');}
-  closeOv('ov-agent');saveDB();buildLoginList();buildAgentSelects();renderAgents();renderDash();
+  if(!editId){
+    toast('To add agents, they must sign up and you approve them from this tab ✓');
+    closeOv('ov-agent');return;
+  }
+  const ag={id:editId,name,tier:document.getElementById('ag-tier').value,ovr:parseFloat(document.getElementById('ag-ovr').value)||0,lic:document.getElementById('ag-lic').value,states:document.getElementById('ag-states').value.trim(),status:document.getElementById('ag-status').value,notes:document.getElementById('ag-notes').value.trim()};
+  const idx=DB.agents.findIndex(a=>a.id===editId);
+  if(idx>-1){DB.agents[idx]={...DB.agents[idx],...ag};}
+  toast('Agent updated ✓');
+  closeOv('ov-agent');buildAgentSelects();renderAgents();renderDash();
+  await sbUpsertAgent(ag);
 }
 function renderAgents(){
   // Commission structure
@@ -1805,7 +2202,19 @@ function renderAgents(){
   const search=document.getElementById('ag-search')?.value.toLowerCase()||'';
   const filter=F.agf;
   const list=document.getElementById('agent-list');list.innerHTML='';
-  DB.agents.filter(a=>a.id!=='dir1').forEach(ag=>{
+  // Show pending agents at top for director to approve
+  const pending=DB.agents.filter(a=>!a.approved&&!isDir(a));
+  if(pending.length&&isDirector()){
+    const ph=document.createElement('div');
+    ph.style.cssText='background:#fef3e2;border:1.5px solid #f5a623;border-radius:12px;padding:14px 16px;margin-bottom:14px;';
+    ph.innerHTML=`<div style="font-size:13px;font-weight:800;color:#b86e00;margin-bottom:10px;">⏳ Pending Approval (${pending.length})</div>`+
+      pending.map(ag=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(245,158,11,.2);">
+        <div style="flex:1;"><div style="font-weight:700;font-size:13px;">${ag.name}</div><div style="font-size:11px;color:#b86e00;">${ag.tier} · ${ag.email||''}</div></div>
+        <button class="btn btn-gold btn-sm" onclick="approveAgent('${ag.id}')">✓ Approve</button>
+        </div>`).join('');
+    list.appendChild(ph);
+  }
+  DB.agents.filter(a=>!isDir(a)).forEach(ag=>{
     if(filter!=='all'&&ag.status!==filter)return;
     if(search&&!ag.name.toLowerCase().includes(search))return;
     const clients=DB.prod.filter(r=>r.ownerId===ag.id).length;
@@ -1816,13 +2225,14 @@ function renderAgents(){
     const licB=ag.lic==='licensed'?`<span class="lic-yes">✅ Licensed</span>`:ag.lic==='studying'?`<span class="lic-study">📚 Studying</span>`:ag.status==='inactive'?`<span class="lic-inact">🚫 Inactive</span>`:`<span class="lic-no">○ Unlicensed</span>`;
     const tierColors={'Trainee':'#7d6e5e','Associate':'#1e4db7','Field Associate':'#1a7f5a','Director':'#d4881a','Marketing Director':'#d4881a','Senior Director':'#b86e00','Executive Director':'#6d28d9'};
     const tc=tierColors[ag.tier]||'#7d6e5e';
+    const pendingBadge=!ag.approved?'<span style="font-size:9px;background:#fef3e2;color:#b86e00;padding:2px 8px;border-radius:20px;font-weight:700;margin-left:6px;">PENDING</span>':'';
     const card=document.createElement('div');card.className='agent-card';
     card.innerHTML=`
       <div class="agent-hdr">
         <div class="ag-avatar" style="background:${tc}">${ini}</div>
         <div style="flex:1">
-          <div class="ag-name">${ag.name}</div>
-          <div class="ag-tier">${ag.tier} · ${ag.ovr||0}%</div>
+          <div class="ag-name">${ag.name}${pendingBadge}</div>
+          <div class="ag-tier">${ag.tier} · ${ag.ovr||0}% · ${ag.email||''}</div>
         </div>
         ${licB}
       </div>
@@ -1832,13 +2242,22 @@ function renderAgents(){
         <div class="ag-stat"><div class="ag-stat-val">${apps}</div><div class="ag-stat-lbl">Apps</div></div>
         <div class="ag-stat"><div class="ag-stat-val">${pts.toLocaleString()}</div><div class="ag-stat-lbl">Points</div></div>
       </div>
-      <div class="ag-actions">
+      <div class="ag-actions" style="flex-wrap:wrap;gap:6px;">
         <button class="btn btn-outline btn-sm" onclick="openAgentModal(DB.agents.find(a=>a.id==='${ag.id}'))">✏️ Edit</button>
+        <button class="btn btn-outline btn-sm" onclick="openResetPwModal('${ag.email||''}')" title="Send password reset email">🔑 Reset PW</button>
+        ${!ag.approved?`<button class="btn btn-gold btn-sm" onclick="approveAgent('${ag.id}')">✓ Approve</button>`:''}
         ${ag.status!=='inactive'?`<button class="btn btn-outline btn-sm" style="border-color:var(--red);color:var(--red)" onclick="openInactiveModal('${ag.id}')">Inactivate</button>`:`<button class="btn btn-outline btn-sm" disabled>🚫 Inactive</button>`}
       </div>`;
     list.appendChild(card);
   });
-  if(!list.children.length)list.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px">No agents yet. Add your first agent above!</div>';
+  if(!list.children.length&&!pending.length)list.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px;">No agents yet. They need to sign up at the login screen — you\'ll see them here to approve.</div>';
+}
+
+async function approveAgent(agentId){
+  const idx=DB.agents.findIndex(a=>a.id===agentId);
+  if(idx>-1){DB.agents[idx].approved=true;DB.agents[idx].status='active';}
+  renderAgents();toast('Agent approved ✓');
+  await sbApproveAgent(agentId);
 }
 
 // ════════ INACTIVE ════════
@@ -1857,15 +2276,20 @@ function renderAttempts(){
   if(!attempts.length){log.innerHTML='<div style="color:var(--text3);font-size:12px;padding:6px 0">No attempts logged. Add at least 2 below.</div>';return;}
   log.innerHTML=attempts.map((a,i)=>`<div class="clog-item"><span class="clog-date">${a.date}</span><input type="text" value="${a.note}" style="flex:1;background:var(--card);border:1.5px solid var(--border2);color:var(--text);padding:5px 9px;font-family:var(--font);font-size:12px;border-radius:8px" onchange="attempts[${i}].note=this.value"><button class="btn-icon" style="font-size:14px" onclick="attempts.splice(${i},1);renderAttempts()">×</button></div>`).join('');
 }
-function confirmInactive(){
+async function confirmInactive(){
   const reason=document.getElementById('inact-reason').value;
   const notes=document.getElementById('inact-notes').value.trim();
   if(attempts.length<2){toast('Need at least 2 contact attempts ❌','err');return;}
   if(!reason){toast('Please select a reason ❌','err');return;}
   if(!notes){toast('Notes are required ❌','err');return;}
   const idx=DB.agents.findIndex(a=>a.id===inactId);
-  if(idx>-1){DB.agents[idx].status='inactive';DB.agents[idx].lic='inactive';DB.agents[idx].inactiveLog=[...attempts,{date:td(),reason,notes}];}
-  closeOv('ov-inactive');saveDB();renderAgents();toast('Agent marked inactive','warn');
+  if(idx>-1){
+    DB.agents[idx].status='inactive';
+    DB.agents[idx].lic='inactive';
+    DB.agents[idx].inactiveLog=[...attempts,{date:td(),reason,notes}];
+    await SB.from('profiles').update({status:'inactive',lic:'inactive',inactive_log:DB.agents[idx].inactiveLog}).eq('id',inactId);
+  }
+  closeOv('ov-inactive');renderAgents();toast('Agent marked inactive','warn');
 }
 
 // ════════ AGENT SELECTS ════════
@@ -1915,7 +2339,7 @@ function renderAll(){
 }
 
 // ════════ INIT ════════
-buildLoginList();
+initSupabase();
 </script>
 </body>
 </html>
