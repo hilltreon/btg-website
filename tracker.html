@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="color-scheme" content="light">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>BTG Tracker</title>
@@ -1939,7 +1940,7 @@ function openRecModal(rec=null){
   document.getElementById('r-notes').value=rec?.notes||'';
   document.getElementById('ov-rec').classList.add('open');
 }
-function saveRec(){
+async function saveRec(){
   const fn=document.getElementById('r-fn').value.trim();
   if(!fn){toast('First name required ❌','err');return;}
   const name=[fn,document.getElementById('r-ln').value.trim()].filter(Boolean).join(' ');
@@ -1969,7 +1970,7 @@ function openConModal(con=null){
   document.getElementById('c-quals').value=con?.quals||'';
   document.getElementById('ov-contact').classList.add('open');
 }
-function saveCon(){
+async function saveCon(){
   const fn=document.getElementById('c-fn').value.trim();
   if(!fn){toast('First name required ❌','err');return;}
   const name=[fn,document.getElementById('c-ln').value.trim()].filter(Boolean).join(' ');
@@ -2046,7 +2047,7 @@ function openApptModal(appt=null,prefillName='',prefillPhone=''){
   document.getElementById('ap-fu').value=appt?.followup||'';
   document.getElementById('ov-appt').classList.add('open');
 }
-function saveAppt(){
+async function saveAppt(){
   const name=document.getElementById('ap-name').value.trim();
   if(!name){toast('Name required ❌','err');return;}
   const editId=document.getElementById('ap-id').value;
@@ -2225,7 +2226,7 @@ function openGoalEdit(key,lbl,target,curr){
   document.getElementById('ov-goal').classList.add('open');
 }
 function openGoalModal(){openGoalEdit('monthly_premium','Monthly Premium',DB.goals.monthly_premium?.target||5000,'');}
-function saveGoal(){
+async function saveGoal(){
   const key=document.getElementById('g-key').value;
   const target=parseInt(document.getElementById('g-val').value)||0;
   const cr=document.getElementById('g-curr').value;
@@ -2235,7 +2236,7 @@ function saveGoal(){
   closeOv('ov-goal');renderGoals();toast('Goal updated ✓');
   await sbSaveGoals();
 }
-function handlePdf(e){
+async function handlePdf(e){
   Array.from(e.target.files).forEach(f=>{
     const reader=new FileReader();
     reader.onload=async ev=>{
