@@ -1319,6 +1319,20 @@ const SB={
 
 async function initSupabase(){
   try{
+    // quick connectivity test first
+    const testRes=await fetch(SUPA_URL+'/rest/v1/',{
+      headers:{'apikey':SUPA_KEY}
+    }).catch(e=>({ok:false,_err:e.message}));
+    if(!testRes.ok){
+      const msg=testRes._err||('HTTP '+testRes.status);
+      document.getElementById('panel-loading').innerHTML=`
+        <div style="font-size:24px;margin-bottom:10px;">⚠️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Cannot reach database</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;word-break:break-all;">${msg}</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:14px;">Check that builttogrowagency.com is added to Supabase → Settings → API → Allowed Origins</div>
+        <button class="btn-login" onclick="location.reload()">Try Again</button>`;
+      return;
+    }
     const {data:{session}}=await SB.auth.getSession();
     if(session&&AUTH_USER){
       await loadUserAndEnter(AUTH_USER);
@@ -1329,7 +1343,7 @@ async function initSupabase(){
     document.getElementById('panel-loading').innerHTML=`
       <div style="font-size:24px;margin-bottom:10px;">⚠️</div>
       <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Connection Error</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">${e.message}</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px;word-break:break-all;">${e.message}</div>
       <button class="btn-login" onclick="location.reload()">Try Again</button>`;
   }
 }
