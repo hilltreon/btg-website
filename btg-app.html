@@ -1,0 +1,2432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="light">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>BTG Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ── Warm white palette — much lighter ── */
+  --bg: #fdfcf9;
+  --bg2: #f8f5ef;
+  --card: #ffffff;
+  --card2: #fefefe;
+  --border: #ede8df;
+  --border2: #d9d0c2;
+  /* ── Brand ── */
+  --navy: #1a2340;
+  --navy2: #212c50;
+  --gold: #c8820e;
+  --gold2: #e09928;
+  --gold-soft: #fef3d8;
+  --gold-mid: #f5a623;
+  /* ── Semantic ── */
+  --green: #1a7f5a;
+  --green-soft: #e4f5ee;
+  --blue: #1e4db7;
+  --blue-soft: #eaf0fc;
+  --amber: #b86e00;
+  --amber-soft: #fef0d8;
+  --red: #c0392b;
+  --red-soft: #fdecea;
+  --purple: #6d28d9;
+  --purple-soft: #f0ecfc;
+  --teal: #0e7490;
+  --teal-soft: #e2f5f9;
+  /* ── Text — rich warm darks ── */
+  --text: #16120d;
+  --text2: #3a2f22;
+  --text3: #7d7060;
+  /* ── Shadows — warm tinted ── */
+  --shadow: 0 2px 14px rgba(22,18,13,.07);
+  --shadow2: 0 10px 40px rgba(22,18,13,.13);
+  --r: 14px;
+  --r2: 10px;
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{
+  height:100%;
+  overflow:hidden;
+  color-scheme:light only;
+  background:#fdfcf9;
+}
+body{
+  font-family:var(--font);
+  background:#fdfcf9;
+  color:#16120d;
+  height:100%;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+}
+/* Force every scrollable view to the cream background */
+.view,.vscroll,#view-dashboard,#view-production,#view-recruiting,
+#view-contacts,#view-appointments,#view-goals,#view-agents{
+  background:#fdfcf9 !important;
+  color:#16120d !important;
+}
+/* Force cards pure white */
+.kpi-card,.section-card,.pcard,.con-card,.appt-card,
+.goal-card,.agent-card,.agent-perf-card,.cs-row,
+.modal,.login-card,.pdf-item{
+  background:#ffffff !important;
+  color:#16120d !important;
+}
+/* Dashboard greeting always dark text */
+.dash-greeting,.dash-hello,.dash-date{
+  color:#16120d !important;
+}
+.dash-hello{font-size:24px;font-weight:800;}
+.dash-date{font-size:13px;font-weight:500;color:#3a2f22 !important;margin-top:3px;}
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* ── All cards: warm white surfaces, warm borders, warm shadows ── */
+.kpi-card,.section-card,.pcard,.con-card,.appt-card,.goal-card,
+.agent-card,.agent-perf-card,.cs-row,.login-card,.pdf-item,
+.appt-date-box,.ag-stat,.pcol-hd,.tier-info-box{
+  background:var(--card);
+}
+.kpi-card,.section-card,.pcard,.con-card,.appt-card,.goal-card,
+.agent-card,.agent-perf-card,.cs-row{
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+}
+.pcard:hover,.con-card:hover{
+  border-color:rgba(212,136,26,.35);
+  box-shadow:0 6px 22px rgba(28,22,18,.11);
+  transform:translateY(-1px);
+}
+
+/* ── All text: warm, high contrast ── */
+.lbl,.gc-lbl,.pcol-name,.apc-lbl,
+.ag-stat-lbl,.plan-cnt,.fsec,.fg label,.lf label{
+  color:var(--text2) !important;
+  font-weight:700;
+}
+/* md-item-lbl intentionally NOT here — gold color set in its own rule below */
+/* kpi-lbl intentionally NOT here — color set per card type (gold/green/blue etc) */
+.kpi-lbl{font-weight:800;}
+.kpi-val,.gc-val,.md-item-val,.pcard-name,.con-name,
+.appt-name,.ag-name,.apc-name,.cs-tier,.sec-title,
+.dash-hello{
+  color:var(--text) !important;
+  font-weight:800;
+}
+.kpi-sub,.gc-det,.pcard-meta,.pcard-notes,.appt-meta,
+.appt-notes,.con-info,.ag-tier,.apc-tier,.cs-note,
+.pcol-meta,.clog-date,.gc-goal,.plan-name{
+  color:var(--text2) !important;
+}
+.pcard-date,.con-owner-tag,.pdf-date,.gc-pct{
+  color:var(--text3) !important;
+}
+
+/* ── Toolbars & navs: warm white ── */
+.desktop-nav,.mobile-nav,.pipe-toolbar{
+  background:rgba(255,255,255,.97);
+  border-color:var(--border);
+}
+
+/* ── Pipeline columns: warm cream background ── */
+.pcol{background:var(--bg2);}
+.cwrap{background:transparent;}
+
+/* ── Form inputs ── */
+.fg input,.fg select,.fg textarea,
+.lf input,.lf select,
+.plan-row input,.plan-row select{
+  background:#fdfcfa !important;
+  color:var(--text) !important;
+  border-color:var(--border2) !important;
+  font-weight:500;
+}
+.fg input::placeholder,.lf input::placeholder,.fg textarea::placeholder{
+  color:var(--text3) !important;
+}
+
+/* ── Filter pills ── */
+.filt{
+  background:#fff;
+  border:1.5px solid var(--border2);
+  color:var(--text2);
+  font-weight:700;
+}
+.filt.on{background:var(--navy);border-color:var(--navy);color:#fff;}
+.filt:hover:not(.on){border-color:var(--gold);color:var(--gold);}
+
+/* ── Modals ── */
+.modal{background:var(--card);box-shadow:0 24px 64px rgba(28,22,18,.18);}
+.mhdr{background:var(--card);border-color:var(--border);}
+.mfoot{background:var(--bg2);border-color:var(--border);}
+
+/* ── Search input ── */
+.sbox input{
+  background:#fff !important;
+  color:var(--text) !important;
+  border-color:var(--border2) !important;
+}
+.sbox input::placeholder{color:var(--text3) !important;}
+
+/* ── Dashboard greeting ── */
+.dash-hello{font-size:24px;font-weight:800;color:var(--text) !important;}
+.dash-date{color:var(--text2);font-weight:500;font-size:13px;}
+
+/* ── KPI bar background ── */
+.kpi-bar,.gc-bar,.md-bar,.sbar{background:var(--border);}
+
+/* ── Warm scrollview ── */
+.vscroll{background:transparent;}
+
+/* ── Goal pct badge warm ── */
+.gc-pct{background:var(--bg2) !important;color:var(--text2) !important;border:1px solid var(--border);}
+
+/* ── Agent stat boxes ── */
+.ag-stat{background:var(--bg2);border:1px solid var(--border);}
+.ag-stat-val{color:var(--text) !important;font-weight:800;}
+
+/* ── Section card inner text ── */
+.plan-name{font-weight:600;}
+.plan-prem{color:var(--text) !important;font-weight:700;}
+.plan-pct-bar{background:var(--border);}
+
+/* ── Appt date box ── */
+.appt-date-box{background:var(--bg2);border:1px solid var(--border);}
+.appt-day{color:var(--navy) !important;font-weight:800;}
+.appt-mon{color:var(--text3) !important;font-weight:700;}
+
+/* ── Outcome tags ── */
+.ot-pending{background:var(--amber-soft);color:var(--amber);}
+.ot-completed{background:var(--green-soft);color:var(--green);}
+.ot-noshow{background:var(--red-soft);color:var(--red);}
+.ot-other{background:var(--bg2);color:var(--text2);}
+
+/* ── Contact badges ── */
+.con-badge{background:var(--bg2);border:1px solid var(--border);color:var(--text2);}
+.con-quals{border-color:var(--border);}
+
+/* ── Warn box ── */
+.warn-box{background:var(--amber-soft);color:var(--amber);}
+
+/* ── Tier info box in agent modal ── */
+.tier-info-box{background:var(--navy);color:#fff;}
+
+/* ── Empty col placeholder ── */
+.ecol{border-color:var(--border2);color:var(--text3);}
+
+/* ── Goal card edit btn ── */
+.gc-edit-btn{background:var(--bg2);color:var(--text2);}
+.gc-edit-btn:hover{background:var(--gold-soft);color:var(--gold);}
+
+/* ── Stage pill backgrounds — warm tints ── */
+.sp-c{background:#edf2fe;color:var(--blue);}
+.sp-i{background:#fef6e6;color:var(--amber);}
+.sp-k{background:#eaf6f0;color:var(--green);}
+
+/* ── Contact type badges ── */
+.ct-recruit{background:var(--teal-soft);color:var(--teal);}
+.ct-client{background:var(--gold-soft);color:var(--gold);}
+.ct-both{background:var(--purple-soft);color:var(--purple);}
+
+/* ── PDF zone ── */
+.pdf-zone{border-color:var(--border2);}
+.pdf-zone:hover{border-color:var(--gold);background:var(--gold-soft);}
+.pdf-item{background:var(--card);border:1px solid var(--border);}
+
+/* ── Flag pill ── */
+.flag-pill{background:var(--amber-soft);color:var(--amber);}
+
+/* ── Premium pill ── */
+.prem-pill{background:var(--green-soft);}
+.prem-lbl{color:var(--green) !important;}
+.prem-val{color:var(--green) !important;}
+
+/* ── Commission structure cards ── */
+.cs-grid .cs-row{background:var(--card);}
+.cs-pct{color:var(--navy) !important;font-weight:800;}
+.cs-note{color:var(--text3) !important;}
+
+/* ── Contact list avatar ── */
+.con-av,.apc-avatar,.ag-avatar,.tb-avatar{background:var(--navy) !important;color:#fff !important;}
+
+/* ── Agent perf card ── */
+.agent-perf-card{background:var(--card);border:1px solid var(--border);}
+
+/* ── pcard footer btn ── */
+.pcard-btn{background:var(--bg2);color:var(--text2);border:none;}
+.pcard-btn:hover{background:var(--border);}
+.pcard-btn.adv{background:var(--green-soft);color:var(--green);}
+
+/* ── con-card actions ── */
+.con-actions .btn-outline{background:var(--card);}
+
+/* ── Inactive log items ── */
+.clog-item{background:var(--bg2);border-radius:8px;}
+.clog-item input{background:var(--card) !important;border-color:var(--border) !important;}
+
+/* ── Scrollbar warm ── */
+::-webkit-scrollbar-thumb{background:var(--border2) !important;}
+
+/* ── Context menu ── */
+.ctx{background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow2);}
+.cxi{border-color:var(--border);color:var(--text);}
+.cxi:hover,.cxi:active{background:var(--bg2);}
+
+/* ── Toast ── */
+.toast{background:var(--navy);}
+
+/* ═══ UTILS ═══ */
+.hidden{display:none!important;}
+.flex{display:flex;}.ai-c{align-items:center;}.jc-sb{justify-content:space-between;}
+.gap4{gap:4px;}.gap8{gap:8px;}.gap12{gap:12px;}.gap16{gap:16px;}
+.fw{width:100%;}
+.mono{font-family:var(--mono);}
+.txt2{color:var(--text2);}
+.txt3{color:var(--text3);}
+.fs10{font-size:10px;}.fs11{font-size:11px;}.fs12{font-size:12px;}.fs13{font-size:13px;}
+.fw6{font-weight:600;}.fw7{font-weight:700;}.fw8{font-weight:800;}
+.lbl{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);}
+
+/* ═══ BUTTONS ═══ */
+.btn{border:none;cursor:pointer;font-family:var(--font);transition:all .15s;font-weight:700;border-radius:var(--r2);padding:11px 20px;font-size:14px;}
+.btn-navy{background:var(--navy);color:#fff;}
+.btn-navy:hover{background:var(--navy2);}
+.btn-navy:active{transform:scale(.97);}
+.btn-gold{background:var(--gold);color:#fff;}
+.btn-gold:hover{background:var(--gold2);}
+.btn-gold:active{transform:scale(.97);}
+.btn-outline{background:#fff;border:1.5px solid var(--border2);color:var(--text2);font-weight:600;}
+.btn-outline:hover{border-color:var(--navy);color:var(--navy);}
+.btn-sm{padding:7px 14px;font-size:12px;border-radius:8px;}
+.btn-xs{padding:5px 10px;font-size:11px;border-radius:6px;}
+.btn-icon{background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:var(--text3);transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.btn-icon:hover{background:var(--border);color:var(--text);}
+.btn-red{background:var(--red);color:#fff;}
+
+/* ═══ CHIP / BADGE ═══ */
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;letter-spacing:.3px;padding:3px 9px;border-radius:20px;}
+.chip-iul{background:var(--teal-soft);color:var(--teal);}
+.chip-ul{background:var(--blue-soft);color:var(--blue);}
+.chip-wl{background:var(--purple-soft);color:var(--purple);}
+.chip-term{background:var(--amber-soft);color:var(--amber);}
+.chip-fa{background:var(--green-soft);color:var(--green);}
+.chip-ia{background:var(--gold-soft);color:#c97a00;}
+.chip-fe{background:var(--red-soft);color:var(--red);}
+.chip-new{background:#f1f5f9;color:var(--text2);}
+.chip-exp{background:var(--blue-soft);color:var(--blue);}
+.chip-vet{background:var(--gold-soft);color:#c97a00;}
+.chip-grey{background:#f1f5f9;color:var(--text3);}
+.lic-yes{background:var(--green-soft);color:var(--green);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;}
+.lic-study{background:var(--amber-soft);color:var(--amber);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;}
+.lic-no{background:#f1f5f9;color:var(--text3);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;}
+.lic-inact{background:var(--red-soft);color:var(--red);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;}
+
+/* ═══ LOGIN ═══ */
+#login-screen{position:fixed;inset:0;background:linear-gradient(150deg,#13192e 0%,#1a2340 55%,#1a1e32 100%);z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+#login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 70%,rgba(212,136,26,.12) 0%,transparent 65%);pointer-events:none;}
+.login-logo{text-align:center;margin-bottom:32px;}
+.login-icon{font-size:56px;margin-bottom:12px;}
+.login-brand{font-size:32px;font-weight:800;color:#fff;letter-spacing:-.5px;}
+.login-sub{font-size:13px;color:rgba(255,255,255,.5);margin-top:4px;font-weight:500;}
+.login-card{background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:400px;box-shadow:0 24px 60px rgba(0,0,0,.3);}
+.lf{margin-bottom:16px;}
+.lf label{display:block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
+.lf input,.lf select{width:100%;background:var(--bg);border:1.5px solid var(--border2);color:var(--text);padding:13px 14px;font-family:var(--font);font-size:15px;border-radius:var(--r2);outline:none;transition:border .2s;-webkit-appearance:none;}
+.lf input:focus,.lf select:focus{border-color:var(--navy);}
+.lf select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+.btn-login{width:100%;background:var(--navy);color:#fff;border:none;padding:15px;font-family:var(--font);font-weight:800;font-size:16px;border-radius:var(--r2);cursor:pointer;margin-top:4px;transition:all .15s;}
+.btn-login:active{transform:scale(.98);}
+.login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;}
+
+/* ═══ APP SHELL ═══ */
+#app{display:none;flex-direction:column;height:100%;overflow:hidden;}
+
+/* TOP HEADER */
+.topbar{background:linear-gradient(90deg,#13192e 0%,#1a2340 60%,#1e2a4a 100%);color:#fff;height:56px;display:flex;align-items:center;padding:0 16px;gap:0;flex-shrink:0;position:relative;box-shadow:0 2px 16px rgba(20,18,14,.18);border-bottom:1px solid rgba(212,136,26,.2);}
+.brand{display:flex;align-items:center;gap:8px;}
+.brand-icon{font-size:22px;}
+.brand-name{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.3px;}
+.brand-sub{font-size:10px;color:rgba(255,255,255,.4);font-weight:600;margin-left:2px;align-self:flex-end;padding-bottom:3px;}
+.tb-right{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.tb-user{display:flex;align-items:center;gap:8px;}
+.tb-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;flex-shrink:0;}
+.tb-name{font-size:13px;font-weight:700;color:#fff;}
+.tb-tier{font-size:10px;color:var(--gold);font-weight:700;}
+.tb-signout{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);padding:6px 12px;border-radius:8px;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;transition:all .15s;}
+.tb-signout:hover{background:rgba(255,255,255,.2);color:#fff;}
+
+/* DESKTOP NAV (side tabs hidden on mobile) */
+.desktop-nav{background:#fff;border-bottom:1px solid var(--border);display:flex;overflow-x:auto;flex-shrink:0;}
+.desktop-nav::-webkit-scrollbar{display:none;}
+.dnav-tab{padding:0 18px;height:48px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;flex-shrink:0;}
+.dnav-tab:hover{color:var(--text);border-bottom-color:var(--border2);}
+.dnav-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.dnav-tab .tab-icon{font-size:14px;}
+.dnav-tab .nbadge{background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:10px;font-family:var(--mono);}
+
+/* MOBILE BOTTOM NAV */
+.mobile-nav{display:none;background:#fff;border-top:2px solid var(--border);padding:6px 4px calc(6px + env(safe-area-inset-bottom));flex-shrink:0;z-index:100;position:relative;}
+.mnav-items{display:grid;grid-template-columns:repeat(6,1fr);}
+.mnav-items.has-agents{grid-template-columns:repeat(7,1fr);}
+.mnav-tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 1px;cursor:pointer;border-radius:10px;transition:all .15s;position:relative;}
+.mni{font-size:18px;line-height:1;}
+.mnl{font-size:8px;font-weight:600;color:var(--text3);letter-spacing:-.1px;text-align:center;}
+.mnav-tab:active{background:var(--bg);}
+.mnav-tab.active .mni{color:var(--navy);}
+.mnav-tab.active .mnl{color:var(--navy);font-weight:700;}
+.mni{font-size:20px;line-height:1;}
+.mnl{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:-.1px;}
+.mnav-tab .nbadge{position:absolute;top:4px;right:12px;background:var(--red);color:#fff;font-size:8px;padding:1px 4px;border-radius:10px;font-family:var(--mono);}
+
+/* VIEWS */
+.view{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.view.active{display:flex;}
+.vscroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;}
+
+/* ═══ DASHBOARD ═══ */
+.dash-greeting{padding:0 0 18px;}
+.dash-hello{font-size:26px;font-weight:800;color:#16120d !important;letter-spacing:-.5px;line-height:1.2;}
+.dash-date{font-size:14px;color:#3a2f22 !important;margin-top:4px;font-weight:600;}
+.kpi-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.kpi-card{background:var(--card);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);position:relative;overflow:hidden;border:1.5px solid var(--border);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--r) var(--r) 0 0;}
+/* Per-card tinted backgrounds + colored labels */
+.kpi-c-gold{background:linear-gradient(160deg,#fffdf7 0%,#fef8e8 100%);border-color:rgba(200,130,14,.2);}
+.kpi-c-gold::before{background:var(--gold);}
+.kpi-c-gold .kpi-lbl{color:var(--gold) !important;}
+.kpi-c-green{background:linear-gradient(160deg,#f8fefa 0%,#edf8f3 100%);border-color:rgba(26,127,90,.2);}
+.kpi-c-green::before{background:var(--green);}
+.kpi-c-green .kpi-lbl{color:var(--green) !important;}
+.kpi-c-amber{background:linear-gradient(160deg,#fffcf5 0%,#fef4e0 100%);border-color:rgba(184,110,0,.2);}
+.kpi-c-amber::before{background:var(--amber);}
+.kpi-c-amber .kpi-lbl{color:var(--amber) !important;}
+.kpi-c-blue{background:linear-gradient(160deg,#f8faff 0%,#ecf2fd 100%);border-color:rgba(30,77,183,.2);}
+.kpi-c-blue::before{background:var(--blue);}
+.kpi-c-blue .kpi-lbl{color:var(--blue) !important;}
+.kpi-c-teal{background:linear-gradient(160deg,#f5fbfc 0%,#e5f6f9 100%);border-color:rgba(14,116,144,.2);}
+.kpi-c-teal::before{background:var(--teal);}
+.kpi-c-teal .kpi-lbl{color:var(--teal) !important;}
+.kpi-lbl{font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px;}
+.kpi-val{font-size:34px;font-weight:800;color:#16120d;font-family:var(--mono);line-height:1;letter-spacing:-1px;}
+.kpi-sub{font-size:12px;color:#3a2f22;margin-top:6px;font-weight:600;}
+.kpi-bar{height:6px;background:rgba(0,0,0,.07);border-radius:3px;margin-top:14px;overflow:hidden;}
+.kpi-fill{height:100%;border-radius:3px;transition:width .8s ease;}
+
+/* MD MILESTONE */
+.md-card{background:linear-gradient(135deg,#0d3d2a 0%,#145c3e 100%);border-radius:var(--r);padding:20px;margin-bottom:14px;color:#fff;border:1px solid rgba(26,160,90,.3);box-shadow:0 4px 20px rgba(10,50,30,.2);}
+.md-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.md-title{font-size:20px;font-weight:800;letter-spacing:-.3px;color:#ffffff;}
+.md-badge{background:#f5a623;color:#fff;font-size:11px;font-weight:800;padding:6px 14px;border-radius:20px;letter-spacing:.3px;}
+.md-items{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.md-item-divider{width:1px;background:rgba(255,255,255,.12);margin:0 2px;align-self:stretch;}
+.md-item-lbl{font-size:13px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#f5a623 !important;margin-bottom:8px;}
+.md-item-val{font-size:36px;font-weight:800;font-family:var(--mono);color:#ffffff;line-height:1;letter-spacing:-1px;}
+.md-item-goal{font-size:13px;color:rgba(255,255,255,.8);margin-top:4px;font-weight:600;}
+.md-bar{height:5px;background:rgba(255,255,255,.15);border-radius:3px;margin-top:10px;overflow:hidden;}
+.md-fill{height:100%;border-radius:3px;background:#f5a623;transition:width .7s;}
+
+/* PLAN BREAKDOWN */
+.section-card{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);margin-bottom:14px;}
+.sec-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:14px;letter-spacing:-.2px;}
+.plan-row-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.plan-row-item:last-child{border-bottom:none;}
+.plan-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.plan-name{font-size:13px;font-weight:600;flex:1;}
+.plan-cnt{font-size:11px;color:var(--text3);min-width:40px;text-align:right;}
+.plan-prem{font-size:13px;font-weight:700;font-family:var(--mono);min-width:80px;text-align:right;}
+.plan-pct-bar{width:60px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.plan-pct-fill{height:100%;border-radius:3px;background:var(--gold);}
+
+/* AGENT PERF CARDS */
+.agent-perf-card{background:var(--card);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.apc-avatar{width:44px;height:44px;border-radius:12px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0;}
+.apc-name{font-size:14px;font-weight:700;}
+.apc-tier{font-size:11px;color:var(--text3);font-weight:500;}
+.apc-stats{display:flex;gap:14px;margin-left:auto;}
+.apc-stat{text-align:right;}
+.apc-val{font-size:15px;font-weight:800;font-family:var(--mono);}
+.apc-lbl{font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+
+/* ═══ PIPELINE ═══ */
+.pipe-toolbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;overflow-x:auto;}
+.pipe-toolbar::-webkit-scrollbar{display:none;}
+.filt{background:var(--bg);border:1.5px solid var(--border2);color:var(--text2);padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font);transition:all .15s;font-weight:700;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+.filt.on{background:var(--navy);border-color:var(--navy);color:#fff;}
+.filt:active{transform:scale(.96);}
+.sbox{position:relative;flex-shrink:0;}
+.sbox input{background:var(--bg);border:1.5px solid var(--border2);color:var(--text);padding:8px 12px 8px 32px;font-family:var(--font);font-size:13px;border-radius:20px;outline:none;transition:border .15s;width:180px;}
+.sbox input:focus{border-color:var(--navy);}
+.sbox input::placeholder{color:var(--text3);}
+.sbox::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none;}
+.add-btn{background:var(--gold);color:#fff;border:none;border-radius:20px;padding:8px 18px;font-family:var(--font);font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;box-shadow:0 2px 8px rgba(212,136,26,.3);}
+.add-btn:hover{background:var(--gold2);}
+.add-btn:active{transform:scale(.96);}
+
+/* MOBILE PIPELINE - swipeable columns */
+.pipe-boards{flex:1;overflow:hidden;display:flex;}
+@media(max-width:767px){
+  .pipe-boards{overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
+  .pcol{min-width:88vw;scroll-snap-align:start;scroll-snap-stop:always;}
+}
+@media(min-width:768px){
+  .pipe-boards{display:grid;grid-template-columns:repeat(3,1fr);}
+}
+.pcol{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;background:var(--card2);}
+.pcol:last-child{border-right:none;}
+.pcol-hd{padding:14px 14px 10px;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0;}
+.pcol-top{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.stage-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.sp-c{background:var(--blue-soft);color:var(--blue);}
+.sp-i{background:var(--amber-soft);color:var(--amber);}
+.sp-k{background:var(--green-soft);color:var(--green);}
+.pcol-cnt{margin-left:auto;font-size:13px;font-weight:700;font-family:var(--mono);color:var(--text2);}
+.pcol-meta{font-size:12px;color:var(--text3);font-weight:500;}
+.cwrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px;}
+.ecol{border:2px dashed var(--border2);padding:28px 20px;text-align:center;color:var(--text3);font-size:12px;border-radius:var(--r);margin-top:4px;}
+
+/* PIPELINE CARDS */
+.pcard{background:#fff;border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:all .15s;position:relative;border:1.5px solid transparent;}
+.pcard:active{transform:scale(.98);border-color:var(--navy);}
+.pcard-name{font-size:15px;font-weight:700;margin-bottom:2px;}
+.pcard-meta{font-size:12px;color:var(--text2);margin-bottom:8px;}
+.pcard-chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;}
+.prem-pill{background:var(--green-soft);border-radius:10px;padding:7px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.prem-lbl{font-size:10px;font-weight:700;color:var(--green);letter-spacing:.3px;text-transform:uppercase;}
+.prem-val{font-size:16px;font-weight:800;color:var(--green);font-family:var(--mono);}
+.prem-type{font-size:10px;color:var(--text3);margin-left:4px;}
+.pcard-notes{font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5;}
+.flag-pill{background:var(--amber-soft);border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:5px;font-size:11px;color:var(--amber);font-weight:700;margin-bottom:8px;}
+.pcard-foot{display:flex;align-items:center;gap:6px;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;}
+.pcard-date{font-size:10px;color:var(--text3);font-family:var(--mono);margin-right:auto;}
+.pcard-btn{background:var(--bg);border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .15s;}
+.pcard-btn:active{background:var(--border);}
+.pcard-btn.adv{background:var(--green-soft);color:var(--green);}
+.pcard-more{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:2px 6px;line-height:1;}
+
+/* ═══ TOP 25 ═══ */
+.con-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+@media(min-width:600px){.con-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1000px){.con-grid{grid-template-columns:repeat(3,1fr);}}
+.con-card{background:#fff;border-radius:var(--r);padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:all .15s;position:relative;}
+.con-card:active{transform:scale(.99);}
+.con-hdr{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;}
+.con-av{width:46px;height:46px;border-radius:12px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;flex-shrink:0;}
+.con-rank{position:absolute;top:-6px;left:-6px;background:var(--gold);color:#fff;font-size:10px;font-weight:800;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.con-name{font-size:15px;font-weight:800;margin-bottom:2px;}
+.con-type-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.ct-recruit{background:var(--teal-soft);color:var(--teal);}
+.ct-client{background:var(--gold-soft);color:#c97a00;}
+.ct-both{background:var(--purple-soft);color:var(--purple);}
+.con-info{font-size:12px;color:var(--text2);line-height:1.8;}
+.con-info-row{display:flex;align-items:center;gap:6px;}
+.con-icon{width:16px;font-size:12px;}
+.con-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.con-badge{background:var(--bg);border:1px solid var(--border);border-radius:20px;font-size:10px;font-weight:600;color:var(--text2);padding:2px 9px;}
+.con-quals{font-size:11px;color:var(--text2);margin-top:8px;line-height:1.5;font-style:italic;padding-top:8px;border-top:1px solid var(--border);}
+.con-actions{display:flex;gap:6px;margin-top:10px;justify-content:flex-end;}
+.con-owner-tag{position:absolute;top:10px;right:10px;background:var(--bg);border-radius:20px;padding:2px 8px;font-size:10px;color:var(--text3);font-weight:600;}
+.appt-dot{position:absolute;top:10px;right:74px;width:8px;height:8px;border-radius:50%;background:var(--amber);}
+
+/* ═══ APPOINTMENTS ═══ */
+.appt-card{background:#fff;border-radius:var(--r);padding:14px;box-shadow:var(--shadow);margin-bottom:8px;display:flex;gap:12px;cursor:pointer;transition:all .15s;border-left:4px solid transparent;}
+.appt-card:active{transform:scale(.99);}
+.appt-card.flagged{border-left-color:var(--amber);}
+.appt-card.at-recruitment{border-left-color:var(--teal);}
+.appt-card.at-field{border-left-color:var(--gold);}
+.appt-card.at-zoom{border-left-color:var(--blue);}
+.appt-date-box{background:var(--bg);border-radius:10px;padding:8px 10px;text-align:center;min-width:52px;flex-shrink:0;border:1px solid var(--border);}
+.appt-day{font-size:22px;font-weight:800;font-family:var(--mono);color:var(--navy);line-height:1;}
+.appt-mon{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);}
+.appt-body{flex:1;}
+.appt-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.appt-meta{font-size:11px;color:var(--text2);margin-bottom:6px;}
+.appt-type-chip{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.atc-rec{background:var(--teal-soft);color:var(--teal);}
+.atc-fld{background:var(--gold-soft);color:#c97a00;}
+.atc-zm{background:var(--blue-soft);color:var(--blue);}
+.appt-notes{font-size:11px;color:var(--text2);margin-top:5px;line-height:1.5;font-style:italic;}
+.appt-flag{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--amber);font-weight:700;margin-top:4px;}
+.appt-actions{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
+.outcome-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;}
+.ot-pending{background:var(--amber-soft);color:var(--amber);}
+.ot-completed{background:var(--green-soft);color:var(--green);}
+.ot-noshow{background:var(--red-soft);color:var(--red);}
+.ot-other{background:#f1f5f9;color:var(--text2);}
+
+/* ═══ GOALS ═══ */
+.goals-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+@media(min-width:600px){.goals-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1000px){.goals-grid{grid-template-columns:repeat(3,1fr);}}
+.goal-card{background:#fff;border-radius:var(--r);padding:20px;box-shadow:var(--shadow);position:relative;border:1.5px solid var(--border);}
+.gc-icon{font-size:26px;margin-bottom:10px;}
+.gc-lbl{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);margin-bottom:10px;}
+.gc-nums{display:flex;align-items:baseline;gap:6px;margin-bottom:10px;}
+.gc-val{font-size:34px;font-weight:800;font-family:var(--mono);color:var(--text);letter-spacing:-1px;line-height:1;}
+.gc-goal{font-size:14px;color:var(--text2);font-weight:600;}
+.gc-pct{margin-left:auto;font-size:12px;font-weight:800;font-family:var(--mono);background:var(--bg2);padding:4px 10px;border-radius:20px;color:var(--text2);border:1px solid var(--border2);}
+.gc-bar{height:8px;background:rgba(0,0,0,.07);border-radius:4px;overflow:hidden;margin-bottom:10px;}
+.gc-fill{height:100%;border-radius:4px;transition:width .8s ease;}
+.gc-det{font-size:12px;color:var(--text2);line-height:1.7;font-weight:500;}
+.gc-edit-btn{position:absolute;top:14px;right:14px;background:var(--gold-soft);border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;color:var(--gold);cursor:pointer;font-family:var(--font);transition:all .15s;}
+.gc-edit-btn:hover{background:var(--gold);color:#fff;}
+.md-goal-card{background:linear-gradient(135deg,#0d3d2a 0%,#145c3e 100%);color:#fff;border-radius:var(--r);padding:20px;box-shadow:0 4px 24px rgba(10,50,30,.2);border:1px solid rgba(26,160,90,.3);}
+.md-goal-title{font-size:16px;font-weight:800;margin-bottom:4px;}
+.md-goal-sub{font-size:11px;color:rgba(255,255,255,.5);margin-bottom:16px;}
+.md-goal-items{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.pdf-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:24px;text-align:center;margin-top:16px;transition:all .15s;cursor:pointer;}
+.pdf-zone:hover{border-color:var(--navy);background:var(--blue-soft);}
+.pdf-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border-radius:10px;box-shadow:var(--shadow);margin-bottom:6px;font-size:12px;}
+.pdf-icon{font-size:20px;}
+.pdf-name{flex:1;font-weight:600;}
+.pdf-date{font-size:10px;color:var(--text3);font-family:var(--mono);}
+
+/* ═══ AGENTS ═══ */
+.agent-card{background:#fff;border-radius:var(--r);padding:16px;box-shadow:var(--shadow);margin-bottom:8px;}
+.agent-hdr{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.ag-avatar{width:44px;height:44px;border-radius:12px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0;}
+.ag-name{font-size:15px;font-weight:700;}
+.ag-tier{font-size:11px;color:var(--text3);}
+.ag-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+.ag-stat{background:var(--bg);border-radius:10px;padding:10px;text-align:center;}
+.ag-stat-val{font-size:16px;font-weight:800;font-family:var(--mono);}
+.ag-stat-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--text3);}
+.ag-actions{display:flex;gap:6px;}
+.cs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;}
+@media(min-width:600px){.cs-grid{grid-template-columns:repeat(3,1fr);}}
+.cs-row{background:#fff;border-radius:10px;padding:12px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;}
+.cs-tier{font-size:12px;font-weight:700;}
+.cs-pct{font-size:22px;font-weight:800;font-family:var(--mono);color:var(--navy);}
+.cs-note{font-size:10px;color:var(--text3);margin-top:2px;}
+
+/* ═══ MODALS ═══ */
+.overlay{position:fixed;inset:0;background:rgba(15,28,63,.5);z-index:500;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(4px);}
+.overlay.open{opacity:1;pointer-events:all;}
+@media(min-width:600px){.overlay{align-items:center;}}
+.modal{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;border-radius:20px 20px 0 0;transform:translateY(40px);transition:transform .25s;position:relative;}
+@media(min-width:600px){.modal{border-radius:20px;max-height:88vh;transform:scale(.96) translateY(16px);}}
+.overlay.open .modal{transform:translateY(0);}
+@media(min-width:600px){.overlay.open .modal{transform:scale(1) translateY(0);}}
+.modal.wide{max-width:640px;}
+.modal-drag{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 0;}
+.mhdr{padding:20px 20px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.mtitle{font-size:18px;font-weight:800;letter-spacing:-.3px;}
+.mbody{padding:16px 20px;}
+.mfoot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;}
+.mfoot .btn{flex:1;}
+.fr{display:grid;gap:10px;margin-bottom:12px;}
+.fr2{grid-template-columns:1fr 1fr;}
+.fr3{grid-template-columns:1fr 1fr 1fr;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--text2);}
+.fg input,.fg select,.fg textarea{background:var(--bg);border:1.5px solid var(--border2);color:var(--text);padding:11px 13px;font-family:var(--font);font-size:14px;border-radius:var(--r2);outline:none;transition:border .15s;-webkit-appearance:none;width:100%;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--navy);}
+.fg select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;}
+.fg textarea{resize:vertical;min-height:72px;line-height:1.6;}
+.fsec{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:12px;margin-top:4px;}
+.plan-row{display:grid;grid-template-columns:1fr 90px 80px 32px;gap:8px;align-items:end;background:var(--bg);padding:10px;border-radius:10px;margin-bottom:8px;}
+.plan-row .fg{margin:0;}
+.plan-row input,.plan-row select{background:#fff;font-size:13px;padding:9px 11px;}
+.prm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;transition:color .15s;border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;margin-top:auto;}
+.prm:hover{color:var(--red);background:var(--red-soft);}
+.badd{width:100%;background:var(--bg);border:1.5px dashed var(--border2);color:var(--text2);padding:10px;font-family:var(--font);font-size:13px;cursor:pointer;transition:all .15s;font-weight:700;border-radius:var(--r2);}
+.badd:hover{border-color:var(--navy);color:var(--navy);}
+.tier-info-box{background:var(--navy);color:#fff;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;}
+.tier-pct{font-size:28px;font-weight:800;font-family:var(--mono);color:var(--gold);}
+
+/* INACTIVE */
+.warn-box{background:var(--amber-soft);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--amber);font-weight:600;margin-bottom:14px;line-height:1.6;}
+.clog{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.clog-item{display:flex;align-items:center;gap:8px;background:var(--bg);padding:8px 12px;border-radius:10px;font-size:12px;}
+.clog-date{font-family:var(--mono);font-size:10px;color:var(--text3);min-width:76px;}
+
+/* CTX */
+.ctx{position:fixed;background:#fff;border-radius:14px;z-index:600;min-width:180px;box-shadow:var(--shadow2);display:none;overflow:hidden;border:1px solid var(--border);}
+.ctx.open{display:block;}
+.cxi{padding:13px 16px;font-size:13px;cursor:pointer;color:var(--text);transition:background .12s;font-weight:600;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.cxi:last-child{border-bottom:none;}
+.cxi:hover,.cxi:active{background:var(--bg);}
+.cxi.danger{color:var(--red);}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:12px 20px;font-size:13px;font-weight:700;border-radius:20px;z-index:700;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow2);}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.warn{background:var(--amber);}
+.toast.err{background:var(--red);}
+@media(min-width:768px){.toast{bottom:28px;}}
+
+/* RESPONSIVE */
+@media(max-width:767px){
+  .mobile-nav{display:block;}
+  .desktop-nav{display:none;}
+  .kpi-row{grid-template-columns:repeat(2,1fr);}
+  .md-items{grid-template-columns:repeat(2,1fr);}
+  .fr3{grid-template-columns:1fr 1fr;}
+  .plan-row{grid-template-columns:1fr 80px 32px;}
+  .plan-ptype{display:none;}
+  .pipe-scroll-hint{display:block;}
+  .vscroll{padding-bottom:80px !important;}
+}
+@media(min-width:768px){
+  .kpi-row{grid-template-columns:repeat(5,1fr);}
+  .con-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(min-width:1100px){
+  .con-grid{grid-template-columns:repeat(3,1fr);}
+  .goals-grid{grid-template-columns:repeat(3,1fr);}
+}
+.pipe-scroll-hint{display:none;text-align:center;font-size:11px;color:var(--text3);padding:6px 0;background:#fff;border-bottom:1px solid var(--border);}
+.dir-only{display:none;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-logo">
+    <div class="login-icon">🏆</div>
+    <div class="login-brand">BTG Tracker</div>
+    <div class="login-sub">Built To Grow · Agency Platform</div>
+  </div>
+
+  <!-- Loading state -->
+  <div class="login-card" id="panel-loading" style="text-align:center;padding:32px;">
+    <div style="font-size:28px;margin-bottom:10px;">⏳</div>
+    <div style="font-size:14px;font-weight:700;color:var(--text);">Loading BTG Tracker...</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:6px;">Connecting to database</div>
+  </div>
+
+  <!-- SIGN IN PANEL -->
+  <div class="login-card" id="panel-signin" style="display:none;">
+    <div class="lf"><label>Email Address</label><input type="email" id="si-email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="lf"><label>Password</label><input type="password" id="si-pass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div id="si-err" style="color:#c0392b;font-size:12px;margin-bottom:8px;display:none;font-weight:600;"></div>
+    <button class="btn-login" onclick="doLogin()">Sign In</button>
+    <div style="display:flex;justify-content:space-between;margin-top:14px;">
+      <span style="font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;" onclick="showPanel('signup')">Request an account</span>
+      <span style="font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;" onclick="showPanel('forgot')">Forgot password?</span>
+    </div>
+  </div>
+
+  <!-- SIGN UP PANEL -->
+  <div class="login-card" id="panel-signup" style="display:none;">
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;">Request Account Access</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">Your director will be notified and activate your account.</div>
+    <div class="lf"><label>Full Name</label><input type="text" id="su-name" placeholder="First Last"></div>
+    <div class="lf"><label>Email Address</label><input type="email" id="su-email" placeholder="you@email.com"></div>
+    <div class="lf"><label>Password</label><input type="password" id="su-pass" placeholder="Choose a password (min 6 chars)"></div>
+    <div class="lf"><label>Role</label>
+      <select id="su-tier">
+        <option value="Trainee">Trainee</option>
+        <option value="Associate">Associate</option>
+        <option value="Field Associate">Field Associate</option>
+        <option value="Director">Director</option>
+        <option value="Marketing Director">Marketing Director</option>
+        <option value="Senior Director">Senior Director</option>
+        <option value="Executive Director">Executive Director</option>
+      </select>
+    </div>
+    <div id="su-err" style="color:#c0392b;font-size:12px;margin-bottom:8px;display:none;font-weight:600;"></div>
+    <button class="btn-login" onclick="doSignup()">Request Access</button>
+    <div style="text-align:center;margin-top:14px;">
+      <span style="font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;" onclick="showPanel('signin')">← Back to Sign In</span>
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD PANEL -->
+  <div class="login-card" id="panel-forgot" style="display:none;">
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;">Reset Password</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">We'll send a reset link to your email.</div>
+    <div class="lf"><label>Email Address</label><input type="email" id="fp-email" placeholder="you@email.com"></div>
+    <div id="fp-msg" style="font-size:12px;margin-bottom:8px;display:none;font-weight:600;"></div>
+    <button class="btn-login" onclick="doForgot()">Send Reset Link</button>
+    <div style="text-align:center;margin-top:14px;">
+      <span style="font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;" onclick="showPanel('signin')">← Back to Sign In</span>
+    </div>
+  </div>
+
+  <!-- PENDING APPROVAL PANEL -->
+  <div class="login-card" id="panel-pending" style="display:none;">
+    <div style="text-align:center;padding:10px 0;">
+      <div style="font-size:40px;margin-bottom:12px;">⏳</div>
+      <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:8px;">Account Pending Approval</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px;">Your request has been sent to the director. You'll be able to log in once your account is activated.</div>
+      <button class="btn-login" onclick="showPanel('signin')">Back to Sign In</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-icon">🏆</span>
+      <span class="brand-name">BTG Tracker</span>
+    </div>
+    <div class="tb-right">
+      <div class="tb-user">
+        <div class="tb-avatar" id="tb-av" onclick="openProfileModal()" style="cursor:pointer;"></div>
+        <div style="display:none" id="tb-info">
+          <div class="tb-name" id="tb-name"></div>
+          <div class="tb-tier" id="tb-tier"></div>
+        </div>
+      </div>
+      <button class="tb-signout" onclick="openProfileModal()">⚙ Profile</button>
+      <button class="tb-signout" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- DESKTOP NAV -->
+  <div class="desktop-nav">
+    <div class="dnav-tab active" data-view="dashboard" onclick="nav(this)"><span class="tab-icon">📊</span>Dashboard</div>
+    <div class="dnav-tab" data-view="production" onclick="nav(this)"><span class="tab-icon">💼</span>Production</div>
+    <div class="dnav-tab" data-view="recruiting" onclick="nav(this)"><span class="tab-icon">🤝</span>Recruiting</div>
+    <div class="dnav-tab" data-view="contacts" onclick="nav(this)"><span class="tab-icon">⭐</span>Top 25</div>
+    <div class="dnav-tab" data-view="appointments" onclick="nav(this)"><span class="tab-icon">📅</span>Appointments<span class="nbadge hidden" id="appt-badge-d">0</span></div>
+    <div class="dnav-tab" data-view="goals" onclick="nav(this)"><span class="tab-icon">🎯</span>Goals</div>
+    <div class="dnav-tab dir-only" data-view="agents" onclick="nav(this)"><span class="tab-icon">👥</span>Agents</div>
+  </div>
+  <div class="pipe-scroll-hint" id="scroll-hint">← Swipe to see all stages →</div>
+
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="vscroll">
+        <div class="dash-greeting">
+          <div class="dash-hello" id="dash-hello">Good morning 👋</div>
+          <div class="dash-date" id="dash-date"></div>
+        </div>
+        <div class="kpi-row" id="kpi-row"></div>
+        <div class="md-card" id="md-card"></div>
+        <div class="section-card">
+          <div class="sec-title">📈 Premium by Plan Type</div>
+          <div id="plan-breakdown"></div>
+        </div>
+        <div id="apef-wrap" class="dir-only">
+          <div class="section-card">
+            <div class="sec-title">👥 Agent Performance</div>
+            <div id="apef-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTION -->
+    <div class="view" id="view-production">
+      <div class="pipe-toolbar">
+        <div class="sbox"><input type="text" id="prod-search" placeholder="Search..." oninput="renderPipe('prod')"></div>
+        <button class="filt on" onclick="setF('prod','all',this)">All</button>
+        <button class="filt" onclick="setF('prod','IUL',this)">IUL</button>
+        <button class="filt" onclick="setF('prod','Universal Life',this)">UL</button>
+        <button class="filt" onclick="setF('prod','Whole Life',this)">WL</button>
+        <button class="filt" onclick="setF('prod','Term Life',this)">Term</button>
+        <button class="filt" onclick="setF('prod','Fixed Annuity',this)">FA</button>
+        <button class="filt" onclick="setF('prod','Indexed Annuity',this)">IA</button>
+        <button class="filt" onclick="setF('prod','Final Expense',this)">FE</button>
+        <button class="add-btn" onclick="openProdModal()">+ Add Client</button>
+      </div>
+      <div class="pipe-boards" id="prod-boards">
+        <div class="pcol" data-stage="contacted" ondragover="dO(event)" ondrop="dD(event,'contacted','prod')" ondragleave="dL(event)">
+          <div class="pcol-hd">
+            <div class="pcol-top"><span class="stage-pill sp-c">🔵 Contacted</span><span class="pcol-cnt" id="pc-cnt-c">0</span></div>
+            <div class="pcol-meta" id="pc-meta-c">No premium yet</div>
+          </div>
+          <div class="cwrap" id="pc-wrap-c"></div>
+        </div>
+        <div class="pcol" data-stage="interested" ondragover="dO(event)" ondrop="dD(event,'interested','prod')" ondragleave="dL(event)">
+          <div class="pcol-hd">
+            <div class="pcol-top"><span class="stage-pill sp-i">🟡 Interested</span><span class="pcol-cnt" id="pc-cnt-i">0</span></div>
+            <div class="pcol-meta" id="pc-meta-i">No premium yet</div>
+          </div>
+          <div class="cwrap" id="pc-wrap-i"></div>
+        </div>
+        <div class="pcol" data-stage="contracting" ondragover="dO(event)" ondrop="dD(event,'contracting','prod')" ondragleave="dL(event)">
+          <div class="pcol-hd">
+            <div class="pcol-top"><span class="stage-pill sp-k">🟢 Contracting</span><span class="pcol-cnt" id="pc-cnt-k">0</span></div>
+            <div class="pcol-meta" id="pc-meta-k">No premium yet</div>
+          </div>
+          <div class="cwrap" id="pc-wrap-k"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECRUITING -->
+    <div class="view" id="view-recruiting">
+      <div class="pipe-toolbar">
+        <div class="sbox"><input type="text" id="rec-search" placeholder="Search..." oninput="renderPipe('rec')"></div>
+        <button class="filt on" onclick="setF('rec','all',this)">All</button>
+        <button class="filt" onclick="setF('rec','New to Industry',this)">New</button>
+        <button class="filt" onclick="setF('rec','Experienced',this)">Exp.</button>
+        <button class="filt" onclick="setF('rec','Veteran',this)">Veteran</button>
+        <button class="add-btn" onclick="openRecModal()">+ Add Prospect</button>
+      </div>
+      <div class="pipe-boards">
+        <div class="pcol" data-stage="contacted" ondragover="dO(event)" ondrop="dD(event,'contacted','rec')" ondragleave="dL(event)">
+          <div class="pcol-hd">
+            <div class="pcol-top"><span class="stage-pill sp-c">🔵 Contacted</span><span class="pcol-cnt" id="rc-cnt-c">0</span></div>
+            <div class="pcol-meta" id="rc-meta-c"></div>
+          </div>
+          <div class="cwrap" id="rc-wrap-c"></div>
+        </div>
+        <div class="pcol" data-stage="interested" ondragover="dO(event)" ondrop="dD(event,'interested','rec')" ondragleave="dL(event)">
+          <div class="pcol-hd">
+            <div class="pcol-top"><span class="stage-pill sp-i">🟡 Interested</span><span class="pcol-cnt" id="rc-cnt-i">0</span></div>
+            <div class="pcol-meta" id="rc-meta-i"></div>
+          </div>
+          <div class="cwrap" id="rc-wrap-i"></div>
+        </div>
+        <div class="pcol" data-stage="contracting" ondragover="dO(event)" ondrop="dD(event,'contracting','rec')" ondragleave="dL(event)">
+          <div class="pcol-hd">
+            <div class="pcol-top"><span class="stage-pill sp-k">🟢 Contracting</span><span class="pcol-cnt" id="rc-cnt-k">0</span></div>
+            <div class="pcol-meta" id="rc-meta-k"></div>
+          </div>
+          <div class="cwrap" id="rc-wrap-k"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP 25 -->
+    <div class="view" id="view-contacts">
+      <div class="pipe-toolbar">
+        <div class="sbox"><input type="text" id="con-search" placeholder="Search contacts..." oninput="renderContacts()"></div>
+        <button class="filt on" onclick="setF('con','all',this)">All</button>
+        <button class="filt" onclick="setF('con','recruit',this)">Recruit</button>
+        <button class="filt" onclick="setF('con','client',this)">Client</button>
+        <button class="filt" onclick="setF('con','both',this)">Both</button>
+        <button class="add-btn" onclick="openConModal()">+ Add Contact</button>
+      </div>
+      <div class="vscroll" style="padding:12px 14px;">
+        <div class="con-grid" id="con-grid"></div>
+      </div>
+    </div>
+
+    <!-- APPOINTMENTS -->
+    <div class="view" id="view-appointments">
+      <div class="pipe-toolbar">
+        <div class="sbox"><input type="text" id="appt-search" placeholder="Search..." oninput="renderAppts()"></div>
+        <button class="filt on" onclick="setF('appt','all',this)">All</button>
+        <button class="filt" onclick="setF('appt','recruitment',this)">Recruit</button>
+        <button class="filt" onclick="setF('appt','field',this)">Field</button>
+        <button class="filt" onclick="setF('appt','zoom',this)">Zoom</button>
+        <button class="filt" onclick="setF('appt','flagged',this)">⚑ Flagged</button>
+        <button class="add-btn" onclick="openApptModal()">+ Schedule</button>
+      </div>
+      <div class="vscroll" style="padding:12px 14px;">
+        <div id="appt-list"></div>
+      </div>
+    </div>
+
+    <!-- GOALS -->
+    <div class="view" id="view-goals">
+      <div class="vscroll">
+        <div class="flex ai-c jc-sb" style="margin-bottom:14px;">
+          <div style="font-size:19px;font-weight:800;letter-spacing:-.3px;">Goals <span style="font-size:13px;font-weight:600;color:var(--text3);" id="goals-yr"></span></div>
+          <button class="btn btn-outline btn-sm dir-only" onclick="openGoalModal()">✏️ Edit Goals</button>
+        </div>
+        <div class="goals-grid" id="goals-grid"></div>
+        <div style="margin-top:18px;" class="dir-only">
+          <div style="font-size:16px;font-weight:800;margin-bottom:10px;">📄 Goal Plan Documents <span style="font-size:11px;font-weight:600;color:var(--text3);">· Director Only</span></div>
+          <div class="pdf-zone" id="pdf-zone" onclick="document.getElementById('pdf-up').click()">
+            <input type="file" id="pdf-up" accept=".pdf" multiple onchange="handlePdf(event)" style="display:none">
+            <div style="font-size:32px;margin-bottom:6px;">📁</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:3px;">Upload Goal Plan PDFs</div>
+            <div style="font-size:12px;color:var(--text3);">Tap to upload · Director-visible only</div>
+          </div>
+          <div id="pdf-list" style="margin-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AGENTS -->
+    <div class="view dir-only" id="view-agents">
+      <div class="pipe-toolbar">
+        <div class="sbox"><input type="text" id="ag-search" placeholder="Search agents..." oninput="renderAgents()"></div>
+        <button class="filt on" onclick="setF('agf','all',this)">All</button>
+        <button class="filt" onclick="setF('agf','active',this)">Active</button>
+        <button class="filt" onclick="setF('agf','pending',this)">Pending</button>
+        <button class="filt" onclick="setF('agf','inactive',this)">Inactive</button>
+        <button class="add-btn" onclick="openAgentModal()">+ Add Agent</button>
+      </div>
+      <div class="vscroll" style="padding:12px 14px;">
+
+        <!-- HOW TO ADD AGENTS -->
+        <div style="background:linear-gradient(135deg,#1a2340,#1e2a4a);border-radius:14px;padding:20px 22px;margin-bottom:16px;border:1.5px solid rgba(212,136,26,.4);">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+            <div style="width:48px;height:48px;border-radius:12px;background:#d4881a;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👥</div>
+            <div>
+              <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:2px;">How to Add Agents</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.5);">Agents sign up themselves — you approve</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <div style="background:#d4881a;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">1</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.8);">Share <strong style="color:#f5a623;">builttogrowagency.com/tracker.html</strong> with your agent</div>
+            </div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <div style="background:#d4881a;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">2</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.8);">They click <strong style="color:#f5a623;">"Request an account"</strong> and fill in their info</div>
+            </div>
+            <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;">
+              <div style="background:#d4881a;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">3</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.8);">You get notified at <strong style="color:#f5a623;">hilltreon@gmail.com</strong> — come back here to approve</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:15px;font-weight:800;margin-bottom:10px;">💰 Commission Structure</div>
+        <div class="cs-grid" id="cs-grid"></div>
+        <div style="font-size:15px;font-weight:800;margin-bottom:10px;margin-top:6px;">Agent Roster</div>
+        <div id="agent-list"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MOBILE BOTTOM NAV — last child of #app so it always sticks to bottom -->
+  <div class="mobile-nav">
+    <div class="mnav-items" id="mnav-items">
+      <div class="mnav-tab active" data-view="dashboard" onclick="nav(this)"><div class="mni">📊</div><div class="mnl">Dash</div></div>
+      <div class="mnav-tab" data-view="production" onclick="nav(this)"><div class="mni">💼</div><div class="mnl">Production</div></div>
+      <div class="mnav-tab" data-view="recruiting" onclick="nav(this)"><div class="mni">🤝</div><div class="mnl">Recruit</div></div>
+      <div class="mnav-tab" data-view="contacts" onclick="nav(this)"><div class="mni">⭐</div><div class="mnl">Top 25</div></div>
+      <div class="mnav-tab" data-view="appointments" onclick="nav(this)"><div class="mni">📅</div><div class="mnl">Appts<span class="nbadge hidden" id="appt-badge-m">!</span></div></div>
+      <div class="mnav-tab" data-view="goals" onclick="nav(this)"><div class="mni">🎯</div><div class="mnl">Goals</div></div>
+      <div class="mnav-tab dir-only" data-view="agents" onclick="nav(this)"><div class="mni">👥</div><div class="mnl">Agents</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PRODUCTION MODAL -->
+<div class="overlay" id="ov-prod" onclick="ovCk(event,'ov-prod')">
+  <div class="modal wide">
+    <div class="modal-drag"></div>
+    <div class="mhdr"><div class="mtitle" id="ptitle">Add Client</div><button class="btn-icon" onclick="closeOv('ov-prod')">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="p-id">
+      <div class="fsec">Client Info</div>
+      <div class="fr fr2"><div class="fg"><label>First Name</label><input id="p-fn" placeholder="First"></div><div class="fg"><label>Last Name</label><input id="p-ln" placeholder="Last"></div></div>
+      <div class="fr fr2"><div class="fg"><label>Phone</label><input id="p-ph" placeholder="(555) 000-0000"></div><div class="fg"><label>State</label><input id="p-st" placeholder="TX" maxlength="2" style="text-transform:uppercase"></div></div>
+      <div class="fr"><div class="fg"><label>Email</label><input id="p-em" placeholder="email@domain.com"></div></div>
+      <div class="fr fr2">
+        <div class="fg"><label>Stage</label><select id="p-stage"><option value="contacted">Contacted</option><option value="interested">Interested</option><option value="contracting">Contracting</option></select></div>
+        <div class="fg dir-only" id="p-ag-wrap"><label>Assigned Agent</label><select id="p-ag"></select></div>
+      </div>
+      <div class="fsec" style="margin-top:6px;">Plans &amp; Premium</div>
+      <div id="prod-pr"></div>
+      <button class="badd" onclick="addPR('prod-pr')">＋ Add Plan / Product</button>
+      <div class="fsec" style="margin-top:14px;">Production Metrics</div>
+      <div class="fr fr2"><div class="fg"><label>Apps Submitted</label><input type="number" id="p-apps" placeholder="0" min="0"></div><div class="fg"><label>Paid Points</label><input type="number" id="p-pts" placeholder="0" min="0"></div></div>
+      <div class="fg"><label>Notes</label><textarea id="p-notes" placeholder="Referral source, key details, next steps..."></textarea></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-outline" onclick="closeOv('ov-prod')">Cancel</button><button class="btn btn-navy" onclick="saveProd()">Save Client</button></div>
+  </div>
+</div>
+
+<!-- RECRUITING MODAL -->
+<div class="overlay" id="ov-rec" onclick="ovCk(event,'ov-rec')">
+  <div class="modal wide">
+    <div class="modal-drag"></div>
+    <div class="mhdr"><div class="mtitle" id="rtitle">Add Prospect</div><button class="btn-icon" onclick="closeOv('ov-rec')">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="r-id">
+      <div class="fsec">Prospect Info</div>
+      <div class="fr fr2"><div class="fg"><label>First Name</label><input id="r-fn" placeholder="First"></div><div class="fg"><label>Last Name</label><input id="r-ln" placeholder="Last"></div></div>
+      <div class="fr fr2"><div class="fg"><label>Phone</label><input id="r-ph" placeholder="(555) 000-0000"></div><div class="fg"><label>State</label><input id="r-st" placeholder="TX" maxlength="2" style="text-transform:uppercase"></div></div>
+      <div class="fr"><div class="fg"><label>Email</label><input id="r-em" placeholder=""></div></div>
+      <div class="fr fr3"><div class="fg"><label>Background</label><select id="r-bg"><option value="New to Industry">New to Industry</option><option value="Experienced">Experienced</option><option value="Veteran">Veteran</option></select></div><div class="fg"><label>Stage</label><select id="r-stage"><option value="contacted">Contacted</option><option value="interested">Interested</option><option value="contracting">Contracting</option></select></div><div class="fg"><label>Source</label><input id="r-src" placeholder="Referral, LinkedIn..."></div></div>
+      <div class="fr fr2"><div class="fg"><label>Product Lines Interest</label><input id="r-lines" placeholder="IUL, Life, Group..."></div><div class="fg"><label>Apps Submitted</label><input type="number" id="r-apps" placeholder="0" min="0"></div></div>
+      <div class="fr"><div class="fg"><label>Paid Points</label><input type="number" id="r-pts" placeholder="0" min="0"></div></div>
+      <div class="fg"><label>Notes</label><textarea id="r-notes" placeholder="Conversation notes, next steps..."></textarea></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-outline" onclick="closeOv('ov-rec')">Cancel</button><button class="btn btn-navy" onclick="saveRec()">Save Prospect</button></div>
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+<div class="overlay" id="ov-contact" onclick="ovCk(event,'ov-contact')">
+  <div class="modal wide">
+    <div class="modal-drag"></div>
+    <div class="mhdr"><div class="mtitle" id="ctitle">Add Contact</div><button class="btn-icon" onclick="closeOv('ov-contact')">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="c-id">
+      <div class="fsec">Personal Info</div>
+      <div class="fr fr2"><div class="fg"><label>First Name</label><input id="c-fn" placeholder="First"></div><div class="fg"><label>Last Name</label><input id="c-ln" placeholder="Last"></div></div>
+      <div class="fr fr2"><div class="fg"><label>Phone</label><input id="c-ph" placeholder="(555) 000-0000"></div><div class="fg"><label>Email</label><input id="c-em" placeholder="email@domain.com"></div></div>
+      <div class="fr fr2"><div class="fg"><label>Occupation</label><input id="c-occ" placeholder="Teacher, Sales Rep..."></div><div class="fg"><label>Where We Met</label><input id="c-met" placeholder="Church, Gym, Event..."></div></div>
+      <div class="fr fr3"><div class="fg"><label>Marital Status</label><select id="c-mar"><option value="">Unknown</option><option value="Single">Single</option><option value="Married">Married</option><option value="Divorced">Divorced</option><option value="Widowed">Widowed</option></select></div><div class="fg"><label>Children</label><select id="c-kids"><option value="">Unknown</option><option value="0">None</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4+">4+</option></select></div><div class="fg"><label>Priority Rank (1–25)</label><input type="number" id="c-rank" min="1" max="25" placeholder="1"></div></div>
+      <div class="fr fr2"><div class="fg"><label>Contact Type</label><select id="c-type"><option value="recruit">Recruit Prospect</option><option value="client">Client Prospect</option><option value="both">Both</option></select></div></div>
+      <div class="fg"><label>Qualities &amp; Interest Notes</label><textarea id="c-quals" placeholder="What made them stand out? Why they're a good fit..."></textarea></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-outline" onclick="closeOv('ov-contact')">Cancel</button><button class="btn btn-navy" onclick="saveCon()">Save Contact</button></div>
+  </div>
+</div>
+
+<!-- APPOINTMENT MODAL -->
+<div class="overlay" id="ov-appt" onclick="ovCk(event,'ov-appt')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="mhdr"><div class="mtitle" id="aptitle">Schedule Appointment</div><button class="btn-icon" onclick="closeOv('ov-appt')">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="ap-id">
+      <div class="fr fr2"><div class="fg"><label>Prospect / Contact Name</label><input id="ap-name" placeholder="Name"></div><div class="fg"><label>Phone</label><input id="ap-ph" placeholder="(555) 000-0000"></div></div>
+      <div class="fr fr3"><div class="fg"><label>Date</label><input type="date" id="ap-date"></div><div class="fg"><label>Time</label><input type="time" id="ap-time"></div><div class="fg"><label>Type</label><select id="ap-type"><option value="recruitment">Recruitment</option><option value="field">Field Presentation</option><option value="zoom">Zoom</option></select></div></div>
+      <div class="fg" style="margin-bottom:12px;"><label>Pre-Appointment Notes</label><textarea id="ap-pre" placeholder="Purpose, talking points..."></textarea></div>
+      <div class="fg" style="margin-bottom:12px;"><label>Result Notes <span style="color:var(--amber);font-size:10px;font-weight:700;">⚑ REQUIRED after appointment</span></label><textarea id="ap-result" placeholder="Leave blank until after. Flag raised until logged."></textarea></div>
+      <div class="fr fr2"><div class="fg"><label>Outcome</label><select id="ap-outcome"><option value="pending">Pending</option><option value="completed">Completed ✅</option><option value="no-show">No Show ❌</option><option value="rescheduled">Rescheduled 🔁</option><option value="cancelled">Cancelled</option></select></div><div class="fg"><label>Follow-up Date</label><input type="date" id="ap-fu"></div></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-outline" onclick="closeOv('ov-appt')">Cancel</button><button class="btn btn-navy" onclick="saveAppt()">Save Appointment</button></div>
+  </div>
+</div>
+
+<!-- AGENT MODAL -->
+<div class="overlay" id="ov-agent" onclick="ovCk(event,'ov-agent')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="mhdr"><div class="mtitle" id="agtitle">Add Agent</div><button class="btn-icon" onclick="closeOv('ov-agent')">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="ag-id">
+      <div class="fr fr2"><div class="fg"><label>First Name</label><input id="ag-fn" placeholder="First"></div><div class="fg"><label>Last Name</label><input id="ag-ln" placeholder="Last"></div></div>
+      <div class="fr"><div class="fg"><label>Email (from signup — read only)</label><input id="ag-em" placeholder="Set when agent signs up" readonly style="opacity:.7;background:#fafafa;"></div></div>
+      <div class="fr fr2"><div class="fg"><label>Tier Level</label><select id="ag-tier" onchange="updateTierPct()"><option value="Trainee">Trainee</option><option value="Associate">Associate</option><option value="Field Associate">Field Associate</option><option value="Director">Director</option><option value="Marketing Director">Marketing Director</option><option value="Senior Director">Senior Director</option><option value="Executive Director">Executive Director</option></select></div><div class="fg"><label>Override %</label><input type="number" id="ag-ovr" placeholder="Auto-filled" min="0" max="100"></div></div>
+      <div class="tier-info-box" id="tier-info">Select a tier above</div>
+      <div class="fr fr3"><div class="fg"><label>License Status</label><select id="ag-lic"><option value="licensed">✅ Licensed</option><option value="studying">📚 Studying</option><option value="unlicensed">○ Not Licensed</option></select></div><div class="fg"><label>States Licensed</label><input id="ag-states" placeholder="TX, FL, GA"></div><div class="fg"><label>Status</label><select id="ag-status"><option value="active">Active</option><option value="pending">Pending</option></select></div></div>
+      <div class="fg"><label>Notes</label><textarea id="ag-notes" placeholder="Background, specialties..."></textarea></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-outline" onclick="closeOv('ov-agent')">Cancel</button><button class="btn btn-navy" onclick="saveAgent()">Save Agent</button></div>
+  </div>
+</div>
+
+<!-- INACTIVE MODAL -->
+<div class="overlay" id="ov-inactive" onclick="ovCk(event,'ov-inactive')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="mhdr"><div class="mtitle">Mark Inactive</div><button class="btn-icon" onclick="closeOv('ov-inactive')">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="inact-id">
+      <div class="warn-box">⚠️ Minimum 2 documented contact attempts required before marking inactive.</div>
+      <div class="fg" style="margin-bottom:12px;"><label>Contact Attempts (min. 2)</label><div class="clog" id="inact-log"></div><button class="btn btn-outline btn-sm" onclick="addAttempt()" style="margin-top:8px;width:100%;">＋ Log Contact Attempt</button></div>
+      <div class="fg" style="margin-bottom:12px;"><label>Reason *</label><select id="inact-reason"><option value="">Select reason...</option><option>Agent quit / self-terminated</option><option>Non-responsive after multiple attempts</option><option>Director decision</option><option>Compliance / licensing issue</option><option>Did not meet performance minimums</option><option>Other (explain in notes)</option></select></div>
+      <div class="fg"><label>Notes * (Required)</label><textarea id="inact-notes" placeholder="Describe circumstances..."></textarea></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-outline" onclick="closeOv('ov-inactive')">Cancel</button><button class="btn btn-red" onclick="confirmInactive()">Mark Inactive</button></div>
+  </div>
+</div>
+
+<!-- GOAL EDIT MODAL -->
+<div class="overlay" id="ov-goal" onclick="ovCk(event,'ov-goal')">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="mhdr"><div class="mtitle">Edit Goal</div><button class="btn-icon" onclick="closeOv('ov-goal')">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="g-key">
+      <div class="fg" style="margin-bottom:12px;"><label id="g-lbl">Target</label><input type="number" id="g-val" placeholder="0" min="0"></div>
+      <div class="fg"><label>Current Override (blank = auto)</label><input type="number" id="g-curr" placeholder="Leave blank for auto-calculate"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-outline" onclick="closeOv('ov-goal')">Cancel</button><button class="btn btn-navy" onclick="saveGoal()">Save Goal</button></div>
+  </div>
+</div>
+
+<!-- CTX -->
+<div class="ctx" id="ctx">
+  <div class="cxi" onclick="ctxDo('edit')">✏️ Edit</div>
+  <div class="cxi" onclick="ctxDo('contacted')">🔵 Move to Contacted</div>
+  <div class="cxi" onclick="ctxDo('interested')">🟡 Move to Interested</div>
+  <div class="cxi" onclick="ctxDo('contracting')">🟢 Move to Contracting</div>
+  <div class="cxi danger" onclick="ctxDo('delete')">🗑 Remove</div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="overlay" id="ov-profile" onclick="ovCk(event,'ov-profile')">
+  <div class="modal narrow">
+    <div class="modal-drag"></div>
+    <div class="mhdr"><div class="mtitle">My Profile</div><button class="btn-icon" onclick="closeOv('ov-profile')">✕</button></div>
+    <div class="mbody">
+      <div class="fsec">Account Info</div>
+      <div class="fg" style="margin-bottom:12px;"><label>Display Name</label><input type="text" id="prof-name" placeholder="Your name"></div>
+      <div class="fg" style="margin-bottom:16px;"><label>Email Address</label><input type="email" id="prof-email" placeholder="you@email.com"></div>
+      <div class="fsec">Change Password</div>
+      <div class="fg" style="margin-bottom:12px;"><label>New Password</label><input type="password" id="prof-pass" placeholder="Leave blank to keep current"></div>
+      <div class="fg" style="margin-bottom:12px;"><label>Confirm New Password</label><input type="password" id="prof-pass2" placeholder="Repeat new password"></div>
+      <div id="prof-msg" style="font-size:12px;font-weight:600;display:none;padding:8px 12px;border-radius:8px;margin-bottom:8px;"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-outline" onclick="closeOv('ov-profile')">Cancel</button><button class="btn btn-navy" onclick="saveProfile()">Save Changes</button></div>
+  </div>
+</div>
+
+<!-- DIRECTOR: RESET AGENT PASSWORD MODAL -->
+<div class="overlay" id="ov-resetpw" onclick="ovCk(event,'ov-resetpw')">
+  <div class="modal narrow">
+    <div class="modal-drag"></div>
+    <div class="mhdr"><div class="mtitle">Reset Agent Password</div><button class="btn-icon" onclick="closeOv('ov-resetpw')">✕</button></div>
+    <div class="mbody">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">Send a password reset email to this agent.</div>
+      <div class="fg" style="margin-bottom:12px;"><label>Agent Email</label><input type="email" id="rp-email" placeholder="agent@email.com" readonly style="opacity:.7;"></div>
+      <div id="rp-msg" style="font-size:12px;font-weight:600;display:none;padding:8px 12px;border-radius:8px;margin-bottom:8px;"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-outline" onclick="closeOv('ov-resetpw')">Cancel</button><button class="btn btn-navy" onclick="sendAgentReset()">Send Reset Email</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+// ════════ CONSTANTS ════════
+const PLANS=['IUL','Universal Life','Whole Life','Term Life','Fixed Annuity','Indexed Annuity','Final Expense'];
+const PCHIP={'IUL':'chip-iul','Universal Life':'chip-ul','Whole Life':'chip-wl','Term Life':'chip-term','Fixed Annuity':'chip-fa','Indexed Annuity':'chip-ia','Final Expense':'chip-fe'};
+const PSHORT={'IUL':'IUL','Universal Life':'UL','Whole Life':'WL','Term Life':'TERM','Fixed Annuity':'FA','Indexed Annuity':'IA','Final Expense':'FE'};
+const PDOT={'IUL':'#00b8d9','Universal Life':'#3b6ef8','Whole Life':'#8b5cf6','Term Life':'#ff9f43','Fixed Annuity':'#00c48c','Indexed Annuity':'#f5a623','Final Expense':'#ff4757'};
+const TIERS={
+  'Trainee':{pct:30,note:'New agent · earns 30% override'},
+  'Associate':{pct:20,note:'Growing agent · 20% override'},
+  'Field Associate':{pct:10,note:'Field-ready · 10% override'},
+  'Director':{pct:60,note:'Base director · 60% contract'},
+  'Marketing Director':{pct:65,note:'Promoted director · 65% contract'},
+  'Senior Director':{pct:70,note:'Senior leadership · 70% contract'},
+  'Executive Director':{pct:75,note:'Executive level · 75% contract'},
+};
+const STAGES=['contacted','interested','contracting'];
+
+// ════════ SUPABASE — zero dependency fetch client ════════
+const SUPA_URL='https://dtksttiukhskxbcsbplt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0a3N0dGl1a2hza3hiY3NicGx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MzYxNzIsImV4cCI6MjA5MDMxMjE3Mn0.ORJ7kYRHa4kCTJSTRYAzibFGwBDe8DI3oumn5caV5dI';
+const NOTIFY_EMAIL='hilltreon@gmail.com';
+let ACCESS_TOKEN=null;
+let REFRESH_TOKEN=null;
+let AUTH_USER=null;
+
+// ── REST helpers ──
+async function sbFetch(path,method='GET',body=null,useAuth=true){
+  const headers={'Content-Type':'application/json','apikey':SUPA_KEY,'Prefer':'return=representation'};
+  if(useAuth&&ACCESS_TOKEN)headers['Authorization']='Bearer '+ACCESS_TOKEN;
+  const res=await fetch(SUPA_URL+path,{method,headers,body:body?JSON.stringify(body):null});
+  if(res.status===204)return{data:null,error:null};
+  const json=await res.json().catch(()=>({}));
+  if(!res.ok)return{data:null,error:json};
+  return{data:json,error:null};
+}
+
+// ── Auth helpers ──
+async function authFetch(path,body){
+  const res=await fetch(SUPA_URL+'/auth/v1'+path,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SUPA_KEY},
+    body:JSON.stringify(body)
+  });
+  const json=await res.json().catch(()=>({}));
+  if(!res.ok)return{data:null,error:json};
+  return{data:json,error:null};
+}
+
+function saveSession(session){
+  if(!session)return;
+  ACCESS_TOKEN=session.access_token;
+  REFRESH_TOKEN=session.refresh_token;
+  AUTH_USER=session.user;
+  localStorage.setItem('btg_session',JSON.stringify({access_token:session.access_token,refresh_token:session.refresh_token,user:session.user}));
+}
+function clearSession(){
+  ACCESS_TOKEN=null;REFRESH_TOKEN=null;AUTH_USER=null;
+  localStorage.removeItem('btg_session');
+}
+function loadSavedSession(){
+  try{
+    const s=JSON.parse(localStorage.getItem('btg_session')||'null');
+    if(s&&s.access_token){ACCESS_TOKEN=s.access_token;REFRESH_TOKEN=s.refresh_token;AUTH_USER=s.user;return s;}
+  }catch(e){}
+  return null;
+}
+
+// ── Thin SB wrapper so existing code works unchanged ──
+const SB={
+  auth:{
+    getSession:async()=>{
+      const s=loadSavedSession();
+      if(!s)return{data:{session:null},error:null};
+      // verify token is still valid by fetching user
+      const res=await fetch(SUPA_URL+'/auth/v1/user',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+s.access_token}});
+      if(res.ok){const u=await res.json();AUTH_USER=u;return{data:{session:s},error:null};}
+      // try refresh
+      const r=await authFetch('/token?grant_type=refresh_token',{refresh_token:s.refresh_token});
+      if(r.data?.access_token){saveSession(r.data);return{data:{session:r.data},error:null};}
+      clearSession();return{data:{session:null},error:null};
+    },
+    signInWithPassword:async({email,password})=>{
+      const {data,error}=await authFetch('/token?grant_type=password',{email,password});
+      if(error)return{error:{message:error.error_description||error.msg||'Invalid login credentials'}};
+      saveSession(data);return{data,error:null};
+    },
+    signUp:async({email,password})=>{
+      const {data,error}=await authFetch('/signup',{email,password});
+      if(error)return{data:null,error:{message:error.error_description||error.msg||error.message||'Signup failed'}};
+      if(data.access_token)saveSession(data);
+      return{data:{user:data.user||data},error:null};
+    },
+    signOut:async()=>{
+      if(ACCESS_TOKEN)await fetch(SUPA_URL+'/auth/v1/logout',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+ACCESS_TOKEN}});
+      clearSession();return{error:null};
+    },
+    resetPasswordForEmail:async(email,opts)=>{
+      const {error}=await authFetch('/recover',{email,redirect_to:opts?.redirectTo||window.location.href});
+      return{error};
+    },
+    updateUser:async(updates)=>{
+      const res=await fetch(SUPA_URL+'/auth/v1/user',{method:'PUT',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+ACCESS_TOKEN},body:JSON.stringify(updates)});
+      const json=await res.json().catch(()=>({}));
+      if(!res.ok)return{error:{message:json.error_description||json.msg||'Update failed'}};
+      return{data:json,error:null};
+    },
+    onAuthStateChange:()=>{}, // handled manually via getSession on load
+  },
+  from:(table)=>({
+    select:(cols='*')=>({
+      eq:(col,val)=>({
+        single:()=>sbFetch(`/rest/v1/${table}?select=${cols}&${col}=eq.${encodeURIComponent(val)}&limit=1`).then(r=>({data:Array.isArray(r.data)?r.data[0]||null:r.data,error:r.error})),
+        limit:(n)=>sbFetch(`/rest/v1/${table}?select=${cols}&${col}=eq.${encodeURIComponent(val)}&limit=${n}`),
+        then:(fn)=>sbFetch(`/rest/v1/${table}?select=${cols}&${col}=eq.${encodeURIComponent(val)}`).then(fn),
+      }),
+      limit:(n)=>sbFetch(`/rest/v1/${table}?select=${cols}&limit=${n}`),
+      then:(fn)=>sbFetch(`/rest/v1/${table}?select=${cols}`).then(fn),
+    }),
+    insert:(body)=>sbFetch(`/rest/v1/${table}`,'POST',Array.isArray(body)?body:[body]),
+    upsert:(body)=>{
+      const h={'Content-Type':'application/json','apikey':SUPA_KEY,'Prefer':'resolution=merge-duplicates,return=minimal'};
+      if(ACCESS_TOKEN)h['Authorization']='Bearer '+ACCESS_TOKEN;
+      return fetch(SUPA_URL+`/rest/v1/${table}`,{method:'POST',headers:h,body:JSON.stringify(Array.isArray(body)?body:[body])}).then(r=>({error:r.ok?null:{message:'upsert failed'}}));
+    },
+    update:(body)=>({
+      eq:(col,val)=>sbFetch(`/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`,'PATCH',body),
+    }),
+    delete:()=>({
+      eq:(col,val)=>sbFetch(`/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`,'DELETE'),
+    }),
+  }),
+  functions:{invoke:async()=>({data:null,error:new Error('edge functions not used')})},
+};
+
+async function initSupabase(){
+  try{
+    const {data:{session}}=await SB.auth.getSession();
+    if(session&&AUTH_USER){
+      await loadUserAndEnter(AUTH_USER);
+    } else {
+      showPanel('signin');
+    }
+  } catch(e){
+    document.getElementById('panel-loading').innerHTML=`
+      <div style="font-size:24px;margin-bottom:10px;">⚠️</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Connection Error</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px;word-break:break-all;">${e.message}</div>
+      <button class="btn-login" onclick="location.reload()">Try Again</button>`;
+  }
+}
+
+async function loadUserAndEnter(user){
+  const {data:profile}=await SB.from('profiles').select('*').eq('id',user.id).single();
+  if(!profile){
+    await SB.auth.signOut();
+    showPanel('signin');
+    setErr('si-err','Account setup incomplete. Contact your director.');
+    return;
+  }
+  if(!profile.approved){
+    showPanel('pending');
+    return;
+  }
+  CU={...profile,email:user.email};
+  enterApp();
+}
+
+async function enterApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  const ini=CU.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('tb-av').textContent=ini;
+  document.getElementById('tb-name').textContent=CU.name;
+  document.getElementById('tb-tier').textContent=CU.tier;
+  const isDir_=isDirector();
+  document.querySelectorAll('.dir-only').forEach(el=>el.style.display=isDir_?'':'none');
+  if(isDir_){
+    document.getElementById('p-ag-wrap').style.display='';
+    document.getElementById('apef-wrap').style.display='';
+    const mnavItems=document.getElementById('mnav-items');
+    if(mnavItems)mnavItems.classList.add('has-agents');
+  }
+  document.getElementById('goals-yr').textContent=new Date().getFullYear();
+  updateGreeting();
+  await loadAllData();
+  renderAll();checkFlags();
+}
+
+// ════════ AUTH ACTIONS ════════
+let CU=null;
+
+function showPanel(name){
+  ['loading','signin','signup','forgot','pending'].forEach(p=>{
+    const el=document.getElementById('panel-'+p);
+    if(el)el.style.display=p===name?'':'none';
+  });
+}
+
+async function doLogin(){
+  if(!SB){toast('Loading... please try again in a second.','warn');return;}
+  const email=document.getElementById('si-email').value.trim();
+  const pass=document.getElementById('si-pass').value;
+  if(!email||!pass){setErr('si-err','Please enter your email and password.');return;}
+  setErr('si-err','');
+  const btn=document.querySelector('#panel-signin .btn-login');
+  btn.textContent='Signing in...';btn.disabled=true;
+  const {error}=await SB.auth.signInWithPassword({email,password:pass});
+  btn.textContent='Sign In';btn.disabled=false;
+  if(error){setErr('si-err',error.message==='Invalid login credentials'?'Incorrect email or password. Try again.':error.message);return;}
+}
+
+async function doSignup(){
+  if(!SB){toast('Loading... please try again in a second.','warn');return;}
+  const name=document.getElementById('su-name').value.trim();
+  const email=document.getElementById('su-email').value.trim();
+  const pass=document.getElementById('su-pass').value;
+  const tier=document.getElementById('su-tier').value;
+  if(!name||!email||!pass){setErr('su-err','Please fill in all fields.');return;}
+  if(pass.length<6){setErr('su-err','Password must be at least 6 characters.');return;}
+  setErr('su-err','');
+  const btn=document.querySelector('#panel-signup .btn-login');
+  btn.textContent='Sending request...';btn.disabled=true;
+  // create auth user
+  const {data,error}=await SB.auth.signUp({email,password:pass});
+  if(error){btn.textContent='Request Access';btn.disabled=false;setErr('su-err',error.message);return;}
+  // create profile row (pending approval)
+  await SB.from('profiles').insert({
+    id:data.user.id, name, email, tier,
+    ovr:TIERS[tier]?.pct||30,
+    lic:'unlicensed', status:'pending',
+    is_director:false, approved:false,
+    added:new Date().toISOString().split('T')[0]
+  });
+  // notify director via Supabase edge function or fallback mailto
+  try{
+    await SB.functions.invoke('notify-signup',{body:{name,email,tier}});
+  } catch(e){
+    // fallback: open mailto link
+    window.location.href=`mailto:${NOTIFY_EMAIL}?subject=New BTG Tracker Signup&body=New agent signup:%0A%0AName: ${encodeURIComponent(name)}%0AEmail: ${encodeURIComponent(email)}%0ATier: ${encodeURIComponent(tier)}%0A%0APlease log in to approve this account.`;
+  }
+  btn.textContent='Request Access';btn.disabled=false;
+  if(isDirectorTier){
+    // director approved instantly — send to sign in
+    document.getElementById('si-email').value=email;
+    showPanel('signin');
+    toast('Account created! Sign in now ✓');
+  } else {
+    showPanel('pending');
+  }
+}
+
+async function doForgot(){
+  if(!SB){toast('Loading... please try again in a second.','warn');return;}
+  const email=document.getElementById('fp-email').value.trim();
+  if(!email){setFpMsg('Please enter your email.','#c0392b');return;}
+  const btn=document.querySelector('#panel-forgot .btn-login');
+  btn.textContent='Sending...';btn.disabled=true;
+  const {error}=await SB.auth.resetPasswordForEmail(email,{
+    redirectTo:window.location.origin+window.location.pathname
+  });
+  btn.textContent='Send Reset Link';btn.disabled=false;
+  if(error){setFpMsg(error.message,'#c0392b');}
+  else{setFpMsg('Reset link sent! Check your email.','#1a7f5a');}
+}
+
+async function logout(){
+  await SB.auth.signOut();
+  CU=null;
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  showPanel('signin');
+  document.getElementById('si-email').value='';
+  document.getElementById('si-pass').value='';
+}
+
+function isDirector(){return CU&&['Director','Marketing Director','Senior Director','Executive Director'].includes(CU.tier);}
+function isDir(a){return['Director','Marketing Director','Senior Director','Executive Director'].includes(a.tier||a.tier);}
+// isDir helper
+
+function setErr(id,msg){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.textContent=msg;el.style.display=msg?'block':'none';
+}
+function setFpMsg(msg,color){
+  const el=document.getElementById('fp-msg');
+  if(!el)return;
+  el.textContent=msg;el.style.color=color;
+  el.style.background=color==='#1a7f5a'?'#eaf6f0':'#fdecea';
+  el.style.display='block';
+}
+
+// ════════ PROFILE ════════
+function openProfileModal(){
+  document.getElementById('prof-name').value=CU.name||'';
+  document.getElementById('prof-email').value=CU.email||'';
+  document.getElementById('prof-pass').value='';
+  document.getElementById('prof-pass2').value='';
+  const msg=document.getElementById('prof-msg');
+  msg.style.display='none';
+  document.getElementById('ov-profile').classList.add('open');
+}
+
+async function saveProfile(){
+  const name=document.getElementById('prof-name').value.trim();
+  const email=document.getElementById('prof-email').value.trim();
+  const pass=document.getElementById('prof-pass').value;
+  const pass2=document.getElementById('prof-pass2').value;
+  const msg=document.getElementById('prof-msg');
+  if(!name||!email){showProfMsg('Name and email are required.','err');return;}
+  if(pass&&pass!==pass2){showProfMsg('Passwords do not match.','err');return;}
+  if(pass&&pass.length<6){showProfMsg('Password must be at least 6 characters.','err');return;}
+  // update email if changed
+  if(email!==CU.email){
+    const {error}=await SB.auth.updateUser({email});
+    if(error){showProfMsg(error.message,'err');return;}
+  }
+  // update password if provided
+  if(pass){
+    const {error}=await SB.auth.updateUser({password:pass});
+    if(error){showProfMsg(error.message,'err');return;}
+  }
+  // update profile name
+  await SB.from('profiles').update({name,email}).eq('id',CU.id);
+  CU.name=name;CU.email=email;
+  document.getElementById('tb-name').textContent=name;
+  document.getElementById('tb-av').textContent=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  showProfMsg('Profile updated ✓','ok');
+  setTimeout(()=>closeOv('ov-profile'),1500);
+}
+
+function showProfMsg(msg,type){
+  const el=document.getElementById('prof-msg');
+  el.textContent=msg;
+  el.style.background=type==='ok'?'#eaf6f0':'#fdecea';
+  el.style.color=type==='ok'?'#1a7f5a':'#c0392b';
+  el.style.display='block';
+}
+
+// ════════ DIRECTOR: RESET AGENT PASSWORD ════════
+function openResetPwModal(agentEmail){
+  document.getElementById('rp-email').value=agentEmail;
+  const msg=document.getElementById('rp-msg');msg.style.display='none';
+  document.getElementById('ov-resetpw').classList.add('open');
+}
+
+async function sendAgentReset(){
+  const email=document.getElementById('rp-email').value.trim();
+  const {error}=await SB.auth.resetPasswordForEmail(email,{
+    redirectTo:window.location.origin+window.location.pathname
+  });
+  const msg=document.getElementById('rp-msg');
+  if(error){
+    msg.textContent=error.message;msg.style.background='#fdecea';msg.style.color='#c0392b';
+  } else {
+    msg.textContent='Reset email sent to '+email+' ✓';
+    msg.style.background='#eaf6f0';msg.style.color='#1a7f5a';
+    setTimeout(()=>closeOv('ov-resetpw'),2000);
+  }
+  msg.style.display='block';
+}
+
+// ════════ DB — SUPABASE ASYNC ════════
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
+function td(){return new Date().toISOString().split('T')[0];}
+
+// In-memory cache — loaded fresh on login, updated on every save
+let DB={agents:[],prod:[],rec:[],contacts:[],appts:[],goals:{},pdfs:[],year:new Date().getFullYear()};
+
+async function loadAllData(){
+  const uid_=CU.id;
+  const isDir_=isDirector();
+  const q=(table,cols,filter)=>sbFetch(`/rest/v1/${table}?select=${cols}${filter||''}`);
+  const ownFilter=`&owner_id=eq.${uid_}`;
+  const [agRes,prRes,reRes,coRes,apRes,goRes,pdRes]=await Promise.all([
+    q('profiles','*'),
+    q('prod_records','*',isDir_?'':ownFilter),
+    q('rec_records','*',isDir_?'':ownFilter),
+    q('contacts','*',isDir_?'':ownFilter),
+    q('appointments','*',isDir_?'':ownFilter),
+    q('goals','*',`&user_id=eq.${uid_}`),
+    isDir_?q('pdfs','id,name,date'):Promise.resolve({data:[],error:null}),
+  ]);
+  DB.agents=(agRes.data||[]).map(mapAgent);
+  DB.prod=(prRes.data||[]).map(mapProd);
+  DB.rec=(reRes.data||[]).map(mapRec);
+  DB.contacts=(coRes.data||[]).map(mapCon);
+  DB.appts=(apRes.data||[]).map(mapAppt);
+  DB.goals=(goRes.data||[])[0]?.data||getDefaultGoals();
+  DB.pdfs=(pdRes.data||[]);
+  DB.year=new Date().getFullYear();
+}
+
+function getDefaultGoals(){
+  return{monthly_premium:{target:5000,curr:null},active_clients:{target:50,curr:null},prospects:{target:30,curr:null},apps_submitted:{target:50,curr:null},paid_points:{target:75000,curr:null},licensed_agents:{target:15,curr:null},total_agents:{target:100,curr:null},new_agents_year:{target:25,curr:0},retention_rate:{target:40,curr:0}};
+}
+
+// ── mappers DB → app ──
+function mapAgent(r){return{id:r.id,name:r.name,email:r.email,tier:r.tier,ovr:r.ovr,lic:r.lic,states:r.states,status:r.status,notes:r.notes,added:r.added,inactiveLog:r.inactive_log||[],is_director:r.is_director,approved:r.approved};}
+function mapProd(r){return{id:r.id,ownerId:r.owner_id,name:r.name,phone:r.phone,email:r.email,state:r.state,stage:r.stage,plans:r.plans||[],apps:r.apps,points:r.points,notes:r.notes,added:r.added};}
+function mapRec(r){return{id:r.id,ownerId:r.owner_id,name:r.name,phone:r.phone,email:r.email,state:r.state,stage:r.stage,bg:r.bg,lines:r.lines,source:r.source,apps:r.apps,points:r.points,notes:r.notes,added:r.added};}
+function mapCon(r){return{id:r.id,ownerId:r.owner_id,name:r.name,phone:r.phone,email:r.email,occ:r.occ,met:r.met,mar:r.mar,kids:r.kids,type:r.type,rank:r.rank,quals:r.quals,added:r.added};}
+function mapAppt(r){return{id:r.id,ownerId:r.owner_id,name:r.name,phone:r.phone,date:r.date,time:r.time,type:r.type,preNotes:r.pre_notes,resultNotes:r.result_notes,outcome:r.outcome,followup:r.followup,added:r.added};}
+
+// ── save helpers ──
+async function sbUpsertProd(rec){
+  await SB.from('prod_records').upsert({id:rec.id,owner_id:rec.ownerId,name:rec.name,phone:rec.phone,email:rec.email,state:rec.state,stage:rec.stage,plans:rec.plans,apps:rec.apps,points:rec.points,notes:rec.notes,added:rec.added});
+}
+async function sbUpsertRec(rec){
+  await SB.from('rec_records').upsert({id:rec.id,owner_id:rec.ownerId,name:rec.name,phone:rec.phone,email:rec.email,state:rec.state,stage:rec.stage,bg:rec.bg,lines:rec.lines,source:rec.source,apps:rec.apps,points:rec.points,notes:rec.notes,added:rec.added});
+}
+async function sbUpsertCon(con){
+  await SB.from('contacts').upsert({id:con.id,owner_id:con.ownerId,name:con.name,phone:con.phone,email:con.email,occ:con.occ,met:con.met,mar:con.mar,kids:con.kids,type:con.type,rank:con.rank,quals:con.quals,added:con.added});
+}
+async function sbUpsertAppt(a){
+  await SB.from('appointments').upsert({id:a.id,owner_id:a.ownerId,name:a.name,phone:a.phone,date:a.date,time:a.time,type:a.type,pre_notes:a.preNotes,result_notes:a.resultNotes,outcome:a.outcome,followup:a.followup,added:a.added});
+}
+async function sbSaveGoals(){
+  await SB.from('goals').upsert({user_id:CU.id,data:DB.goals});
+}
+async function sbDeleteProd(id){await SB.from('prod_records').delete().eq('id',id);}
+async function sbDeleteRec(id){await SB.from('rec_records').delete().eq('id',id);}
+async function sbDeleteCon(id){await SB.from('contacts').delete().eq('id',id);}
+async function sbDeleteAppt(id){await SB.from('appointments').delete().eq('id',id);}
+async function sbDeletePdf(id){await SB.from('pdfs').delete().eq('id',id);}
+
+// ── Agent management (director only) ──
+async function sbUpsertAgent(ag){
+  // update profile row in Supabase
+  await SB.from('profiles').update({
+    name:ag.name,tier:ag.tier,ovr:ag.ovr,lic:ag.lic,
+    states:ag.states,status:ag.status,notes:ag.notes,
+    inactive_log:ag.inactiveLog||[]
+  }).eq('id',ag.id);
+}
+async function sbApproveAgent(agentId){
+  await SB.from('profiles').update({approved:true,status:'active'}).eq('id',agentId);
+}
+
+// saveDB is now a no-op — we save directly per operation
+function saveDB(){}
+
+// ════════ AUTH ════════
+function updateGreeting(){
+  const h=new Date().getHours();
+  const greet=h<12?'Good morning ☀️':h<17?'Good afternoon 👋':'Good evening 🌙';
+  document.getElementById('dash-hello').textContent=greet+', '+CU.name.split(' ')[0]+'!';
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+
+// ════════ NAV ════════
+function nav(tab){
+  document.querySelectorAll('.dnav-tab,.mnav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const vn=tab.dataset.view;
+  document.querySelectorAll(`[data-view="${vn}"]`).forEach(t=>t.classList.add('active'));
+  const v=document.getElementById('view-'+vn);if(v)v.classList.add('active');
+  const sh=document.getElementById('scroll-hint');
+  if(sh)sh.style.display=(vn==='production'||vn==='recruiting')&&window.innerWidth<768?'block':'none';
+  if(vn==='dashboard')renderDash();
+  if(vn==='production')renderPipe('prod');
+  if(vn==='recruiting')renderPipe('rec');
+  if(vn==='contacts')renderContacts();
+  if(vn==='appointments')renderAppts();
+  if(vn==='goals')renderGoals();
+  if(vn==='agents')renderAgents();
+}
+
+// ════════ FILTERS ════════
+const F={prod:'all',rec:'all',con:'all',appt:'all',agf:'all'};
+function setF(k,v,btn){
+  F[k]=v;
+  btn.closest('.pipe-toolbar').querySelectorAll('.filt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(k==='prod')renderPipe('prod');if(k==='rec')renderPipe('rec');
+  if(k==='con')renderContacts();if(k==='appt')renderAppts();if(k==='agf')renderAgents();
+}
+
+// ════════ VISIBLE ════════
+function vProd(){return isDirector()?DB.prod:DB.prod.filter(r=>r.ownerId===CU.id);}
+function vRec(){return isDirector()?DB.rec:DB.rec.filter(r=>r.ownerId===CU.id);}
+function vCon(){return isDirector()?DB.contacts:DB.contacts.filter(r=>r.ownerId===CU.id);}
+function vAppt(){return isDirector()?DB.appts:DB.appts.filter(r=>r.ownerId===CU.id);}
+
+// ════════ DASHBOARD ════════
+function renderDash(){
+  const prod=vProd(),rec=vRec();
+  const totPrem=prod.reduce((s,r)=>(r.plans||[]).reduce((ps,p)=>ps+(p.premium||0),0)+s,0);
+  const totalApps=[...prod,...rec].reduce((s,r)=>s+(r.apps||0),0);
+  const totalPts=[...prod,...rec].reduce((s,r)=>s+(r.points||0),0);
+
+  // Two separate agent counts — this is the key distinction
+  const nonDirAgents = DB.agents.filter(a=>a.status!=='inactive'&&!isDir(a));
+  const licensedAg = nonDirAgents.filter(a=>a.lic==='licensed').length;
+  const overallAg  = nonDirAgents.length; // everyone regardless of license status
+
+  const kpis=[
+    {lbl:'Monthly Premium',val:'$'+totPrem.toLocaleString(),sub:'active policies',pct:Math.min(totPrem/(DB.goals.monthly_premium?.target||5000)*100,100),c:'kpi-c-teal',fill:'var(--teal)'},
+    {lbl:'Active Clients',val:prod.length,sub:'in production',pct:Math.min(prod.length/(DB.goals.active_clients?.target||50)*100,100),c:'kpi-c-green',fill:'var(--green)'},
+    {lbl:'✅ Licensed Agents',val:licensedAg,sub:'of '+(DB.goals.licensed_agents?.target||15)+' MD goal',pct:Math.min(licensedAg/(DB.goals.licensed_agents?.target||15)*100,100),c:'kpi-c-gold',fill:'var(--gold)'},
+    {lbl:'Overall Recruits',val:overallAg,sub:'total under base',pct:Math.min(overallAg/(DB.goals.total_agents?.target||100)*100,100),c:'kpi-c-blue',fill:'var(--blue)'},
+    {lbl:'Apps Submitted',val:totalApps,sub:'combined pipelines',pct:Math.min(totalApps/(DB.goals.apps_submitted?.target||50)*100,100),c:'kpi-c-amber',fill:'var(--amber)'},
+  ];
+  document.getElementById('kpi-row').innerHTML=kpis.map(k=>`
+    <div class="kpi-card ${k.c}">
+      <div class="kpi-lbl">${k.lbl}</div>
+      <div class="kpi-val">${k.val}</div>
+      <div class="kpi-sub">${k.sub}</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${k.pct}%;background:${k.fill}"></div></div>
+    </div>`).join('');
+
+  // MD Card — licensed agents is the official milestone metric, overall shown as context
+  document.getElementById('md-card').innerHTML=`
+    <div class="md-head">
+      <div class="md-title">🎯 Marketing Director Run</div>
+      <div class="md-badge">Aug 2025</div>
+    </div>
+    <div class="md-items">
+      <div>
+        <div class="md-item-lbl">✅ Licensed Agents</div>
+        <div class="md-item-val">${licensedAg}</div>
+        <div class="md-item-goal">of 15 required</div>
+        <div class="md-bar"><div class="md-fill" style="width:${Math.min(licensedAg/15*100,100)}%"></div></div>
+      </div>
+      <div>
+        <div class="md-item-lbl">👥 Overall Under Base</div>
+        <div class="md-item-val">${overallAg}</div>
+        <div class="md-item-goal">total recruits</div>
+        <div class="md-bar"><div class="md-fill" style="width:${Math.min(overallAg/(DB.goals.total_agents?.target||100)*100,100)}%"></div></div>
+      </div>
+      <div>
+        <div class="md-item-lbl">📋 Apps Submitted</div>
+        <div class="md-item-val">${totalApps}</div>
+        <div class="md-item-goal">of 50 required</div>
+        <div class="md-bar"><div class="md-fill" style="width:${Math.min(totalApps/50*100,100)}%"></div></div>
+      </div>
+      <div>
+        <div class="md-item-lbl">⭐ Paid Points</div>
+        <div class="md-item-val">${totalPts>=1000?(totalPts/1000).toFixed(1)+'k':totalPts}</div>
+        <div class="md-item-goal">of 75k required</div>
+        <div class="md-bar"><div class="md-fill" style="width:${Math.min(totalPts/75000*100,100)}%"></div></div>
+      </div>
+    </div>`;
+
+  // Plan breakdown
+  const byPlan={};PLANS.forEach(p=>{byPlan[p]={cnt:0,prem:0};});
+  prod.forEach(r=>(r.plans||[]).forEach(p=>{if(byPlan[p.plan]){byPlan[p.plan].cnt++;byPlan[p.plan].prem+=p.premium||0;}}));
+  const totP=Object.values(byPlan).reduce((s,v)=>s+v.prem,0);
+  const pb=document.getElementById('plan-breakdown');
+  const rows=PLANS.filter(p=>byPlan[p].cnt>0).map(p=>{
+    const pct=totP?Math.round(byPlan[p].prem/totP*100):0;
+    return`<div class="plan-row-item">
+      <div class="plan-dot" style="background:${PDOT[p]}"></div>
+      <div class="plan-name">${p}</div>
+      <div class="plan-cnt">${byPlan[p].cnt} pol.</div>
+      <div class="plan-prem">$${byPlan[p].prem.toLocaleString()}<span style="font-size:10px;color:var(--text3);font-family:var(--font)">/mo</span></div>
+      <div class="plan-pct-bar"><div class="plan-pct-fill" style="background:${PDOT[p]};width:${pct}%"></div></div>
+    </div>`;
+  });
+  pb.innerHTML=rows.length?rows.join(''):'<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">No production data yet. Add clients to get started.</div>';
+
+  // Agent performance
+  if(isDirector()){
+    const list=document.getElementById('apef-list');
+    list.innerHTML='';
+    DB.agents.filter(a=>!isDir(a)).forEach(ag=>{
+      const cl=DB.prod.filter(r=>r.ownerId===ag.id).length;
+      const pr=DB.prod.filter(r=>r.ownerId===ag.id).reduce((s,r)=>(r.plans||[]).reduce((ps,p)=>ps+(p.premium||0),0)+s,0);
+      const ap=[...DB.prod,...DB.rec].filter(r=>r.ownerId===ag.id).reduce((s,r)=>s+(r.apps||0),0);
+      const ini=ag.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const licB=ag.lic==='licensed'?'✅ Licensed':ag.lic==='studying'?'📚 Studying':'○ Unlicensed';
+      list.innerHTML+=`<div class="agent-perf-card">
+        <div class="apc-avatar">${ini}</div>
+        <div style="flex:1">
+          <div class="apc-name">${ag.name}</div>
+          <div class="apc-tier">${ag.tier} · ${ag.ovr||0}% · ${licB}</div>
+        </div>
+        <div class="apc-stats">
+          <div class="apc-stat"><div class="apc-val">${cl}</div><div class="apc-lbl">Clients</div></div>
+          <div class="apc-stat"><div class="apc-val" style="color:var(--green)">$${pr.toLocaleString()}</div><div class="apc-lbl">Mo.Prem</div></div>
+          <div class="apc-stat"><div class="apc-val">${ap}</div><div class="apc-lbl">Apps</div></div>
+        </div>
+      </div>`;
+    });
+    if(!list.children.length)list.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px 0">No agents yet. Add agents in the Agents tab.</div>';
+  }
+}
+
+// ════════ PIPELINE ════════
+let dragId=null,dragType=null;
+function renderPipe(type){
+  const records=type==='prod'?vProd():vRec();
+  const search=document.getElementById(type+'-search').value.toLowerCase();
+  const filter=F[type];
+  const pre=type==='prod'?'pc':'rc';
+  STAGES.forEach(stage=>{
+    const sid=stage==='contacted'?'c':stage==='interested'?'i':'k';
+    const filtered=records.filter(r=>{
+      if(r.stage!==stage)return false;
+      if(filter!=='all'){
+        if(type==='prod'&&!(r.plans||[]).some(p=>p.plan===filter))return false;
+        if(type==='rec'&&r.bg!==filter)return false;
+      }
+      if(search&&!r.name.toLowerCase().includes(search)&&!(r.notes||'').toLowerCase().includes(search))return false;
+      return true;
+    });
+    const wrap=document.getElementById(pre+'-wrap-'+sid);
+    document.getElementById(pre+'-cnt-'+sid).textContent=filtered.length;
+    const meta=document.getElementById(pre+'-meta-'+sid);
+    if(type==='prod'){
+      const sp=filtered.reduce((s,r)=>(r.plans||[]).reduce((ps,p)=>ps+(p.premium||0),0)+s,0);
+      if(meta)meta.textContent=sp>0?'$'+sp.toLocaleString()+'/mo premium':'No premium yet';
+    } else {
+      if(meta)meta.textContent=filtered.length+' prospects';
+    }
+    wrap.innerHTML='';
+    if(!filtered.length){wrap.innerHTML='<div class="ecol">No records here yet</div>';return;}
+    filtered.forEach(r=>wrap.appendChild(buildCard(r,type)));
+  });
+}
+
+function buildCard(r,type){
+  const card=document.createElement('div');
+  card.className='pcard';card.draggable=true;
+  card.addEventListener('dragstart',e=>{dragId=r.id;dragType=type;e.dataTransfer.effectAllowed='move';});
+  card.addEventListener('dragend',()=>dragId=null);
+  const stage=r.stage;
+  const next=stage==='contacted'?'interested':stage==='interested'?'contracting':null;
+  let chips='',premHtml='';
+  if(type==='prod'){
+    const plans=r.plans||[];
+    chips=plans.map(p=>`<span class="chip ${PCHIP[p.plan]||'chip-grey'}">${PSHORT[p.plan]||p.plan}</span>`).join('');
+    const tp=plans.reduce((s,p)=>s+(p.premium||0),0);
+    if(tp>0){
+      const actual=plans.some(p=>p.type==='actual');
+      premHtml=`<div class="prem-pill"><div><div class="prem-lbl">${actual?'Confirmed Premium':'Est. Premium'}</div></div><div><span class="prem-val">$${tp.toLocaleString()}</span><span class="prem-type">/mo</span></div></div>`;
+    }
+  } else {
+    const bc=r.bg==='New to Industry'?'chip-new':r.bg==='Experienced'?'chip-exp':'chip-vet';
+    chips=`<span class="chip ${bc}">${r.bg||'Prospect'}</span>`;
+    if(r.source)chips+=`<span class="chip chip-grey">${r.source}</span>`;
+  }
+  const hasFlag=DB.appts.some(a=>a.name===r.name&&a.outcome==='pending'&&a.date<td());
+  const flagHtml=hasFlag?`<div class="flag-pill">⚑ Appointment result needed</div>`:'';
+  const advBtn=next?`<button class="pcard-btn adv" onclick="moveRec('${r.id}','${next}','${type}');event.stopPropagation()">→ ${next.charAt(0).toUpperCase()+next.slice(1)}</button>`:`<button class="pcard-btn" style="opacity:.4">✓ Final stage</button>`;
+  card.innerHTML=`
+    <div class="flex ai-c jc-sb">
+      <div>
+        <div class="pcard-name">${r.name}</div>
+        <div class="pcard-meta">${[r.phone,r.state].filter(Boolean).join(' · ')}</div>
+      </div>
+      <button class="pcard-more" onclick="openCtx(event,'${r.id}','${type}')">⋮</button>
+    </div>
+    <div class="pcard-chips">${chips}</div>
+    ${flagHtml}${premHtml}
+    ${r.notes?`<div class="pcard-notes">${r.notes}</div>`:''}
+    <div class="pcard-foot">
+      <span class="pcard-date">${r.added||''}</span>
+      <button class="pcard-btn" onclick="${type==='prod'?'editProd':'editRec'}('${r.id}');event.stopPropagation()">Edit</button>
+      ${advBtn}
+    </div>`;
+  return card;
+}
+
+function dO(e){e.preventDefault();e.currentTarget.style.background='#f0f4ff';}
+function dL(e){e.currentTarget.style.background='';}
+function dD(e,stage,type){e.preventDefault();e.currentTarget.style.background='';if(dragId&&dragType===type)moveRec(dragId,stage,type);}
+async function moveRec(id,stage,type){
+  const arr=type==='prod'?DB.prod:DB.rec;
+  const r=arr.find(x=>x.id===id);
+  if(r){r.stage=stage;renderPipe(type);toast('Moved to '+stage+' ✓');
+    if(type==='prod')await sbUpsertProd(r); else await sbUpsertRec(r);}
+}
+
+// ════════ PROD CRUD ════════
+function openProdModal(rec=null){
+  document.getElementById('ptitle').textContent=rec?'Edit Client':'Add Client';
+  document.getElementById('p-id').value=rec?.id||'';
+  document.getElementById('p-fn').value=rec?rec.name.split(' ')[0]:'';
+  document.getElementById('p-ln').value=rec?rec.name.split(' ').slice(1).join(' '):'';
+  document.getElementById('p-ph').value=rec?.phone||'';
+  document.getElementById('p-em').value=rec?.email||'';
+  document.getElementById('p-st').value=rec?.state||'';
+  document.getElementById('p-stage').value=rec?.stage||'contacted';
+  document.getElementById('p-apps').value=rec?.apps||'';
+  document.getElementById('p-pts').value=rec?.points||'';
+  document.getElementById('p-notes').value=rec?.notes||'';
+  if(isDirector()){buildAgentSelects();if(rec)document.getElementById('p-ag').value=rec.ownerId||CU.id;}
+  const pr=document.getElementById('prod-pr');pr.innerHTML='';
+  if(rec&&rec.plans&&rec.plans.length)rec.plans.forEach(p=>addPR('prod-pr',p));
+  else addPR('prod-pr');
+  document.getElementById('ov-prod').classList.add('open');
+}
+function addPR(cid,ex=null){
+  const c=document.getElementById(cid);
+  const row=document.createElement('div');row.className='plan-row';
+  row.innerHTML=`
+    <div class="fg" style="margin:0"><label>Plan</label><select class="ps">${PLANS.map(p=>`<option value="${p}"${ex?.plan===p?' selected':''}>${p}</option>`).join('')}</select></div>
+    <div class="fg" style="margin:0"><label>Prem. ($)</label><input type="number" class="pp" placeholder="0.00" min="0" step="0.01" value="${ex?.premium||''}"></div>
+    <div class="fg plan-ptype" style="margin:0"><label>Type</label><select class="pt"><option value="possible"${!ex||ex.type==='possible'?' selected':''}>Possible</option><option value="actual"${ex?.type==='actual'?' selected':''}>Actual</option></select></div>
+    <button class="prm" onclick="this.parentNode.remove()">×</button>`;
+  c.appendChild(row);
+}
+async function saveProd(){
+  const fn=document.getElementById('p-fn').value.trim();
+  if(!fn){toast('First name required ❌','err');return;}
+  const name=[fn,document.getElementById('p-ln').value.trim()].filter(Boolean).join(' ');
+  const plans=[];
+  document.querySelectorAll('#prod-pr .plan-row').forEach(row=>{
+    const plan=row.querySelector('.ps').value;
+    const premium=parseFloat(row.querySelector('.pp').value)||0;
+    const pt=row.querySelector('.pt');const type=pt?pt.value:'possible';
+    if(plan)plans.push({plan,premium,type});
+  });
+  const editId=document.getElementById('p-id').value;
+  const ownerId=isDirector()?(document.getElementById('p-ag').value||CU.id):CU.id;
+  const rec={id:editId||uid(),ownerId,name,phone:document.getElementById('p-ph').value.trim(),email:document.getElementById('p-em').value.trim(),state:document.getElementById('p-st').value.toUpperCase(),stage:document.getElementById('p-stage').value,plans,apps:parseInt(document.getElementById('p-apps').value)||0,points:parseInt(document.getElementById('p-pts').value)||0,notes:document.getElementById('p-notes').value.trim(),added:td()};
+  if(editId){const idx=DB.prod.findIndex(r=>r.id===editId);if(idx>-1){rec.added=DB.prod[idx].added;DB.prod[idx]=rec;}toast('Client updated ✓');}
+  else{DB.prod.push(rec);toast('Client added ✓');}
+  closeOv('ov-prod');renderAll();await sbUpsertProd(rec);
+}
+function editProd(id){const r=DB.prod.find(x=>x.id===id);if(r)openProdModal(r);}
+async function delProd(id){if(!confirm('Remove this client?'))return;DB.prod=DB.prod.filter(r=>r.id!==id);renderAll();toast('Removed','warn');await sbDeleteProd(id);}
+
+// ════════ REC CRUD ════════
+function openRecModal(rec=null){
+  document.getElementById('rtitle').textContent=rec?'Edit Prospect':'Add Prospect';
+  document.getElementById('r-id').value=rec?.id||'';
+  document.getElementById('r-fn').value=rec?rec.name.split(' ')[0]:'';
+  document.getElementById('r-ln').value=rec?rec.name.split(' ').slice(1).join(' '):'';
+  document.getElementById('r-ph').value=rec?.phone||'';
+  document.getElementById('r-em').value=rec?.email||'';
+  document.getElementById('r-st').value=rec?.state||'';
+  document.getElementById('r-stage').value=rec?.stage||'contacted';
+  document.getElementById('r-bg').value=rec?.bg||'New to Industry';
+  document.getElementById('r-lines').value=rec?.lines||'';
+  document.getElementById('r-src').value=rec?.source||'';
+  document.getElementById('r-apps').value=rec?.apps||'';
+  document.getElementById('r-pts').value=rec?.points||'';
+  document.getElementById('r-notes').value=rec?.notes||'';
+  document.getElementById('ov-rec').classList.add('open');
+}
+async function saveRec(){
+  const fn=document.getElementById('r-fn').value.trim();
+  if(!fn){toast('First name required ❌','err');return;}
+  const name=[fn,document.getElementById('r-ln').value.trim()].filter(Boolean).join(' ');
+  const editId=document.getElementById('r-id').value;
+  const rec={id:editId||uid(),ownerId:CU.id,name,phone:document.getElementById('r-ph').value.trim(),email:document.getElementById('r-em').value.trim(),state:document.getElementById('r-st').value.toUpperCase(),stage:document.getElementById('r-stage').value,bg:document.getElementById('r-bg').value,lines:document.getElementById('r-lines').value.trim(),source:document.getElementById('r-src').value.trim(),apps:parseInt(document.getElementById('r-apps').value)||0,points:parseInt(document.getElementById('r-pts').value)||0,notes:document.getElementById('r-notes').value.trim(),added:td()};
+  if(editId){const idx=DB.rec.findIndex(r=>r.id===editId);if(idx>-1){rec.added=DB.rec[idx].added;DB.rec[idx]=rec;}toast('Prospect updated ✓');}
+  else{DB.rec.push(rec);toast('Prospect added ✓');}
+  closeOv('ov-rec');renderAll();await sbUpsertRec(rec);
+}
+function editRec(id){const r=DB.rec.find(x=>x.id===id);if(r)openRecModal(r);}
+async function delRec(id){if(!confirm('Remove prospect?'))return;DB.rec=DB.rec.filter(r=>r.id!==id);renderAll();toast('Removed','warn');await sbDeleteRec(id);}
+
+// ════════ CONTACTS ════════
+function openConModal(con=null){
+  document.getElementById('ctitle').textContent=con?'Edit Contact':'Add Contact';
+  document.getElementById('c-id').value=con?.id||'';
+  document.getElementById('c-fn').value=con?con.name.split(' ')[0]:'';
+  document.getElementById('c-ln').value=con?con.name.split(' ').slice(1).join(' '):'';
+  document.getElementById('c-ph').value=con?.phone||'';
+  document.getElementById('c-em').value=con?.email||'';
+  document.getElementById('c-occ').value=con?.occ||'';
+  document.getElementById('c-met').value=con?.met||'';
+  document.getElementById('c-mar').value=con?.mar||'';
+  document.getElementById('c-kids').value=con?.kids||'';
+  document.getElementById('c-type').value=con?.type||'recruit';
+  document.getElementById('c-rank').value=con?.rank||'';
+  document.getElementById('c-quals').value=con?.quals||'';
+  document.getElementById('ov-contact').classList.add('open');
+}
+async function saveCon(){
+  const fn=document.getElementById('c-fn').value.trim();
+  if(!fn){toast('First name required ❌','err');return;}
+  const name=[fn,document.getElementById('c-ln').value.trim()].filter(Boolean).join(' ');
+  const editId=document.getElementById('c-id').value;
+  const con={id:editId||uid(),ownerId:CU.id,name,phone:document.getElementById('c-ph').value.trim(),email:document.getElementById('c-em').value.trim(),occ:document.getElementById('c-occ').value.trim(),met:document.getElementById('c-met').value.trim(),mar:document.getElementById('c-mar').value,kids:document.getElementById('c-kids').value,type:document.getElementById('c-type').value,rank:parseInt(document.getElementById('c-rank').value)||99,quals:document.getElementById('c-quals').value.trim(),added:td()};
+  if(editId){const idx=DB.contacts.findIndex(c=>c.id===editId);if(idx>-1){con.added=DB.contacts[idx].added;DB.contacts[idx]=con;}toast('Contact updated ✓');}
+  else{DB.contacts.push(con);toast('Contact added ✓');}
+  closeOv('ov-contact');renderContacts();await sbUpsertCon(con);
+}
+async function delCon(id){if(!confirm('Remove contact?'))return;DB.contacts=DB.contacts.filter(c=>c.id!==id);renderContacts();toast('Removed','warn');await sbDeleteCon(id);}
+
+function renderContacts(){
+  const search=document.getElementById('con-search').value.toLowerCase();
+  const filter=F.con;
+  let cons=vCon().filter(c=>{
+    if(filter!=='all'&&c.type!==filter)return false;
+    if(search&&!c.name.toLowerCase().includes(search)&&!(c.quals||'').toLowerCase().includes(search))return false;
+    return true;
+  }).sort((a,b)=>(a.rank||99)-(b.rank||99));
+  const grid=document.getElementById('con-grid');grid.innerHTML='';
+  if(!cons.length){grid.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">No contacts yet. Build your Top 25 list! ⭐</div>';return;}
+  cons.forEach(c=>{
+    const ini=c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const tc=c.type==='recruit'?'ct-recruit':c.type==='client'?'ct-client':'ct-both';
+    const tl=c.type==='recruit'?'🤝 Recruit':c.type==='client'?'💼 Client':'⭐ Both';
+    const hasAppt=DB.appts.some(a=>a.name===c.name&&a.outcome==='pending'&&a.date<td());
+    const own=DB.agents.find(a=>a.id===c.ownerId);
+    const div=document.createElement('div');div.className='con-card';
+    div.innerHTML=`
+      ${isDirector()&&own?`<div class="con-owner-tag">${own.name}</div>`:''}
+      ${hasAppt?`<div class="appt-dot" title="Pending appointment"></div>`:''}
+      <div class="con-hdr">
+        <div style="position:relative;flex-shrink:0;">
+          <div class="con-av">${ini}</div>
+          ${c.rank&&c.rank<=25?`<div class="con-rank">${c.rank}</div>`:''}
+        </div>
+        <div>
+          <div class="con-name">${c.name}</div>
+          <span class="con-type-badge ${tc}">${tl}</span>
+        </div>
+      </div>
+      <div class="con-info">
+        ${c.phone?`<div class="con-info-row"><span class="con-icon">📞</span>${c.phone}</div>`:''}
+        ${c.email?`<div class="con-info-row"><span class="con-icon">✉️</span>${c.email}</div>`:''}
+        ${c.occ?`<div class="con-info-row"><span class="con-icon">💼</span>${c.occ}</div>`:''}
+        ${c.met?`<div class="con-info-row"><span class="con-icon">📍</span>Met at: ${c.met}</div>`:''}
+      </div>
+      <div class="con-badges">
+        ${c.mar?`<span class="con-badge">💍 ${c.mar}</span>`:''}
+        ${c.kids?`<span class="con-badge">👶 ${c.kids==='0'?'No kids':c.kids+' kid(s)'}</span>`:''}
+      </div>
+      ${c.quals?`<div class="con-quals">"${c.quals.slice(0,120)}${c.quals.length>120?'...':''}"</div>`:''}
+      <div class="con-actions">
+        <button class="btn btn-outline btn-xs" onclick="openConModal(DB.contacts.find(x=>x.id==='${c.id}'))">Edit</button>
+        <button class="btn btn-outline btn-xs" onclick="delCon('${c.id}')">Remove</button>
+        <button class="btn btn-navy btn-xs" onclick="openApptModal(null,'${c.name.replace(/'/g,"\\'")}','${c.phone||''}')">📅 Appt</button>
+      </div>`;
+    grid.appendChild(div);
+  });
+}
+
+// ════════ APPOINTMENTS ════════
+function openApptModal(appt=null,prefillName='',prefillPhone=''){
+  document.getElementById('aptitle').textContent=appt?'Edit Appointment':'Schedule Appointment';
+  document.getElementById('ap-id').value=appt?.id||'';
+  document.getElementById('ap-name').value=appt?.name||prefillName;
+  document.getElementById('ap-ph').value=appt?.phone||prefillPhone;
+  document.getElementById('ap-date').value=appt?.date||'';
+  document.getElementById('ap-time').value=appt?.time||'';
+  document.getElementById('ap-type').value=appt?.type||'recruitment';
+  document.getElementById('ap-pre').value=appt?.preNotes||'';
+  document.getElementById('ap-result').value=appt?.resultNotes||'';
+  document.getElementById('ap-outcome').value=appt?.outcome||'pending';
+  document.getElementById('ap-fu').value=appt?.followup||'';
+  document.getElementById('ov-appt').classList.add('open');
+}
+async function saveAppt(){
+  const name=document.getElementById('ap-name').value.trim();
+  if(!name){toast('Name required ❌','err');return;}
+  const editId=document.getElementById('ap-id').value;
+  const appt={id:editId||uid(),ownerId:CU.id,name,phone:document.getElementById('ap-ph').value.trim(),date:document.getElementById('ap-date').value,time:document.getElementById('ap-time').value,type:document.getElementById('ap-type').value,preNotes:document.getElementById('ap-pre').value.trim(),resultNotes:document.getElementById('ap-result').value.trim(),outcome:document.getElementById('ap-outcome').value,followup:document.getElementById('ap-fu').value,added:td()};
+  if(editId){const idx=DB.appts.findIndex(a=>a.id===editId);if(idx>-1){appt.added=DB.appts[idx].added;DB.appts[idx]=appt;}toast('Appointment updated ✓');}
+  else{DB.appts.push(appt);toast('Appointment scheduled ✓');}
+  closeOv('ov-appt');renderAppts();checkFlags();await sbUpsertAppt(appt);
+}
+async function delAppt(id){if(!confirm('Remove appointment?'))return;DB.appts=DB.appts.filter(a=>a.id!==id);renderAppts();checkFlags();toast('Removed','warn');await sbDeleteAppt(id);}
+
+function renderAppts(){
+  const search=document.getElementById('appt-search').value.toLowerCase();
+  const filter=F.appt;
+  let appts=vAppt().filter(a=>{
+    if(filter==='flagged')return a.outcome==='pending'&&a.date<td();
+    if(filter!=='all'&&a.type!==filter)return false;
+    if(search&&!a.name.toLowerCase().includes(search))return false;
+    return true;
+  }).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const list=document.getElementById('appt-list');list.innerHTML='';
+  if(!appts.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px;">No appointments found. Schedule your first one! 📅</div>';return;}
+  appts.forEach(a=>{
+    const isFlagged=a.outcome==='pending'&&a.date<td();
+    const d=new Date(a.date+'T12:00:00');
+    const day=d.getDate(),mon=d.toLocaleString('default',{month:'short'}).toUpperCase();
+    const tc=a.type==='recruitment'?'atc-rec':a.type==='field'?'atc-fld':'atc-zm';
+    const tl=a.type==='recruitment'?'Recruitment':a.type==='field'?'Field Presentation':'Zoom';
+    const otc=a.outcome==='completed'?'ot-completed':a.outcome==='pending'?'ot-pending':a.outcome==='no-show'?'ot-noshow':'ot-other';
+    const otl=a.outcome==='completed'?'✅ Completed':a.outcome==='pending'?'⏳ Pending':a.outcome==='no-show'?'❌ No Show':a.outcome.charAt(0).toUpperCase()+a.outcome.slice(1);
+    const own=DB.agents.find(ag=>ag.id===a.ownerId);
+    const typeClass=`at-${a.type==='recruitment'?'recruitment':a.type==='field'?'field':'zoom'}`;
+    const div=document.createElement('div');
+    div.className=`appt-card ${typeClass}${isFlagged?' flagged':''}`;
+    div.innerHTML=`
+      <div class="appt-date-box"><div class="appt-day">${day}</div><div class="appt-mon">${mon}</div></div>
+      <div class="appt-body">
+        <div class="appt-name">${a.name}</div>
+        <div class="appt-meta">${[a.phone,a.time?'@ '+a.time:'',isDirector()&&own?own.name:''].filter(Boolean).join(' · ')}</div>
+        <span class="appt-type-chip ${tc}">${tl}</span>
+        ${a.preNotes?`<div class="appt-notes">📋 ${a.preNotes}</div>`:''}
+        ${a.resultNotes?`<div class="appt-notes" style="color:var(--green)">✅ ${a.resultNotes}</div>`:''}
+        ${isFlagged?`<div class="appt-flag">⚑ Result notes required — flagged</div>`:''}
+        ${a.followup?`<div style="font-size:11px;color:var(--text3);margin-top:3px">🔁 Follow-up: ${a.followup}</div>`:''}
+      </div>
+      <div class="appt-actions">
+        <span class="outcome-tag ${otc}">${otl}</span>
+        <button class="pcard-btn" onclick="openApptModal(DB.appts.find(x=>x.id==='${a.id}'))">Edit</button>
+        <button class="pcard-btn" onclick="delAppt('${a.id}')">Remove</button>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function checkFlags(){
+  const n=DB.appts.filter(a=>{
+    if(!isDirector()&&a.ownerId!==CU?.id)return false;
+    return a.outcome==='pending'&&a.date<td();
+  }).length;
+  ['appt-badge-d','appt-badge-m'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b){b.textContent=n;b.classList.toggle('hidden',n===0);}
+  });
+}
+
+// ════════ GOALS ════════
+const GDEFS=[
+  {key:'monthly_premium',lbl:'Monthly Premium',icon:'💰',unit:'$',c:'var(--gold)',detail:'Total monthly premium across all active client policies.'},
+  {key:'active_clients',lbl:'Active Clients',icon:'👥',unit:'',c:'var(--green)',detail:'Total clients across all production stages.'},
+  {key:'prospects',lbl:'Recruiting Prospects',icon:'🤝',unit:'',c:'var(--blue)',detail:'Total prospects in your recruiting pipeline.'},
+  {key:'apps_submitted',lbl:'Apps Submitted',icon:'📋',unit:'',c:'var(--amber)',detail:'Total applications submitted across both pipelines.'},
+  {key:'paid_points',lbl:'Paid Points',icon:'⭐',unit:'',c:'var(--teal)',detail:'Total paid points toward MD milestone (need 75,000).'},
+  // Two separate agent goals — licensed is the MD requirement, overall tracks full team growth
+  {key:'licensed_agents',lbl:'Licensed Agents',icon:'✅',unit:'',c:'var(--green)',detail:'Agents with an active license under your base. 15 required for MD promotion — this is your primary agent goal.'},
+  {key:'total_agents',lbl:'Overall Recruits Under Base',icon:'👥',unit:'',c:'var(--purple)',detail:'All agents under your base regardless of license status. Tracks your full recruiting pipeline. Scale target: 100+.'},
+  {key:'new_agents_year',lbl:'New Agents This Year',icon:'🆕',unit:'',c:'var(--navy)',detail:'New agents contracted this calendar year.'},
+  {key:'retention_rate',lbl:'Retention Rate',icon:'🔒',unit:'%',c:'var(--green)',detail:'Target 30–50%. Agents retained vs. total onboarded.'},
+];
+
+function renderGoals(){
+  document.getElementById('goals-yr').textContent=DB.year;
+  const prod=vProd(),rec=vRec();
+  const totPrem=prod.reduce((s,r)=>(r.plans||[]).reduce((ps,p)=>ps+(p.premium||0),0)+s,0);
+  const totApps=[...prod,...rec].reduce((s,r)=>s+(r.apps||0),0);
+  const totPts=[...prod,...rec].reduce((s,r)=>s+(r.points||0),0);
+
+  // Separate counts — licensed vs all non-director non-inactive
+  const nonDirAg=DB.agents.filter(a=>a.status!=='inactive'&&!isDir(a));
+  const licensedAg=nonDirAg.filter(a=>a.lic==='licensed').length;
+  const overallAg=nonDirAg.length;
+
+  const auto={
+    monthly_premium:totPrem,
+    active_clients:prod.length,
+    prospects:rec.length,
+    apps_submitted:totApps,
+    paid_points:totPts,
+    licensed_agents:licensedAg,   // auto-calculated from agent roster
+    total_agents:overallAg,        // auto-calculated — all non-dir agents
+    new_agents_year:DB.goals.new_agents_year?.curr||0,
+    retention_rate:DB.goals.retention_rate?.curr||0,
+  };
+  const grid=document.getElementById('goals-grid');grid.innerHTML='';
+
+  GDEFS.forEach(def=>{
+    const g=DB.goals[def.key]||{target:def.key==='licensed_agents'?15:def.key==='total_agents'?100:0,curr:null};
+    const curr=g.curr!==null?g.curr:(auto[def.key]||0);
+    const target=g.target||1;
+    const pct=Math.min(Math.round(curr/target*100),100);
+    const dispC=def.unit==='$'?'$'+curr.toLocaleString():(def.unit==='%'?curr+'%':curr.toLocaleString());
+    const dispT=def.unit==='$'?'$'+target.toLocaleString():(def.unit==='%'?target+'%':target.toLocaleString());
+    // Licensed agents card gets a special highlight border since it's the MD milestone requirement
+    const isLicGoal=def.key==='licensed_agents';
+    const card=document.createElement('div');card.className='goal-card';
+    if(isLicGoal)card.style.cssText='border:2px solid var(--green);position:relative;';
+    card.innerHTML=`
+      ${isLicGoal?`<div style="position:absolute;top:-10px;left:14px;background:var(--green);color:#fff;font-size:9px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:.5px;">MD MILESTONE REQUIREMENT</div>`:''}
+      <div class="gc-icon">${def.icon}</div>
+      <div class="gc-lbl">${def.lbl}</div>
+      <div class="gc-nums"><span class="gc-val">${dispC}</span><span class="gc-goal">/ ${dispT}</span><span class="gc-pct">${pct}%</span></div>
+      <div class="gc-bar"><div class="gc-fill" style="width:${pct}%;background:${def.c}"></div></div>
+      <div class="gc-det">${def.detail}</div>
+      ${isDirector()?`<button class="gc-edit-btn" onclick="openGoalEdit('${def.key}','${def.lbl}',${target},${g.curr!==null?g.curr:''})">✏️ Edit</button>`:''}`;
+    grid.appendChild(card);
+  });
+
+  // MD milestone card — now correctly uses licensed agents count
+  const totApps2=totApps;
+  const totPts2=totPts;
+  const mc=document.createElement('div');mc.className='md-goal-card';
+  mc.style.cssText='grid-column:1/-1;';
+  mc.innerHTML=`
+    <div class="md-goal-title">🎯 Marketing Director Milestone</div>
+    <div class="md-goal-sub">Deadline: August 2025 · Director: ${TIERS['Director'].pct}% → Marketing Director: ${TIERS['Marketing Director'].pct}%</div>
+    <div class="md-goal-items" style="grid-template-columns:repeat(4,1fr);">
+      <div>
+        <div class="md-item-lbl">✅ Licensed Agents</div>
+        <div class="md-item-val">${licensedAg}</div>
+        <div class="md-item-goal">of 15 required</div>
+        <div class="md-bar"><div class="md-fill" style="width:${Math.min(licensedAg/15*100,100)}%"></div></div>
+      </div>
+      <div>
+        <div class="md-item-lbl">👥 Overall Under Base</div>
+        <div class="md-item-val">${overallAg}</div>
+        <div class="md-item-goal">total recruits</div>
+        <div class="md-bar"><div class="md-fill" style="width:${Math.min(overallAg/100*100,100)}%"></div></div>
+      </div>
+      <div>
+        <div class="md-item-lbl">📋 Apps Submitted</div>
+        <div class="md-item-val">${totApps2}</div>
+        <div class="md-item-goal">of 50 required</div>
+        <div class="md-bar"><div class="md-fill" style="width:${Math.min(totApps2/50*100,100)}%"></div></div>
+      </div>
+      <div>
+        <div class="md-item-lbl">⭐ Paid Points</div>
+        <div class="md-item-val">${totPts2>=1000?(totPts2/1000).toFixed(1)+'k':totPts2}</div>
+        <div class="md-item-goal">of 75k required</div>
+        <div class="md-bar"><div class="md-fill" style="width:${Math.min(totPts2/75000*100,100)}%"></div></div>
+      </div>
+    </div>`;
+  grid.appendChild(mc);
+
+  // PDFs
+  const pl=document.getElementById('pdf-list');
+  if(pl&&isDirector()){
+    pl.innerHTML='';
+    DB.pdfs.forEach(pdf=>{
+      pl.innerHTML+=`<div class="pdf-item"><span class="pdf-icon">📄</span><span class="pdf-name">${pdf.name}</span><span class="pdf-date">${pdf.date}</span><button class="btn btn-outline btn-xs" onclick="delPdf('${pdf.id}')">Remove</button></div>`;
+    });
+  }
+}
+function openGoalEdit(key,lbl,target,curr){
+  document.getElementById('g-key').value=key;
+  document.getElementById('g-lbl').textContent=lbl+' — Target';
+  document.getElementById('g-val').value=target||'';
+  document.getElementById('g-curr').value=curr!==undefined&&curr!==''?curr:'';
+  document.getElementById('ov-goal').classList.add('open');
+}
+function openGoalModal(){openGoalEdit('monthly_premium','Monthly Premium',DB.goals.monthly_premium?.target||5000,'');}
+async function saveGoal(){
+  const key=document.getElementById('g-key').value;
+  const target=parseInt(document.getElementById('g-val').value)||0;
+  const cr=document.getElementById('g-curr').value;
+  const curr=cr===''?null:parseInt(cr);
+  if(!DB.goals[key])DB.goals[key]={};
+  DB.goals[key].target=target;DB.goals[key].curr=curr;
+  closeOv('ov-goal');renderGoals();toast('Goal updated ✓');
+  await sbSaveGoals();
+}
+async function handlePdf(e){
+  Array.from(e.target.files).forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=async ev=>{
+      const pdf={id:uid(),name:f.name,date:td(),data:ev.target.result};
+      DB.pdfs.push(pdf);renderGoals();toast('PDF uploaded ✓');
+      await SB.from('pdfs').insert({id:pdf.id,name:pdf.name,date:pdf.date,data:pdf.data});
+    };
+    reader.readAsDataURL(f);
+  });e.target.value='';
+}
+async function delPdf(id){if(!confirm('Remove PDF?'))return;DB.pdfs=DB.pdfs.filter(p=>p.id!==id);renderGoals();await sbDeletePdf(id);}
+
+// ════════ AGENTS ════════
+function openAgentModal(agent=null){
+  document.getElementById('agtitle').textContent=agent?'Edit Agent':'Add Agent';
+  document.getElementById('ag-id').value=agent?.id||'';
+  document.getElementById('ag-fn').value=agent?agent.name.split(' ')[0]:'';
+  document.getElementById('ag-ln').value=agent?agent.name.split(' ').slice(1).join(' '):'';
+  document.getElementById('ag-em').value=agent?.email||'';
+  document.getElementById('ag-em').value=agent?.email||'(set on signup)';
+  document.getElementById('ag-tier').value=agent?.tier||'Trainee';
+  document.getElementById('ag-ovr').value=agent?.ovr||'';
+  document.getElementById('ag-lic').value=agent?.lic||'unlicensed';
+  document.getElementById('ag-states').value=agent?.states||'';
+  document.getElementById('ag-status').value=agent?.status||'active';
+  document.getElementById('ag-notes').value=agent?.notes||'';
+  updateTierPct();
+  document.getElementById('ov-agent').classList.add('open');
+}
+function updateTierPct(){
+  const tier=document.getElementById('ag-tier').value;
+  const info=TIERS[tier];
+  const box=document.getElementById('tier-info');
+  if(box&&info){
+    box.innerHTML=`<div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:2px">${tier}</div><div class="tier-pct">${info.pct}%</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px">${info.note}</div>`;
+    document.getElementById('ag-ovr').value=info.pct;
+  }
+}
+async function saveAgent(){
+  const fn=document.getElementById('ag-fn').value.trim();
+  if(!fn){toast('Name required ❌','err');return;}
+  const name=[fn,document.getElementById('ag-ln').value.trim()].filter(Boolean).join(' ');
+  const editId=document.getElementById('ag-id').value;
+  if(!editId){
+    toast('To add agents, they must sign up and you approve them from this tab ✓');
+    closeOv('ov-agent');return;
+  }
+  const ag={id:editId,name,tier:document.getElementById('ag-tier').value,ovr:parseFloat(document.getElementById('ag-ovr').value)||0,lic:document.getElementById('ag-lic').value,states:document.getElementById('ag-states').value.trim(),status:document.getElementById('ag-status').value,notes:document.getElementById('ag-notes').value.trim()};
+  const idx=DB.agents.findIndex(a=>a.id===editId);
+  if(idx>-1){DB.agents[idx]={...DB.agents[idx],...ag};}
+  toast('Agent updated ✓');
+  closeOv('ov-agent');buildAgentSelects();renderAgents();renderDash();
+  await sbUpsertAgent(ag);
+}
+function renderAgents(){
+  // Commission structure
+  const csg=document.getElementById('cs-grid');
+  if(csg){csg.innerHTML=Object.entries(TIERS).map(([tier,info])=>`
+    <div class="cs-row">
+      <div><div class="cs-tier">${tier}</div><div class="cs-note">${info.note}</div></div>
+      <div class="cs-pct">${info.pct}%</div>
+    </div>`).join('');}
+  const search=document.getElementById('ag-search')?.value.toLowerCase()||'';
+  const filter=F.agf;
+  const list=document.getElementById('agent-list');list.innerHTML='';
+  // Show pending agents at top for director to approve
+  const pending=DB.agents.filter(a=>!a.approved&&!isDir(a));
+  if(pending.length&&isDirector()){
+    const ph=document.createElement('div');
+    ph.style.cssText='background:#fef3e2;border:1.5px solid #f5a623;border-radius:12px;padding:14px 16px;margin-bottom:14px;';
+    ph.innerHTML=`<div style="font-size:13px;font-weight:800;color:#b86e00;margin-bottom:10px;">⏳ Pending Approval (${pending.length})</div>`+
+      pending.map(ag=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(245,158,11,.2);">
+        <div style="flex:1;"><div style="font-weight:700;font-size:13px;">${ag.name}</div><div style="font-size:11px;color:#b86e00;">${ag.tier} · ${ag.email||''}</div></div>
+        <button class="btn btn-gold btn-sm" onclick="approveAgent('${ag.id}')">✓ Approve</button>
+        </div>`).join('');
+    list.appendChild(ph);
+  }
+  DB.agents.filter(a=>!isDir(a)).forEach(ag=>{
+    if(filter!=='all'&&ag.status!==filter)return;
+    if(search&&!ag.name.toLowerCase().includes(search))return;
+    const clients=DB.prod.filter(r=>r.ownerId===ag.id).length;
+    const prem=DB.prod.filter(r=>r.ownerId===ag.id).reduce((s,r)=>(r.plans||[]).reduce((ps,p)=>ps+(p.premium||0),0)+s,0);
+    const apps=[...DB.prod,...DB.rec].filter(r=>r.ownerId===ag.id).reduce((s,r)=>s+(r.apps||0),0);
+    const pts=[...DB.prod,...DB.rec].filter(r=>r.ownerId===ag.id).reduce((s,r)=>s+(r.points||0),0);
+    const ini=ag.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const licB=ag.lic==='licensed'?`<span class="lic-yes">✅ Licensed</span>`:ag.lic==='studying'?`<span class="lic-study">📚 Studying</span>`:ag.status==='inactive'?`<span class="lic-inact">🚫 Inactive</span>`:`<span class="lic-no">○ Unlicensed</span>`;
+    const tierColors={'Trainee':'#7d6e5e','Associate':'#1e4db7','Field Associate':'#1a7f5a','Director':'#d4881a','Marketing Director':'#d4881a','Senior Director':'#b86e00','Executive Director':'#6d28d9'};
+    const tc=tierColors[ag.tier]||'#7d6e5e';
+    const pendingBadge=!ag.approved?'<span style="font-size:9px;background:#fef3e2;color:#b86e00;padding:2px 8px;border-radius:20px;font-weight:700;margin-left:6px;">PENDING</span>':'';
+    const card=document.createElement('div');card.className='agent-card';
+    card.innerHTML=`
+      <div class="agent-hdr">
+        <div class="ag-avatar" style="background:${tc}">${ini}</div>
+        <div style="flex:1">
+          <div class="ag-name">${ag.name}${pendingBadge}</div>
+          <div class="ag-tier">${ag.tier} · ${ag.ovr||0}% · ${ag.email||''}</div>
+        </div>
+        ${licB}
+      </div>
+      <div class="ag-stats">
+        <div class="ag-stat"><div class="ag-stat-val">${clients}</div><div class="ag-stat-lbl">Clients</div></div>
+        <div class="ag-stat"><div class="ag-stat-val" style="color:var(--green)">$${prem.toLocaleString()}</div><div class="ag-stat-lbl">Mo.Prem</div></div>
+        <div class="ag-stat"><div class="ag-stat-val">${apps}</div><div class="ag-stat-lbl">Apps</div></div>
+        <div class="ag-stat"><div class="ag-stat-val">${pts.toLocaleString()}</div><div class="ag-stat-lbl">Points</div></div>
+      </div>
+      <div class="ag-actions" style="flex-wrap:wrap;gap:6px;">
+        <button class="btn btn-outline btn-sm" onclick="openAgentModal(DB.agents.find(a=>a.id==='${ag.id}'))">✏️ Edit</button>
+        <button class="btn btn-outline btn-sm" onclick="openResetPwModal('${ag.email||''}')" title="Send password reset email">🔑 Reset PW</button>
+        ${!ag.approved?`<button class="btn btn-gold btn-sm" onclick="approveAgent('${ag.id}')">✓ Approve</button>`:''}
+        ${ag.status!=='inactive'?`<button class="btn btn-outline btn-sm" style="border-color:var(--red);color:var(--red)" onclick="openInactiveModal('${ag.id}')">Inactivate</button>`:`<button class="btn btn-outline btn-sm" disabled>🚫 Inactive</button>`}
+      </div>`;
+    list.appendChild(card);
+  });
+  if(!list.children.length&&!pending.length)list.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px;">No agents yet. They need to sign up at the login screen — you\'ll see them here to approve.</div>';
+}
+
+async function approveAgent(agentId){
+  const idx=DB.agents.findIndex(a=>a.id===agentId);
+  if(idx>-1){DB.agents[idx].approved=true;DB.agents[idx].status='active';}
+  renderAgents();toast('Agent approved ✓');
+  await sbApproveAgent(agentId);
+}
+
+// ════════ INACTIVE ════════
+let inactId=null,attempts=[];
+function openInactiveModal(id){
+  inactId=id;attempts=[];
+  document.getElementById('inact-id').value=id;
+  document.getElementById('inact-reason').value='';
+  document.getElementById('inact-notes').value='';
+  renderAttempts();
+  document.getElementById('ov-inactive').classList.add('open');
+}
+function addAttempt(){attempts.push({date:td(),note:'Contact attempted via phone'});renderAttempts();}
+function renderAttempts(){
+  const log=document.getElementById('inact-log');
+  if(!attempts.length){log.innerHTML='<div style="color:var(--text3);font-size:12px;padding:6px 0">No attempts logged. Add at least 2 below.</div>';return;}
+  log.innerHTML=attempts.map((a,i)=>`<div class="clog-item"><span class="clog-date">${a.date}</span><input type="text" value="${a.note}" style="flex:1;background:var(--card);border:1.5px solid var(--border2);color:var(--text);padding:5px 9px;font-family:var(--font);font-size:12px;border-radius:8px" onchange="attempts[${i}].note=this.value"><button class="btn-icon" style="font-size:14px" onclick="attempts.splice(${i},1);renderAttempts()">×</button></div>`).join('');
+}
+async function confirmInactive(){
+  const reason=document.getElementById('inact-reason').value;
+  const notes=document.getElementById('inact-notes').value.trim();
+  if(attempts.length<2){toast('Need at least 2 contact attempts ❌','err');return;}
+  if(!reason){toast('Please select a reason ❌','err');return;}
+  if(!notes){toast('Notes are required ❌','err');return;}
+  const idx=DB.agents.findIndex(a=>a.id===inactId);
+  if(idx>-1){
+    DB.agents[idx].status='inactive';
+    DB.agents[idx].lic='inactive';
+    DB.agents[idx].inactiveLog=[...attempts,{date:td(),reason,notes}];
+    await SB.from('profiles').update({status:'inactive',lic:'inactive',inactive_log:DB.agents[idx].inactiveLog}).eq('id',inactId);
+  }
+  closeOv('ov-inactive');renderAgents();toast('Agent marked inactive','warn');
+}
+
+// ════════ AGENT SELECTS ════════
+function buildAgentSelects(){
+  const sel=document.getElementById('p-ag');if(!sel)return;
+  sel.innerHTML='';
+  DB.agents.forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.name+' · '+a.tier;sel.appendChild(o);});
+}
+
+// ════════ CTX MENU ════════
+let ctxId=null,ctxType=null;
+function openCtx(e,id,type){
+  e.stopPropagation();ctxId=id;ctxType=type;
+  const m=document.getElementById('ctx');
+  m.style.left=Math.min(e.clientX,window.innerWidth-190)+'px';
+  m.style.top=Math.min(e.clientY,window.innerHeight-220)+'px';
+  m.classList.add('open');
+}
+function ctxDo(action){
+  document.getElementById('ctx').classList.remove('open');
+  if(!ctxId)return;
+  if(action==='edit'){ctxType==='prod'?editProd(ctxId):editRec(ctxId);}
+  else if(action==='delete'){ctxType==='prod'?delProd(ctxId):delRec(ctxId);}
+  else moveRec(ctxId,action,ctxType);
+  ctxId=null;
+}
+document.addEventListener('click',()=>document.getElementById('ctx').classList.remove('open'));
+
+// ════════ MODALS ════════
+function closeOv(id){document.getElementById(id).classList.remove('open');}
+function ovCk(e,id){if(e.target===document.getElementById(id))closeOv(id);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'));});
+
+// ════════ TOAST ════════
+let tTimer=null;
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type?' '+type:'')+' show';
+  clearTimeout(tTimer);tTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ════════ RENDER ALL ════════
+function renderAll(){
+  renderDash();renderPipe('prod');renderPipe('rec');
+  renderContacts();renderAppts();renderGoals();
+  if(isDirector())renderAgents();
+}
+
+// ════════ INIT ════════
+initSupabase();
+</script>
+</body>
+</html>
+
