@@ -1383,20 +1383,23 @@ function showPanel(name){
 }
 
 async function doLogin(){
-  if(!SB){toast('Loading... please try again in a second.','warn');return;}
   const email=document.getElementById('si-email').value.trim();
   const pass=document.getElementById('si-pass').value;
   if(!email||!pass){setErr('si-err','Please enter your email and password.');return;}
   setErr('si-err','');
   const btn=document.querySelector('#panel-signin .btn-login');
   btn.textContent='Signing in...';btn.disabled=true;
-  const {error}=await SB.auth.signInWithPassword({email,password:pass});
-  btn.textContent='Sign In';btn.disabled=false;
-  if(error){setErr('si-err',error.message==='Invalid login credentials'?'Incorrect email or password. Try again.':error.message);return;}
+  try{
+    const {error}=await SB.auth.signInWithPassword({email,password:pass});
+    btn.textContent='Sign In';btn.disabled=false;
+    if(error){setErr('si-err',error.message);return;}
+  } catch(e){
+    btn.textContent='Sign In';btn.disabled=false;
+    setErr('si-err','Error: '+e.message);
+  }
 }
 
 async function doSignup(){
-  if(!SB){toast('Loading... please try again in a second.','warn');return;}
   const name=document.getElementById('su-name').value.trim();
   const email=document.getElementById('su-email').value.trim();
   const pass=document.getElementById('su-pass').value;
@@ -1406,6 +1409,7 @@ async function doSignup(){
   setErr('su-err','');
   const btn=document.querySelector('#panel-signup .btn-login');
   btn.textContent='Sending request...';btn.disabled=true;
+  try{
   // create auth user
   const {data,error}=await SB.auth.signUp({email,password:pass});
   if(error){btn.textContent='Request Access';btn.disabled=false;setErr('su-err',error.message);return;}
@@ -1426,27 +1430,34 @@ async function doSignup(){
   }
   btn.textContent='Request Access';btn.disabled=false;
   if(isDirectorTier){
-    // director approved instantly — send to sign in
     document.getElementById('si-email').value=email;
     showPanel('signin');
     toast('Account created! Sign in now ✓');
   } else {
     showPanel('pending');
   }
+  } catch(e){
+    btn.textContent='Request Access';btn.disabled=false;
+    setErr('su-err','Error: '+e.message);
+  }
 }
 
 async function doForgot(){
-  if(!SB){toast('Loading... please try again in a second.','warn');return;}
   const email=document.getElementById('fp-email').value.trim();
   if(!email){setFpMsg('Please enter your email.','#c0392b');return;}
   const btn=document.querySelector('#panel-forgot .btn-login');
   btn.textContent='Sending...';btn.disabled=true;
-  const {error}=await SB.auth.resetPasswordForEmail(email,{
-    redirectTo:window.location.origin+window.location.pathname
-  });
-  btn.textContent='Send Reset Link';btn.disabled=false;
-  if(error){setFpMsg(error.message,'#c0392b');}
-  else{setFpMsg('Reset link sent! Check your email.','#1a7f5a');}
+  try{
+    const {error}=await SB.auth.resetPasswordForEmail(email,{
+      redirectTo:window.location.origin+window.location.pathname
+    });
+    btn.textContent='Send Reset Link';btn.disabled=false;
+    if(error){setFpMsg(error.message,'#c0392b');}
+    else{setFpMsg('Reset link sent! Check your email.','#1a7f5a');}
+  } catch(e){
+    btn.textContent='Send Reset Link';btn.disabled=false;
+    setFpMsg('Error: '+e.message,'#c0392b');
+  }
 }
 
 async function logout(){
