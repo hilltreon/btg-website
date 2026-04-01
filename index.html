@@ -415,9 +415,85 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
   .opt-label{padding:1rem 1rem;font-size:.95rem}
   .cb-label{padding:.55rem .6rem;font-size:.85rem}
 }
+
+/* ─── EXIT INTENT POPUP ─── */
+.popup-overlay{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1rem}
+.popup-overlay.active{display:flex}
+.popup-box{background:var(--dark);border:1px solid var(--border);max-width:480px;width:100%;position:relative;overflow:hidden}
+.popup-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--green))}
+.popup-close{position:absolute;top:.75rem;right:.9rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;padding:.2rem}
+.popup-close:hover{color:var(--white)}
+.popup-inner{padding:2rem 2rem 1.8rem}
+.popup-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:var(--green);margin-bottom:.5rem}
+.popup-h{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--white);line-height:1.05;margin-bottom:.6rem}
+.popup-p{font-size:.82rem;color:var(--muted);line-height:1.7;margin-bottom:1.2rem}
+.popup-form{display:flex;flex-direction:column;gap:.65rem}
+.popup-form input{background:var(--black);border:1px solid var(--border);color:var(--white);padding:.7rem 1rem;font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;width:100%}
+.popup-form input:focus{border-color:var(--blue)}
+.popup-submit{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;background:var(--green);color:var(--black);border:none;padding:.85rem;cursor:pointer;transition:all .2s}
+.popup-submit:hover{background:var(--green2)}
+.popup-skip{text-align:center;margin-top:.7rem;font-size:.7rem;color:var(--muted);cursor:pointer;text-decoration:underline}
+.popup-skip:hover{color:var(--white)}
+
+/* ─── SOCIAL LINKS ─── */
+.social-links{display:flex;gap:.7rem;margin-top:.9rem;flex-wrap:wrap}
+.social-link{display:inline-flex;align-items:center;gap:.4rem;font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:.35rem .75rem;transition:all .2s}
+.social-link:hover{color:var(--white);border-color:var(--blue)}
+
+/* ─── MOBILE CALL BUTTON ─── */
+.mob-call-bar{display:none;position:fixed;bottom:80px;left:0;right:0;z-index:480;padding:0 1rem}
+.mob-call-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;background:var(--green);color:var(--black);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.88rem;letter-spacing:.14em;text-transform:uppercase;padding:.85rem;text-decoration:none;box-shadow:0 4px 20px rgba(34,197,94,.4)}
+@media(max-width:680px){.mob-call-bar{display:block}.float-cta{bottom:148px}}
+
+/* ─── HERO MOBILE IMPROVEMENTS ─── */
+@media(max-width:480px){
+  .hero h1{font-size:clamp(2.6rem,13vw,4rem)!important}
+  .hero-btns{flex-direction:column;gap:.6rem}
+  .hero-btns .hbtn{width:100%;text-align:center}
+  .hero-stats{gap:0}
+  .hs{padding:.8rem 1rem .8rem 0;margin-right:1rem}
+  .hs-n{font-size:1.6rem}
+}
+
+/* ─── CAREERS INCOME BANNER ─── */
+.income-banner{background:linear-gradient(135deg,#0d2010,#0f2a15);border:1px solid rgba(34,197,94,.3);padding:1.5rem 2rem;margin-bottom:2rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.income-fig{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--green);line-height:1;flex-shrink:0}
+.income-label{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:.1rem}
+.income-note{font-size:.78rem;color:var(--muted);line-height:1.65}
+
+/* ─── RECRUITING URGENCY STRIP ─── */
+.recruit-strip{background:linear-gradient(90deg,#0d2010,#162540,#0d2010);border-top:1px solid rgba(34,197,94,.2);border-bottom:1px solid rgba(34,197,94,.2);padding:.65rem 4%;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--green)}
+
+/* ─── MOBILE FORM IMPROVEMENTS ─── */
+@media(max-width:680px){
+  .consult-box{padding:1.2rem}
+  .step-indicators{overflow-x:auto;padding-bottom:.3rem}
+  .fstep-dot{flex-shrink:0}
+  .checkbox-grid{grid-template-columns:1fr!important}
+}
 </style>
 </head>
 <body>
+
+
+<!-- EXIT INTENT POPUP -->
+<div class="popup-overlay" id="exit-popup">
+  <div class="popup-box">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+    <div class="popup-inner">
+      <div class="popup-eyebrow">Before You Go</div>
+      <div class="popup-h">Get Your Free<br/>Coverage Review</div>
+      <p class="popup-p">Most people are either overpaying or underprotected. Drop your info and a licensed agent will reach out within 24 hours — zero pressure, zero cost.</p>
+      <div class="popup-form">
+        <input type="text" id="popup-name" placeholder="Your Name *"/>
+        <input type="tel" id="popup-phone" placeholder="Phone Number *"/>
+        <input type="email" id="popup-email" placeholder="Email Address (optional)"/>
+        <button class="popup-submit" onclick="handlePopupSubmit(this)">Send Me My Free Review →</button>
+      </div>
+      <p class="popup-skip" onclick="closePopup()">No thanks, I'll figure it out on my own</p>
+    </div>
+  </div>
+</div>
 
 <!-- NAV -->
 <nav id="main-nav">
@@ -449,6 +525,12 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
 <!-- FLOAT CTA -->
 <div class="float-cta" id="float-cta">
   <button class="float-btn" onclick="showPage('home',null,'consult')">📅 Book Free Consult</button>
+</div>
+
+
+<!-- MOBILE CALL BAR -->
+<div class="mob-call-bar">
+  <a href="tel:3463364587" class="mob-call-btn">📞 Call Now — (346) 336-4587</a>
 </div>
 
 <!-- ═══════ HOME PAGE ═══════ -->
@@ -626,6 +708,12 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
           <a href="tel:3463364587" class="tc-btn tc-call">📞 Call (346) 336-4587</a>
           <a href="sms:3463364587" class="tc-btn tc-text">💬 Send a Text</a>
           <a href="#" class="tc-btn tc-text" onclick="showPage('home',null,'consult')">📅 Book Free Consult</a>
+        </div>
+        <div class="social-links" style="margin-top:1rem">
+          <a href="https://www.linkedin.com/in/treon-hill-900908123/" target="_blank" class="social-link">💼 LinkedIn</a>
+          <a href="https://www.instagram.com/texaswitht/" target="_blank" class="social-link">📸 Instagram</a>
+          <a href="https://www.tiktok.com/@texaswitht" target="_blank" class="social-link">🎵 TikTok</a>
+          <a href="https://www.facebook.com/TexasWithT/" target="_blank" class="social-link">👥 Facebook</a>
         </div>
       </div>
     </div>
@@ -921,6 +1009,12 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
       <div class="footer-brand">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.1em;color:var(--white)">Built <span style="color:var(--green)">To Grow</span> Financial Group</div>
         <p>Independent life insurance &amp; financial services · The Woodlands, TX · Serving families &amp; businesses nationwide across 24+ top-rated carriers.</p>
+      <div class="social-links">
+          <a href="https://www.instagram.com" target="_blank" class="social-link">📸 Instagram</a>
+          <a href="https://www.facebook.com" target="_blank" class="social-link">👥 Facebook</a>
+          <a href="https://www.linkedin.com" target="_blank" class="social-link">💼 LinkedIn</a>
+          <a href="https://www.tiktok.com" target="_blank" class="social-link">🎵 TikTok</a>
+        </div>
       </div>
       <div class="footer-col">
         <h5>Products</h5>
@@ -943,6 +1037,7 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
     <div class="footer-bottom">
       <div class="footer-copy">© 2025 Built To Grow Financial Group · The Woodlands · Conroe · Greater Houston, TX · Nationwide · License #3449367 · (346) 336-4587</div>
       <div class="footer-disc">Built To Grow Financial Group is an independent insurance agency. Products and availability vary by state. This site is for informational purposes only and does not constitute a binding offer of insurance.</div>
+      <div class="footer-disc" style="margin-top:.5rem;opacity:.6">Powered by PHP Agency</div>
     </div>
   </footer>
 
@@ -969,6 +1064,21 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
       </div>
     </div>
   </section>
+
+
+
+  <!-- RECRUITING STRIP -->
+  <div class="recruit-strip">
+    🔥 &nbsp; Now Recruiting in Texas, Florida, Georgia & Nationwide &nbsp;·&nbsp; Limited Spots This Quarter &nbsp;·&nbsp; Apply Below
+  </div>
+
+  <!-- INCOME BANNER -->
+  <div class="sec" style="padding-top:2rem;padding-bottom:0">
+    <div class="income-banner">
+      <div><div class="income-fig">$50K–$200K+</div><div class="income-label">Year 1–3 Earning Range</div></div>
+      <div class="income-note">Commission-based, uncapped income. New agents average $3K–$6K/month within 90 days. Top producers earn $10K–$30K+ monthly. No ceiling, no territory limits.</div>
+    </div>
+  </div>
 
   <!-- PATHS -->
   <section class="sec sec-alt obs" id="paths">
@@ -1145,12 +1255,75 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
     <div class="footer-bottom">
       <div class="footer-copy">© 2025 Built To Grow Financial Group · The Woodlands, TX</div>
       <div class="footer-disc">Independent insurance agency. Products vary by state. Compensation is commission-based (1099).</div>
+      <div class="footer-disc" style="margin-top:.5rem;opacity:.6">Powered by PHP Agency</div>
     </div>
   </footer>
 
 </div><!-- end careers -->
 
 <script>
+
+// ── EXIT INTENT POPUP ──
+let popupShown = false;
+let popupDismissed = false;
+
+function showPopup() {
+  if (popupShown || popupDismissed) return;
+  // Only show on home page
+  if (!document.getElementById('page-home').classList.contains('active')) return;
+  popupShown = true;
+  document.getElementById('exit-popup').classList.add('active');
+}
+
+function closePopup() {
+  popupDismissed = true;
+  document.getElementById('exit-popup').classList.remove('active');
+}
+
+// Desktop: mouse leaves window
+document.addEventListener('mouseleave', (e) => {
+  if (e.clientY < 20) showPopup();
+});
+
+// Mobile: user has scrolled 60% and then scrolls back up fast
+let lastScrollY = 0;
+window.addEventListener('scroll', () => {
+  const scrollPct = (window.scrollY / document.body.scrollHeight) * 100;
+  const diff = lastScrollY - window.scrollY;
+  if (scrollPct > 40 && diff > 80) showPopup();
+  lastScrollY = window.scrollY;
+}, { passive: true });
+
+// Close on overlay click
+document.getElementById('exit-popup').addEventListener('click', function(e) {
+  if (e.target === this) closePopup();
+});
+
+async function handlePopupSubmit(btn) {
+  const name  = document.getElementById('popup-name').value.trim();
+  const phone = document.getElementById('popup-phone').value.trim();
+  const email = document.getElementById('popup-email').value.trim();
+  if (!name || !phone) {
+    document.getElementById('popup-name').focus();
+    return;
+  }
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  try {
+    await fetch('https://formspree.io/f/xpzgrdqw', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ Name: name, Phone: phone, Email: email, Source: 'Exit Popup' })
+    });
+    btn.textContent = '✓ Got it! We\'ll be in touch soon.';
+    btn.style.background = 'var(--green2)';
+    setTimeout(() => closePopup(), 2500);
+  } catch(err) {
+    btn.textContent = 'Submit';
+    btn.disabled = false;
+  }
+}
+
 // ── PAGE SWITCHING ──
 function showPage(page, tabEl, anchor, src) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
