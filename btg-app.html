@@ -1430,6 +1430,7 @@ async function doSignup(){
     window.location.href=`mailto:${NOTIFY_EMAIL}?subject=New BTG Tracker Signup&body=New agent signup:%0A%0AName: ${encodeURIComponent(name)}%0AEmail: ${encodeURIComponent(email)}%0ATier: ${encodeURIComponent(tier)}%0A%0APlease log in to approve this account.`;
   }
   btn.textContent='Request Access';btn.disabled=false;
+  const isDirectorTier=['Director','Marketing Director','Senior Director','Executive Director'].includes(tier);
   if(isDirectorTier){
     document.getElementById('si-email').value=email;
     showPanel('signin');
