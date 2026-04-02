@@ -643,6 +643,7 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 let currentUser = null;
 let currentProfile = null;
+function myUid() { return currentUser?.user?.id || currentUser?.id || ''; }
 let allRec = [], allCli = [], allAgents = [], allAppts = [];
 let recFilter = '', cliFilter = '', productFilter = 'all', agentFilter = 'all', apptFilter = 'all';
 
@@ -693,9 +694,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 async function initApp() {
   try {
-    const profiles = await sbFetch(`/rest/v1/profiles?id=eq.${currentUser.user.id}&select=*`);
+    // Normalize user id from various Supabase response shapes
+    const uid = currentUser?.user?.id || currentUser?.id;
+    if (!uid) { clearSession(); currentUser = null; return; }
+    if (!currentUser.user) currentUser.user = {id: uid};
+
+    const profiles = await sbFetch(`/rest/v1/profiles?id=eq.${uid}&select=*`);
     if (!profiles || profiles.length === 0) {
-      showAuthMsg('Account pending approval. Contact your director.', 'error');
+      showAuthMsg('Account not found. Contact your director.', 'error');
       clearSession(); currentUser = null; return;
     }
     currentProfile = profiles[0];
@@ -706,7 +712,8 @@ async function initApp() {
     showApp();
     await loadAll();
   } catch(e) {
-    console.error(e);
+    console.error('initApp error:', e);
+    showAuthMsg('Error loading account. Please try again.');
     clearSession(); currentUser = null;
   }
 }
@@ -752,12 +759,19 @@ async function doLogin() {
   const email = document.getElementById('li-email').value.trim();
   const pass = document.getElementById('li-pass').value;
   if (!email || !pass) { showAuthMsg('Enter email and password.'); return; }
-  showAuthMsg('Signing in...', 'success');
-  const res = await sbAuth('/token?grant_type=password', {email, password: pass});
-  if (res.error) { showAuthMsg(res.error_description || res.error); return; }
-  currentUser = res;
-  saveSession(res);
-  await initApp();
+  showAuthMsg('Signing in…', 'success');
+  try {
+    const res = await sbAuth('/token?grant_type=password', {email, password: pass});
+    if (res.error) { showAuthMsg(res.error_description || res.error); return; }
+    // Normalize: Supabase token endpoint may return user fields at top level
+    if (!res.user) res.user = {id: res.id || res.sub, email: res.email};
+    if (!res.user?.id) { showAuthMsg('Login failed — unexpected response. Try again.'); return; }
+    currentUser = res;
+    saveSession(res);
+    await initApp();
+  } catch(e) {
+    showAuthMsg('Network error. Check connection and try again.');
+  }
 }
 
 async function doSignup() {
@@ -814,7 +828,7 @@ async function loadRec() {
   try {
     const path = currentProfile.is_director
       ? `/rest/v1/rec_records?select=*&order=added.desc`
-      : `/rest/v1/rec_records?owner_id=eq.${currentUser.user.id}&select=*&order=added.desc`;
+      : `/rest/v1/rec_records?owner_id=eq.${myUid()}&select=*&order=added.desc`;
     allRec = await sbFetch(path) || [];
     renderRec();
   } catch(e) { allRec = []; }
@@ -885,7 +899,7 @@ async function saveRec() {
     source: document.getElementById('r-source').value,
     pipeline_stage: document.getElementById('r-stage').value,
     notes: document.getElementById('r-notes').value,
-    owner_id: currentUser.user.id
+    owner_id: myUid()
   };
   if (isNew) {
     await sbFetch('/rest/v1/rec_records', {method:'POST', body: JSON.stringify(data)});
@@ -912,7 +926,7 @@ async function loadCli() {
   try {
     const path = currentProfile.is_director
       ? `/rest/v1/client_records?select=*&order=added.desc`
-      : `/rest/v1/client_records?owner_id=eq.${currentUser.user.id}&select=*&order=added.desc`;
+      : `/rest/v1/client_records?owner_id=eq.${myUid()}&select=*&order=added.desc`;
     allCli = await sbFetch(path) || [];
     renderCli();
   } catch(e) { allCli = []; }
@@ -1015,7 +1029,7 @@ async function saveCli() {
     annual_premium: parseFloat(document.getElementById('c-annual').value)||null,
     issue_date: document.getElementById('c-issue').value||null,
     review_date: document.getElementById('c-review').value||null,
-    owner_id: currentUser.user.id
+    owner_id: myUid()
   };
   if (isNew) {
     await sbFetch('/rest/v1/client_records', {method:'POST', body: JSON.stringify(data)});
@@ -1111,7 +1125,7 @@ async function loadAppts() {
   try {
     const path = currentProfile.is_director
       ? `/rest/v1/appointments?select=*&order=date.asc`
-      : `/rest/v1/appointments?owner_id=eq.${currentUser.user.id}&select=*&order=date.asc`;
+      : `/rest/v1/appointments?owner_id=eq.${myUid()}&select=*&order=date.asc`;
     allAppts = await sbFetch(path) || [];
     renderAppts();
   } catch(e) { allAppts = []; }
@@ -1172,7 +1186,7 @@ async function saveAppt() {
   if (!name || !date) { toast('Name and date required'); return; }
   const id = document.getElementById('a-id').value || uid();
   const isNew = !document.getElementById('a-id').value;
-  const data = {id, name, phone: document.getElementById('a-phone').value, date, time: document.getElementById('a-time').value, type: document.getElementById('a-type').value, pre_notes: document.getElementById('a-pre').value, outcome:'pending', owner_id: currentUser.user.id};
+  const data = {id, name, phone: document.getElementById('a-phone').value, date, time: document.getElementById('a-time').value, type: document.getElementById('a-type').value, pre_notes: document.getElementById('a-pre').value, outcome:'pending', owner_id: myUid()};
   if (isNew) {
     await sbFetch('/rest/v1/appointments', {method:'POST', body: JSON.stringify(data)});
     allAppts.push(data); allAppts.sort((a,b)=>a.date>b.date?1:-1);
@@ -1246,8 +1260,8 @@ function showProfile() {
     <div style="background:var(--bg);border-radius:10px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div><div class="lbl">Tier</div><div style="font-weight:700;margin-top:3px">${p.tier||'Trainee'}</div></div>
       <div><div class="lbl">License</div><div style="font-weight:700;margin-top:3px">${p.lic||'—'}</div></div>
-      <div><div class="lbl">My Prospects</div><div style="font-weight:700;margin-top:3px">${allRec.filter(r=>r.owner_id===currentUser.user.id).length}</div></div>
-      <div><div class="lbl">My Clients</div><div style="font-weight:700;margin-top:3px">${allCli.filter(r=>r.owner_id===currentUser.user.id).length}</div></div>
+      <div><div class="lbl">My Prospects</div><div style="font-weight:700;margin-top:3px">${allRec.filter(r=>r.owner_id===myUid()).length}</div></div>
+      <div><div class="lbl">My Clients</div><div style="font-weight:700;margin-top:3px">${allCli.filter(r=>r.owner_id===myUid()).length}</div></div>
     </div>`;
   openModal('profile-modal');
 }
@@ -1255,25 +1269,18 @@ function showProfile() {
 // ═══════════════════════════════════════════════════
 //  MODALS / UTILS
 // ═══════════════════════════════════════════════════
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-// Close modal on overlay click
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); });
-});
-
-// + Button shortcuts
-document.addEventListener('click', e => {
-  if (e.target.id === 'rec-modal' || e.target.closest('#rec-modal [data-new]')) return;
-});
-
 function openModal(id) {
   document.getElementById(id).classList.add('open');
   if (id === 'rec-modal' && !document.getElementById('r-id').value) clearRecForm();
   if (id === 'cli-modal' && !document.getElementById('c-id').value) clearCliForm();
   if (id === 'appt-modal' && !document.getElementById('a-id').value) clearApptForm();
 }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); });
+});
 
 function clearRecForm() {
   ['r-name','r-phone','r-email','r-state','r-notes'].forEach(id => document.getElementById(id).value='');
