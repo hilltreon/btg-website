@@ -685,6 +685,22 @@ function clearSession() { try { localStorage.removeItem('btg_session'); } catch(
 //  INIT
 // ═══════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', async () => {
+  // Handle password reset token in URL hash
+  const hash = window.location.hash;
+  if (hash && hash.includes('type=recovery')) {
+    const params = new URLSearchParams(hash.replace('#',''));
+    const accessToken = params.get('access_token');
+    if (accessToken) {
+      showResetUI(accessToken);
+      return;
+    }
+  }
+  // Handle error in hash
+  if (hash && hash.includes('error=')) {
+    const params = new URLSearchParams(hash.replace('#',''));
+    showAuthMsg(params.get('error_description') || 'Link expired. Request a new one.');
+    return;
+  }
   const saved = loadSession();
   if (saved?.access_token) {
     currentUser = saved;
@@ -753,6 +769,50 @@ function switchAuthTab(tab) {
 
 function showAuthMsg(msg, type='error') {
   document.getElementById('auth-msg').innerHTML = `<div class="auth-${type}">${msg}</div>`;
+}
+
+function showResetUI(token) {
+  document.getElementById('auth-screen').classList.remove('hidden');
+  window._resetToken = token;
+  document.getElementById('login-form').innerHTML = `
+    <div style="background:var(--blue-soft);color:var(--blue);border-radius:8px;padding:10px 13px;font-size:13px;margin-bottom:12px">
+      Set your new password below.
+    </div>
+    <div class="form-row"><div class="form-group"><label>New Password</label><input id="rp-pass" type="password" placeholder="Min 8 characters"></div></div>
+    <div class="form-row"><div class="form-group"><label>Confirm Password</label><input id="rp-pass2" type="password" placeholder="Repeat password"></div></div>
+    <button class="btn btn-navy fw" style="margin-top:4px" onclick="doSetPassword(window._resetToken)">Set Password →</button>
+  `;
+  document.querySelectorAll('.auth-tab').forEach(t => t.style.display='none');
+}
+
+async function doSetPassword(token) {
+  const pass = document.getElementById('rp-pass').value;
+  const pass2 = document.getElementById('rp-pass2').value;
+  if (!pass || pass.length < 8) { showAuthMsg('Password must be at least 8 characters.'); return; }
+  if (pass !== pass2) { showAuthMsg('Passwords do not match.'); return; }
+  showAuthMsg('Updating password...', 'success');
+  const res = await fetch(SB_URL + '/auth/v1/user', {
+    method: 'PUT',
+    headers: {'apikey': SB_KEY, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+    body: JSON.stringify({password: pass})
+  });
+  const data = await res.json();
+  if (data.error) { showAuthMsg(data.message || data.error); return; }
+  showAuthMsg('Password set! Signing you in...', 'success');
+  // Auto login
+  const email = data.email;
+  const authRes = await sbAuth('/token?grant_type=password', {email, password: pass});
+  if (authRes.access_token) {
+    if (!authRes.user) authRes.user = {id: authRes.id || authRes.sub, email};
+    currentUser = authRes;
+    saveSession(authRes);
+    window.location.hash = '';
+    await initApp();
+  } else {
+    showAuthMsg('Password set! Please sign in now.', 'success');
+    document.getElementById('login-form').innerHTML = `<div class="form-row"><div class="form-group"><label>Email</label><input id="li-email" type="email" value="${email}"></div></div><div class="form-row"><div class="form-group"><label>Password</label><input id="li-pass" type="password" placeholder="Your new password"></div></div><button class="btn btn-navy fw" style="margin-top:4px" onclick="doLogin()">Sign In →</button>`;
+    document.querySelectorAll('.auth-tab').forEach(t => t.style.display='');
+  }
 }
 
 async function doLogin() {
