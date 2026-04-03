@@ -236,7 +236,8 @@ label{font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bot
 /* ── COMMISSION CALCULATOR ── */
 .calc-card{background:var(--navy);border-radius:var(--r);padding:20px;color:#fff;margin-bottom:16px;}
 .calc-card label{color:rgba(255,255,255,.6);}
-.calc-card input,.calc-card select{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;}
+.calc-card input{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;}
+.calc-card select{background:#fff;border-color:rgba(255,255,255,.2);color:#111827;}
 .calc-card input::placeholder{color:rgba(255,255,255,.3);}
 .calc-result{background:rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .cr-item .cr-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.4);}
@@ -564,7 +565,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
             <option value="1.0">Whole Life</option>
             <option value="0.5">Term</option>
             <option value="0.8">Group Benefits</option>
-            <option value="1.0">Annuity</option>
+            <option value="annuity">Annuity — 6% flat</option>
           </select>
         </div>
       </div>
@@ -1981,46 +1982,49 @@ function calcCommission() {
   }
 
   const agentPct = parseInt(document.getElementById('calc-tier').value) || 30;
-  const productMult = parseFloat(document.getElementById('calc-product').value) || 1;
+  const productVal = document.getElementById('calc-product').value;
+  const isAnnuity = productVal === 'annuity';
 
-  // Agent earnings
-  const agentAnnual = annual * (agentPct / 100) * productMult;
+  // Annuity: flat 6% for all tiers — no override structure applies
+  const effectivePct = isAnnuity ? 6 : agentPct;
+  const agentAnnual = annual * (effectivePct / 100);
   const agentMonthly = agentAnnual / 12;
-  // Points = annual premium (standard approximation for BTG)
-  const points = Math.round(annual * productMult);
+  const points = isAnnuity ? 0 : Math.round(annual);
 
   document.getElementById('cr-agent-annual').textContent = '$' + agentAnnual.toLocaleString('en-US', {maximumFractionDigits:0});
   document.getElementById('cr-agent-monthly').textContent = '$' + agentMonthly.toLocaleString('en-US', {maximumFractionDigits:0});
-  document.getElementById('cr-agent-pct-lbl').textContent = agentPct + '% contract';
-  document.getElementById('cr-points').textContent = points.toLocaleString('en-US');
+  document.getElementById('cr-agent-pct-lbl').textContent = isAnnuity ? '6% flat (all tiers)' : agentPct + '% contract';
+  document.getElementById('cr-points').textContent = isAnnuity ? 'N/A' : points.toLocaleString('en-US');
 
-  // Override breakdown — show what a director at each level earns over this agent
-  // BTG override structure (override pct = viewer_tier_pct - agent_tier_pct, only if viewer > agent)
-  const tiers = [
-    { label: 'Associate', pct: 40 },
-    { label: 'Field Assoc.', pct: 50 },
-    { label: 'Director', pct: 60 },
-    { label: 'Prod. MD', pct: 70 },
-    { label: 'Mktg Director', pct: 75 },
-  ];
-
-  const overridesAbove = tiers.filter(t => t.pct > agentPct);
-  const grid = document.getElementById('cr-overrides-grid');
-
-  if (overridesAbove.length === 0) {
-    document.getElementById('cr-override-section').style.display = 'none';
+  // Override breakdown — hidden for annuity (flat rate, no tier difference)
+  const overrideSection = document.getElementById('cr-override-section');
+  if (isAnnuity) {
+    overrideSection.style.display = 'none';
   } else {
-    document.getElementById('cr-override-section').style.display = 'block';
-    grid.style.gridTemplateColumns = `repeat(${Math.min(overridesAbove.length, 4)}, 1fr)`;
-    grid.innerHTML = overridesAbove.map(t => {
-      const overridePct = t.pct - agentPct;
-      const overrideEarns = annual * (overridePct / 100) * productMult;
-      return `<div style="text-align:center;background:rgba(255,255,255,.07);border-radius:8px;padding:10px 6px;">
-        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">${t.label}</div>
-        <div style="font-family:var(--display);font-size:16px;font-weight:800;color:var(--gold2);">$${overrideEarns.toLocaleString('en-US',{maximumFractionDigits:0})}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px;">${overridePct}% override</div>
-      </div>`;
-    }).join('');
+    const tiers = [
+      { label: 'Associate', pct: 40 },
+      { label: 'Field Assoc.', pct: 50 },
+      { label: 'Director', pct: 60 },
+      { label: 'Prod. MD', pct: 70 },
+      { label: 'Mktg Director', pct: 75 },
+    ];
+    const overridesAbove = tiers.filter(t => t.pct > agentPct);
+    const grid = document.getElementById('cr-overrides-grid');
+    if (overridesAbove.length === 0) {
+      overrideSection.style.display = 'none';
+    } else {
+      overrideSection.style.display = 'block';
+      grid.style.gridTemplateColumns = `repeat(${Math.min(overridesAbove.length, 4)}, 1fr)`;
+      grid.innerHTML = overridesAbove.map(t => {
+        const overridePct = t.pct - agentPct;
+        const overrideEarns = annual * (overridePct / 100);
+        return `<div style="text-align:center;background:rgba(255,255,255,.07);border-radius:8px;padding:10px 6px;">
+          <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">${t.label}</div>
+          <div style="font-family:var(--display);font-size:16px;font-weight:800;color:var(--gold2);">$${overrideEarns.toLocaleString('en-US',{maximumFractionDigits:0})}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px;">${overridePct}% override</div>
+        </div>`;
+      }).join('');
+    }
   }
 
   document.getElementById('calc-result').style.display = 'block';
