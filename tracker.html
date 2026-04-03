@@ -375,6 +375,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
   <div class="nav-tab" data-tab="clients" onclick="switchTab('clients')"><span class="tab-icon">👥</span> Clients <span class="count" id="cli-count">0</span></div>
   <div class="nav-tab director-only" data-tab="agents" onclick="switchTab('agents')"><span class="tab-icon">🏢</span> All Agents</div>
   <div class="nav-tab" data-tab="calculator" onclick="switchTab('calculator')"><span class="tab-icon">💰</span> Calculator</div>
+  <div class="nav-tab" data-tab="expenses" onclick="switchTab('expenses')"><span class="tab-icon">🧾</span> Agent Expenses</div>
   <div class="nav-tab" data-tab="appointments" onclick="switchTab('appointments')"><span class="tab-icon">📅</span> Appointments</div>
 </div>
 
@@ -525,6 +526,130 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
     <div class="appts-list" id="appts-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
   </div>
 
+  <!-- CALCULATOR -->
+  <div class="page" id="page-calculator">
+    <div class="section-header">
+      <div><div class="section-title">Commission Calculator</div><div class="section-sub">Estimate earnings by tier and product</div></div>
+    </div>
+    <div class="calc-card">
+      <div class="form-row cols2">
+        <div class="form-group"><label>Annual Premium ($)</label><input id="calc-premium" type="number" placeholder="5000" oninput="calcCommission()"></div>
+        <div class="form-group"><label>Agent Tier</label>
+          <select id="calc-tier" onchange="calcCommission()">
+            <option value="30">Trainee (30%)</option>
+            <option value="40">Associate (40%)</option>
+            <option value="50">Field Associate (50%)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Product Multiplier</label>
+          <select id="calc-product" onchange="calcCommission()">
+            <option value="1">IUL (1.0×)</option>
+            <option value="0.9">Term (0.9×)</option>
+            <option value="1.1">Whole Life (1.1×)</option>
+            <option value="0.8">Group (0.8×)</option>
+          </select>
+        </div>
+      </div>
+      <div class="calc-result" id="calc-result" style="display:none">
+        <div class="cr-item"><div class="cr-lbl">Agent Earns (<span id="cr-pct"></span>)</div><div class="cr-val" id="cr-agent"></div></div>
+        <div class="cr-item"><div class="cr-lbl">Your Override (<span id="cr-ovr-pct"></span>)</div><div class="cr-val" id="cr-override"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENT EXPENSES (private per agent — RLS enforced) -->
+  <div class="page" id="page-expenses">
+    <div class="section-header">
+      <div><div class="section-title">Agent Expenses</div><div class="section-sub">Your private 1099 deduction log — visible only to you</div></div>
+      <div class="flex gap8">
+        <button class="export-btn" onclick="exportExpensesCSV()">⬇ Export CSV</button>
+        <button class="btn btn-navy" onclick="openExpenseModal()">+ Add Receipt</button>
+      </div>
+    </div>
+
+    <!-- Summary bar -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div class="stat-card" style="--accent:var(--green)"><div class="stat-icon">🧾</div><div class="stat-lbl">Total Receipts</div><div class="stat-val" id="exp-count">0</div></div>
+      <div class="stat-card" style="--accent:var(--navy);grid-column:span 2"><div class="stat-icon">💵</div><div class="stat-lbl">Total Deductions</div><div class="stat-val" id="exp-total" style="color:var(--green)">$0</div></div>
+    </div>
+
+    <!-- Category filter -->
+    <div class="filter-chips" id="exp-cat-filters" style="margin-bottom:16px;">
+      <div class="chip active" onclick="filterExpenses('all',this)">All</div>
+      <div class="chip" onclick="filterExpenses('Marketing & Ads',this)">Marketing</div>
+      <div class="chip" onclick="filterExpenses('Phone / Internet',this)">Phone</div>
+      <div class="chip" onclick="filterExpenses('Travel & Mileage',this)">Travel</div>
+      <div class="chip" onclick="filterExpenses('Meals & Entertainment',this)">Meals</div>
+      <div class="chip" onclick="filterExpenses('Office Supplies',this)">Office</div>
+      <div class="chip" onclick="filterExpenses('Licensing & Fees',this)">Licensing</div>
+      <div class="chip" onclick="filterExpenses('Education & Training',this)">Training</div>
+      <div class="chip" onclick="filterExpenses('Software & Tools',this)">Software</div>
+      <div class="chip" onclick="filterExpenses('Other',this)">Other</div>
+    </div>
+
+    <div id="exp-list"><div class="loading-wrap"><div class="spinner"></div><p>Loading expenses...</p></div></div>
+  </div>
+
+</div>
+
+<!-- EXPENSE MODAL -->
+<div class="modal-overlay" id="exp-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="exp-modal-title">Add Receipt</div>
+      <button class="modal-close" onclick="closeModal('exp-modal')">✕</button>
+    </div>
+
+    <!-- Photo capture -->
+    <div id="exp-photo-section" style="margin-bottom:16px;">
+      <div id="exp-photo-preview" class="hidden">
+        <div style="position:relative;display:inline-block;width:100%;">
+          <img id="exp-preview-img" src="" alt="Receipt" style="width:100%;max-height:220px;object-fit:contain;border-radius:10px;border:1.5px solid var(--border);">
+          <button onclick="removeExpensePhoto()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+      </div>
+      <div id="exp-photo-btns" style="display:flex;gap:10px;">
+        <button class="btn btn-ghost fw" onclick="document.getElementById('exp-camera-input').click()">📷 Take Photo</button>
+        <button class="btn btn-ghost fw" onclick="document.getElementById('exp-file-input').click()">🖼 Choose File</button>
+      </div>
+      <input id="exp-camera-input" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleExpensePhoto(this)">
+      <input id="exp-file-input" type="file" accept="image/*" style="display:none" onchange="handleExpensePhoto(this)">
+    </div>
+
+    <div class="form-row cols2">
+      <div class="form-group"><label>Date *</label><input id="exp-date" type="date"></div>
+      <div class="form-group"><label>Amount ($) *</label><input id="exp-amount" type="number" inputmode="decimal" placeholder="0.00" step="0.01"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Category *</label>
+        <select id="exp-category">
+          <option value="">Select category...</option>
+          <option>Marketing & Ads</option>
+          <option>Office Supplies</option>
+          <option>Phone / Internet</option>
+          <option>Travel & Mileage</option>
+          <option>Meals & Entertainment</option>
+          <option>Education & Training</option>
+          <option>Software & Tools</option>
+          <option>Licensing & Fees</option>
+          <option>Printing & Postage</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Note (optional)</label><textarea id="exp-note" placeholder="What was this for?" rows="2" style="min-height:60px;"></textarea></div>
+    </div>
+    <input type="hidden" id="exp-id">
+    <input type="hidden" id="exp-photo-data">
+    <div class="modal-footer">
+      <button class="btn btn-navy flex-1" onclick="saveExpense()">Save Receipt</button>
+      <button class="btn btn-ghost" onclick="closeModal('exp-modal')">Cancel</button>
+      <button class="btn btn-red btn-sm hidden" id="exp-delete" onclick="deleteExpense()">Delete</button>
+    </div>
+  </div>
 </div>
 
 <!-- MOBILE NAV -->
@@ -534,6 +659,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
   <div class="mob-tab" onclick="switchTab('clients')"><div class="mi">👥</div>Clients</div>
   <div class="mob-tab director-only" onclick="switchTab('agents')"><div class="mi">🏢</div>Agents</div>
   <div class="mob-tab" onclick="switchTab('calculator')"><div class="mi">💰</div>Calc</div>
+  <div class="mob-tab" onclick="switchTab('expenses')"><div class="mi">🧾</div>Expenses</div>
   <div class="mob-tab" onclick="switchTab('appointments')"><div class="mi">📅</div>Appts</div>
 </div>
 
@@ -822,7 +948,7 @@ function showApp() {
 }
 
 async function loadAll() {
-  await Promise.all([loadRec(), loadCli(), loadAppts(), currentProfile.is_director ? loadAgents() : Promise.resolve()]);
+  await Promise.all([loadRec(), loadCli(), loadAppts(), loadExpenses(), currentProfile.is_director ? loadAgents() : Promise.resolve()]);
   updateDashboard();
 }
 
@@ -944,7 +1070,7 @@ function switchTab(tab) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   document.querySelectorAll('.mob-tab').forEach((t,i) => {
-    const tabs = ['dashboard','recruiting','clients','agents','appointments','calculator'];
+    const tabs = ['dashboard','recruiting','clients','agents','appointments','calculator','expenses'];
     t.classList.toggle('active', tabs[i] === tab);
   });
   document.getElementById('page-' + tab)?.classList.add('active');
@@ -1463,6 +1589,203 @@ function toast(msg) {
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function capitalize(s) { return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+
+// ═══════════════════════════════════════════════════
+//  AGENT EXPENSES  (private — RLS enforced in Supabase)
+//  Table: agent_expenses
+//  Columns: id, user_id, date, amount, category, note, photo_data, created_at
+//  RLS policy: SELECT/INSERT/UPDATE/DELETE where user_id = auth.uid()
+// ═══════════════════════════════════════════════════
+let allExpenses = [];
+let expCatFilter = 'all';
+
+async function loadExpenses() {
+  try {
+    // RLS guarantees only this agent's rows come back — no director override possible
+    const rows = await sbFetch(`/rest/v1/agent_expenses?user_id=eq.${myUid()}&select=*&order=date.desc`);
+    allExpenses = rows || [];
+    renderExpenses();
+  } catch(e) {
+    // Table may not exist yet — show empty state gracefully
+    allExpenses = [];
+    renderExpenses();
+    console.warn('agent_expenses table not ready:', e.message);
+  }
+}
+
+function renderExpenses() {
+  const filtered = expCatFilter === 'all'
+    ? allExpenses
+    : allExpenses.filter(e => e.category === expCatFilter);
+
+  const total = allExpenses.reduce((s, e) => s + parseFloat(e.amount || 0), 0);
+  document.getElementById('exp-count').textContent = allExpenses.length;
+  document.getElementById('exp-total').textContent = '$' + total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  const list = document.getElementById('exp-list');
+  if (!filtered.length) {
+    list.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text3);">
+      <div style="font-size:40px;margin-bottom:8px;">🧾</div>
+      <p style="margin:0;">${expCatFilter !== 'all' ? 'No receipts in this category.' : 'No receipts yet. Tap + to log your first one.'}</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(e => {
+    const amt = parseFloat(e.amount || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const d = e.date ? e.date.split('-') : ['','',''];
+    const dateStr = d.length === 3 ? `${d[1]}/${d[2]}/${d[0]}` : e.date || '';
+    const thumb = e.photo_data
+      ? `<img src="${e.photo_data}" alt="receipt" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;">`
+      : `<div style="width:44px;height:44px;border-radius:8px;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📄</div>`;
+    return `<div class="list-card" style="cursor:pointer;margin-bottom:10px;" onclick="editExpense('${e.id}')">
+      <div style="padding:13px 16px;display:flex;align-items:center;gap:12px;">
+        ${thumb}
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:700;color:var(--navy);">${e.category}</div>
+          <div style="font-size:12px;color:var(--text3);">${dateStr}</div>
+          ${e.note ? `<div style="font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.note}</div>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:17px;font-weight:800;color:var(--green);">$${amt}</div>
+          <div style="font-size:11px;color:var(--text3);">›</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterExpenses(cat, el) {
+  expCatFilter = cat;
+  document.querySelectorAll('#exp-cat-filters .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderExpenses();
+}
+
+function openExpenseModal(exp=null) {
+  document.getElementById('exp-id').value = exp?.id || '';
+  document.getElementById('exp-date').value = exp?.date || new Date().toISOString().split('T')[0];
+  document.getElementById('exp-amount').value = exp?.amount || '';
+  document.getElementById('exp-category').value = exp?.category || '';
+  document.getElementById('exp-note').value = exp?.note || '';
+  document.getElementById('exp-photo-data').value = exp?.photo_data || '';
+  document.getElementById('exp-modal-title').textContent = exp ? 'Edit Receipt' : 'Add Receipt';
+  document.getElementById('exp-delete').classList.toggle('hidden', !exp);
+
+  // Photo preview
+  if (exp?.photo_data) {
+    document.getElementById('exp-preview-img').src = exp.photo_data;
+    document.getElementById('exp-photo-preview').classList.remove('hidden');
+    document.getElementById('exp-photo-btns').style.display = 'none';
+  } else {
+    document.getElementById('exp-photo-preview').classList.add('hidden');
+    document.getElementById('exp-photo-btns').style.display = 'flex';
+  }
+  openModal('exp-modal');
+}
+
+function editExpense(id) {
+  openExpenseModal(allExpenses.find(e => e.id === id));
+}
+
+function handleExpensePhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  // Compress to max 800px wide before storing as base64
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    const MAX = 800;
+    let w = img.width, h = img.height;
+    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    const data = canvas.toDataURL('image/jpeg', 0.75);
+    URL.revokeObjectURL(url);
+    document.getElementById('exp-photo-data').value = data;
+    document.getElementById('exp-preview-img').src = data;
+    document.getElementById('exp-photo-preview').classList.remove('hidden');
+    document.getElementById('exp-photo-btns').style.display = 'none';
+  };
+  img.src = url;
+  input.value = '';
+}
+
+function removeExpensePhoto() {
+  document.getElementById('exp-photo-data').value = '';
+  document.getElementById('exp-preview-img').src = '';
+  document.getElementById('exp-photo-preview').classList.add('hidden');
+  document.getElementById('exp-photo-btns').style.display = 'flex';
+}
+
+async function saveExpense() {
+  const amount = document.getElementById('exp-amount').value;
+  const category = document.getElementById('exp-category').value;
+  const date = document.getElementById('exp-date').value;
+  if (!amount || !category || !date) { toast('Date, amount, and category are required'); return; }
+
+  const id = document.getElementById('exp-id').value || uid();
+  const isNew = !document.getElementById('exp-id').value;
+  const data = {
+    id,
+    user_id: myUid(),
+    date,
+    amount: parseFloat(amount),
+    category,
+    note: document.getElementById('exp-note').value || '',
+    photo_data: document.getElementById('exp-photo-data').value || null
+  };
+
+  try {
+    if (isNew) {
+      await sbFetch('/rest/v1/agent_expenses', {method:'POST', body: JSON.stringify(data)});
+      allExpenses.unshift(data);
+    } else {
+      await sbFetch(`/rest/v1/agent_expenses?id=eq.${id}&user_id=eq.${myUid()}`, {method:'PATCH', body: JSON.stringify(data)});
+      const i = allExpenses.findIndex(e => e.id === id);
+      if (i >= 0) allExpenses[i] = {...allExpenses[i], ...data};
+    }
+    renderExpenses();
+    closeModal('exp-modal');
+    toast('Receipt saved!');
+  } catch(e) {
+    toast('Error saving — check console');
+    console.error('saveExpense:', e);
+  }
+}
+
+async function deleteExpense() {
+  const id = document.getElementById('exp-id').value;
+  if (!id) return;
+  if (!confirm('Delete this receipt?')) return;
+  try {
+    await sbFetch(`/rest/v1/agent_expenses?id=eq.${id}&user_id=eq.${myUid()}`, {method:'DELETE'});
+    allExpenses = allExpenses.filter(e => e.id !== id);
+    renderExpenses();
+    closeModal('exp-modal');
+    toast('Receipt deleted');
+  } catch(e) {
+    toast('Error deleting');
+  }
+}
+
+function exportExpensesCSV() {
+  if (!allExpenses.length) { toast('No expenses to export'); return; }
+  const headers = ['Date','Amount','Category','Note'];
+  const rows = allExpenses.map(e => {
+    const d = e.date ? e.date.split('-') : ['','',''];
+    const dateStr = d.length === 3 ? `${d[1]}/${d[2]}/${d[0]}` : e.date || '';
+    return [dateStr, e.amount, e.category, e.note || ''];
+  });
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `BTG_Expenses_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('Exported ' + allExpenses.length + ' receipts');
+}
+
 // ═══════════════════════════════════════════════════
 //  DARK MODE
 // ═══════════════════════════════════════════════════
