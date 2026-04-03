@@ -529,32 +529,98 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
   <!-- CALCULATOR -->
   <div class="page" id="page-calculator">
     <div class="section-header">
-      <div><div class="section-title">Commission Calculator</div><div class="section-sub">Estimate earnings by tier and product</div></div>
+      <div><div class="section-title">Commission Calculator</div><div class="section-sub">Estimate earnings by tier and policy type</div></div>
     </div>
+
+    <!-- Inputs -->
     <div class="calc-card">
       <div class="form-row cols2">
-        <div class="form-group"><label>Annual Premium ($)</label><input id="calc-premium" type="number" placeholder="5000" oninput="calcCommission()"></div>
-        <div class="form-group"><label>Agent Tier</label>
+        <div class="form-group">
+          <label>Annual Premium ($)</label>
+          <input id="calc-premium" type="number" inputmode="decimal" placeholder="5,000" oninput="calcCommission()">
+        </div>
+        <div class="form-group">
+          <label>Monthly Premium ($)</label>
+          <input id="calc-monthly" type="number" inputmode="decimal" placeholder="or enter monthly" oninput="calcFromMonthly()">
+        </div>
+      </div>
+      <div class="form-row cols2">
+        <div class="form-group">
+          <label>Agent Tier</label>
           <select id="calc-tier" onchange="calcCommission()">
-            <option value="30">Trainee (30%)</option>
-            <option value="40">Associate (40%)</option>
-            <option value="50">Field Associate (50%)</option>
+            <option value="30">Trainee — 30%</option>
+            <option value="40">Associate — 40%</option>
+            <option value="50">Field Associate — 50%</option>
+            <option value="60">Director — 60%</option>
+            <option value="70">Producing MD — 70%</option>
+            <option value="75">Marketing Director — 75%</option>
           </select>
         </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Product Multiplier</label>
+        <div class="form-group">
+          <label>Policy Type</label>
           <select id="calc-product" onchange="calcCommission()">
-            <option value="1">IUL (1.0×)</option>
-            <option value="0.9">Term (0.9×)</option>
-            <option value="1.1">Whole Life (1.1×)</option>
-            <option value="0.8">Group (0.8×)</option>
+            <option value="1.0">Policy</option>
+            <option value="1.0">IUL</option>
+            <option value="1.0">Whole Life</option>
+            <option value="0.5">Term</option>
+            <option value="0.8">Group Benefits</option>
+            <option value="1.0">Annuity</option>
           </select>
         </div>
       </div>
-      <div class="calc-result" id="calc-result" style="display:none">
-        <div class="cr-item"><div class="cr-lbl">Agent Earns (<span id="cr-pct"></span>)</div><div class="cr-val" id="cr-agent"></div></div>
-        <div class="cr-item"><div class="cr-lbl">Your Override (<span id="cr-ovr-pct"></span>)</div><div class="cr-val" id="cr-override"></div></div>
+
+      <!-- Results -->
+      <div id="calc-result" style="display:none;margin-top:4px;">
+        <!-- Agent earnings row -->
+        <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:16px;margin-bottom:10px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.45);margin-bottom:10px;">Agent Earnings</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div>
+              <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;">Year 1</div>
+              <div style="font-family:var(--display);font-size:24px;font-weight:800;color:var(--gold2);" id="cr-agent-annual">—</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.35);" id="cr-agent-pct-lbl"></div>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;">Monthly Est.</div>
+              <div style="font-family:var(--display);font-size:24px;font-weight:800;color:var(--gold2);" id="cr-agent-monthly">—</div>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;">Points Value</div>
+              <div style="font-family:var(--display);font-size:24px;font-weight:800;color:var(--green2);" id="cr-points">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Override breakdown (director view) -->
+        <div id="cr-override-section" style="background:rgba(255,255,255,.05);border-radius:10px;padding:14px;border:1px solid rgba(255,255,255,.1);">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.4);margin-bottom:10px;">Director Override Breakdown (if this is your agent)</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;" id="cr-overrides-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tier reference card -->
+    <div class="list-card">
+      <div class="list-card-header"><div class="list-card-title">BTG Contract Structure</div></div>
+      <div style="padding:14px 18px;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="color:var(--text3);">
+              <th style="text-align:left;padding:6px 0;font-weight:600;">Tier</th>
+              <th style="text-align:center;padding:6px 0;font-weight:600;">Contract</th>
+              <th style="text-align:center;padding:6px 0;font-weight:600;">Override on Trainees</th>
+              <th style="text-align:center;padding:6px 0;font-weight:600;">On Associates</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top:1px solid var(--border)"><td style="padding:8px 0;font-weight:600;">Trainee</td><td style="text-align:center;">30%</td><td style="text-align:center;color:var(--text3);">—</td><td style="text-align:center;color:var(--text3);">—</td></tr>
+            <tr style="border-top:1px solid var(--border)"><td style="padding:8px 0;font-weight:600;">Associate</td><td style="text-align:center;">40%</td><td style="text-align:center;">10%</td><td style="text-align:center;color:var(--text3);">—</td></tr>
+            <tr style="border-top:1px solid var(--border)"><td style="padding:8px 0;font-weight:600;">Field Associate</td><td style="text-align:center;">50%</td><td style="text-align:center;">20%</td><td style="text-align:center;">10%</td></tr>
+            <tr style="border-top:1px solid var(--border)"><td style="padding:8px 0;font-weight:600;">Director</td><td style="text-align:center;">60%</td><td style="text-align:center;">30%</td><td style="text-align:center;">20%</td></tr>
+            <tr style="border-top:1px solid var(--border)"><td style="padding:8px 0;font-weight:600;">Producing MD</td><td style="text-align:center;">70%</td><td style="text-align:center;">40%</td><td style="text-align:center;">30%</td></tr>
+            <tr style="border-top:1px solid var(--border)"><td style="padding:8px 0;font-weight:600;color:var(--gold);">Marketing Director</td><td style="text-align:center;font-weight:700;color:var(--gold);">75%</td><td style="text-align:center;">45%</td><td style="text-align:center;">35%</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -822,8 +888,10 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <button class="modal-close" onclick="closeModal('profile-modal')">✕</button>
     </div>
     <div id="profile-content"></div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost fw" onclick="doLogout()">Sign Out</button>
+    <div class="modal-footer" id="profile-footer">
+      <button class="btn btn-navy flex-1" id="profile-save-btn" onclick="saveProfile()" style="display:none">Save Changes</button>
+      <button class="btn btn-ghost" id="profile-edit-btn" onclick="toggleProfileEdit(true)">✏ Edit Info</button>
+      <button class="btn btn-ghost" onclick="doLogout()">Sign Out</button>
     </div>
   </div>
 </div>
@@ -1513,23 +1581,113 @@ function updateDashboard() {
 //  PROFILE
 // ═══════════════════════════════════════════════════
 function showProfile() {
-  const p = currentProfile;
-  document.getElementById('profile-content').innerHTML = `
-    <div style="text-align:center;margin-bottom:20px">
-      <div style="width:64px;height:64px;border-radius:50%;background:var(--gold-soft);color:var(--amber);font-family:var(--display);font-size:24px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
-        ${(p.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
-      </div>
-      <div style="font-family:var(--display);font-size:18px;font-weight:800">${p.name}</div>
-      <div style="font-size:13px;color:var(--text3);margin-top:4px">${p.email}</div>
-      ${p.is_director ? '<div style="margin-top:8px"><span class="director-tag">DIRECTOR</span></div>' : ''}
-    </div>
-    <div style="background:var(--bg);border-radius:10px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div><div class="lbl">Tier</div><div style="font-weight:700;margin-top:3px">${p.tier||'Trainee'}</div></div>
-      <div><div class="lbl">License</div><div style="font-weight:700;margin-top:3px">${p.lic||'—'}</div></div>
-      <div><div class="lbl">My Prospects</div><div style="font-weight:700;margin-top:3px">${allRec.filter(r=>r.owner_id===myUid()).length}</div></div>
-      <div><div class="lbl">My Clients</div><div style="font-weight:700;margin-top:3px">${allCli.filter(r=>r.owner_id===myUid()).length}</div></div>
-    </div>`;
+  renderProfile(false);
   openModal('profile-modal');
+}
+
+function renderProfile(editMode) {
+  const p = currentProfile;
+  const initials = (p.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const myRecCount = allRec.filter(r=>r.owner_id===myUid()).length;
+  const myCliCount = allCli.filter(r=>r.owner_id===myUid()).length;
+  const myExpTotal = allExpenses.reduce((s,e)=>s+parseFloat(e.amount||0),0);
+  const tierPctMap = {Trainee:30,Associate:40,'Field Associate':50,Director:60,'Producing MD':70,'Marketing Director':75};
+  const tierPct = tierPctMap[p.tier] || 30;
+
+  document.getElementById('profile-save-btn').style.display = editMode ? '' : 'none';
+  document.getElementById('profile-edit-btn').style.display = editMode ? 'none' : '';
+
+  if (editMode) {
+    document.getElementById('profile-content').innerHTML = `
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--gold-soft);color:var(--amber);font-family:var(--display);font-size:24px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">${initials}</div>
+        ${p.is_director ? '<span class="director-tag">DIRECTOR</span>' : `<span class="badge badge-gold">${p.tier||'Trainee'} · ${tierPct}%</span>`}
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Full Name</label><input id="pf-name" value="${p.name||''}"></div>
+      </div>
+      <div class="form-row cols2">
+        <div class="form-group"><label>Phone</label><input id="pf-phone" value="${p.phone||''}" placeholder="(555) 000-0000"></div>
+        <div class="form-group"><label>State(s) Licensed</label><input id="pf-states" value="${p.states||''}" placeholder="TX, FL..."></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Email <span style="color:var(--text3);font-weight:400;">(contact director to change)</span></label>
+          <input value="${p.email||''}" disabled style="opacity:.5;cursor:not-allowed;">
+        </div>
+      </div>`;
+  } else {
+    document.getElementById('profile-content').innerHTML = `
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--gold-soft);color:var(--amber);font-family:var(--display);font-size:24px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">${initials}</div>
+        <div style="font-family:var(--display);font-size:18px;font-weight:800;">${p.name||'—'}</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:3px;">${p.email||''}</div>
+        ${p.phone ? `<div style="font-size:13px;color:var(--text3);margin-top:2px;">${p.phone}</div>` : ''}
+        <div style="margin-top:10px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+          ${p.is_director ? '<span class="director-tag">DIRECTOR</span>' : `<span class="badge badge-gold">${p.tier||'Trainee'} · ${tierPct}%</span>`}
+          ${p.lic ? `<span class="badge badge-green">${p.lic}</span>` : ''}
+          ${p.states ? `<span class="badge badge-blue">📍 ${p.states}</span>` : ''}
+        </div>
+      </div>
+
+      <div style="background:var(--bg);border-radius:12px;padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div style="text-align:center;">
+          <div class="lbl">Prospects</div>
+          <div style="font-family:var(--display);font-size:22px;font-weight:800;color:var(--navy);margin-top:4px;">${myRecCount}</div>
+        </div>
+        <div style="text-align:center;">
+          <div class="lbl">Clients</div>
+          <div style="font-family:var(--display);font-size:22px;font-weight:800;color:var(--navy);margin-top:4px;">${myCliCount}</div>
+        </div>
+        <div style="text-align:center;">
+          <div class="lbl">My Expenses</div>
+          <div style="font-family:var(--display);font-size:18px;font-weight:800;color:var(--green);margin-top:4px;">$${myExpTotal.toLocaleString('en-US',{maximumFractionDigits:0})}</div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg);border-radius:12px;padding:14px;">
+        <div class="lbl" style="margin-bottom:10px;">My Commission Rate</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:13px;font-weight:600;color:var(--text2);">${p.tier||'Trainee'}</span>
+          <span style="font-family:var(--display);font-size:20px;font-weight:800;color:var(--navy);">${tierPct}%</span>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${Math.round((tierPct/75)*100)}%;background:var(--gold);border-radius:3px;transition:width .5s;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+          <span style="font-size:10px;color:var(--text3);">Trainee 30%</span>
+          <span style="font-size:10px;color:var(--gold);font-weight:700;">MD 75%</span>
+        </div>
+      </div>`;
+  }
+}
+
+function toggleProfileEdit(on) {
+  renderProfile(on);
+}
+
+async function saveProfile() {
+  const name = document.getElementById('pf-name')?.value.trim();
+  const phone = document.getElementById('pf-phone')?.value.trim();
+  const states = document.getElementById('pf-states')?.value.trim();
+  if (!name) { toast('Name is required'); return; }
+  try {
+    await sbFetch(`/rest/v1/profiles?id=eq.${myUid()}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name, phone, states })
+    });
+    currentProfile.name = name;
+    currentProfile.phone = phone;
+    currentProfile.states = states;
+    // Update topbar
+    const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('top-av').textContent = initials;
+    document.getElementById('top-name').textContent = name.split(' ')[0];
+    renderProfile(false);
+    toast('Profile updated!');
+  } catch(e) {
+    toast('Error saving profile');
+    console.error(e);
+  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -1802,23 +1960,70 @@ function initDark() {
 // ═══════════════════════════════════════════════════
 //  COMMISSION CALCULATOR
 // ═══════════════════════════════════════════════════
+function calcFromMonthly() {
+  const monthly = parseFloat(document.getElementById('calc-monthly').value) || 0;
+  if (monthly) {
+    document.getElementById('calc-premium').value = (monthly * 12).toFixed(2);
+  }
+  calcCommission();
+}
+
 function calcCommission() {
-  const premium = parseFloat(document.getElementById('calc-premium').value) || 0;
+  const annual = parseFloat(document.getElementById('calc-premium').value) || 0;
+  if (!annual) {
+    document.getElementById('calc-result').style.display = 'none';
+    return;
+  }
+  // Sync monthly field if user typed annual
+  const monthlyInput = document.getElementById('calc-monthly');
+  if (document.activeElement !== monthlyInput) {
+    monthlyInput.value = (annual / 12).toFixed(2);
+  }
+
   const agentPct = parseInt(document.getElementById('calc-tier').value) || 30;
   const productMult = parseFloat(document.getElementById('calc-product').value) || 1;
-  if (!premium) { document.getElementById('calc-result').style.display='none'; return; }
 
-  // Director override = 60% - agent%, applied to premium
-  const directorPct = 60;
-  const overridePct = directorPct - agentPct;
-  const agentEarns = (premium * agentPct / 100) * productMult;
-  const dirOverride = (premium * overridePct / 100) * productMult;
+  // Agent earnings
+  const agentAnnual = annual * (agentPct / 100) * productMult;
+  const agentMonthly = agentAnnual / 12;
+  // Points = annual premium (standard approximation for BTG)
+  const points = Math.round(annual * productMult);
 
-  document.getElementById('cr-agent').textContent = '$' + agentEarns.toLocaleString('en-US',{maximumFractionDigits:0});
-  document.getElementById('cr-override').textContent = '$' + dirOverride.toLocaleString('en-US',{maximumFractionDigits:0});
-  document.getElementById('cr-pct').textContent = agentPct + '%';
-  document.getElementById('cr-ovr-pct').textContent = overridePct + '%';
-  document.getElementById('calc-result').style.display='grid';
+  document.getElementById('cr-agent-annual').textContent = '$' + agentAnnual.toLocaleString('en-US', {maximumFractionDigits:0});
+  document.getElementById('cr-agent-monthly').textContent = '$' + agentMonthly.toLocaleString('en-US', {maximumFractionDigits:0});
+  document.getElementById('cr-agent-pct-lbl').textContent = agentPct + '% contract';
+  document.getElementById('cr-points').textContent = points.toLocaleString('en-US');
+
+  // Override breakdown — show what a director at each level earns over this agent
+  // BTG override structure (override pct = viewer_tier_pct - agent_tier_pct, only if viewer > agent)
+  const tiers = [
+    { label: 'Associate', pct: 40 },
+    { label: 'Field Assoc.', pct: 50 },
+    { label: 'Director', pct: 60 },
+    { label: 'Prod. MD', pct: 70 },
+    { label: 'Mktg Director', pct: 75 },
+  ];
+
+  const overridesAbove = tiers.filter(t => t.pct > agentPct);
+  const grid = document.getElementById('cr-overrides-grid');
+
+  if (overridesAbove.length === 0) {
+    document.getElementById('cr-override-section').style.display = 'none';
+  } else {
+    document.getElementById('cr-override-section').style.display = 'block';
+    grid.style.gridTemplateColumns = `repeat(${Math.min(overridesAbove.length, 4)}, 1fr)`;
+    grid.innerHTML = overridesAbove.map(t => {
+      const overridePct = t.pct - agentPct;
+      const overrideEarns = annual * (overridePct / 100) * productMult;
+      return `<div style="text-align:center;background:rgba(255,255,255,.07);border-radius:8px;padding:10px 6px;">
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">${t.label}</div>
+        <div style="font-family:var(--display);font-size:16px;font-weight:800;color:var(--gold2);">$${overrideEarns.toLocaleString('en-US',{maximumFractionDigits:0})}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px;">${overridePct}% override</div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('calc-result').style.display = 'block';
 }
 
 // ═══════════════════════════════════════════════════
