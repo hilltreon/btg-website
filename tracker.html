@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>BTG Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
   --bg: #f0f2f7;
@@ -414,6 +415,15 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div class="stat-card" style="--accent:var(--green)"><div class="stat-icon">👥</div><div class="stat-lbl">Active Clients</div><div class="stat-val" id="ds-clients">0</div><div class="stat-sub">Policies in force</div></div>
       <div class="stat-card" style="--accent:var(--blue)"><div class="stat-icon">📋</div><div class="stat-lbl">Apps in UW</div><div class="stat-val" id="ds-uw">0</div><div class="stat-sub">Pending underwriting</div></div>
       <div class="stat-card" style="--accent:var(--purple)"><div class="stat-icon">📅</div><div class="stat-lbl">Appts Today</div><div class="stat-val" id="ds-appts">0</div><div class="stat-sub">Scheduled meetings</div></div>
+    </div>
+
+    <!-- DAILY FOCUS -->
+    <div class="list-card" id="daily-focus-card" style="margin-bottom:16px;">
+      <div class="list-card-header">
+        <div class="list-card-title">⚡ Today's Focus</div>
+        <span id="focus-date" style="font-size:12px;color:var(--text3);"></span>
+      </div>
+      <div id="focus-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
     </div>
 
     <div class="list-card" id="recent-activity">
@@ -873,6 +883,11 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div class="form-group"><label>Pre-meeting Notes</label><textarea id="a-pre" placeholder="What to prepare, goals for this meeting..."></textarea></div>
     </div>
     <input type="hidden" id="a-id">
+    <div id="gcal-sync-row" style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px 13px;background:var(--bg);border-radius:10px;">
+      <input type="checkbox" id="a-gcal-sync" style="width:16px;height:16px;accent-color:var(--navy);" checked>
+      <label for="a-gcal-sync" style="font-size:13px;font-weight:500;color:var(--text2);margin:0;cursor:pointer;">Add to Google Calendar</label>
+      <span id="gcal-sync-status" style="font-size:11px;color:var(--text3);margin-left:auto;"></span>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-navy flex-1" onclick="saveAppt()">Save Appointment</button>
       <button class="btn btn-ghost" onclick="closeModal('appt-modal')">Cancel</button>
@@ -903,6 +918,10 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
 // ═══════════════════════════════════════════════════
 const SB_URL = 'https://dtksttiukhskxbcsbplt.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0a3N0dGl1a2hza3hiY3NicGx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MzYxNzIsImV4cCI6MjA5MDMxMjE3Mn0.ORJ7kYRHa4kCTJSTRYAzibFGwBDe8DI3oumn5caV5dI';
+const GCAL_CLIENT_ID = '357410077476-a4fl4rf1lhhnadhqkrgl422vkqehagqo.apps.googleusercontent.com';
+const GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
+let gcalToken = null;       // in-memory access token
+let gcalTokenClient = null; // GIS token client instance
 
 let currentUser = null;
 let currentProfile = null;
@@ -1019,6 +1038,16 @@ function showApp() {
 async function loadAll() {
   await Promise.all([loadRec(), loadCli(), loadAppts(), loadExpenses(), currentProfile.is_director ? loadAgents() : Promise.resolve()]);
   updateDashboard();
+  // Restore saved Google Calendar token from profile
+  if (currentProfile.gcal_token) {
+    gcalToken = currentProfile.gcal_token;
+  }
+  // Init GIS once it's loaded (may still be async-loading)
+  const tryInitGcal = () => {
+    if (window.google?.accounts?.oauth2) { initGcalClient(); }
+    else { setTimeout(tryInitGcal, 500); }
+  };
+  tryInitGcal();
 }
 
 // ═══════════════════════════════════════════════════
@@ -1185,13 +1214,27 @@ function recCard(r) {
       ${r.source ? `<span class="badge badge-gray">${r.source}</span>` : ''}
       ${r.followup_date ? followupBadge(r.followup_date) : ''}
     </div>
-      ${r.followup_date ? followupBadge(r.followup_date) : ''}
-    </div>
     <div class="pc-actions">
       ${prev ? `<button class="stage-btn back" onclick="event.stopPropagation();moveRec('${r.id}','${prev}')">← ${capitalize(prev)}</button>` : ''}
       ${next ? `<button class="stage-btn fwd" onclick="event.stopPropagation();moveRec('${r.id}','${next}')">→ ${capitalize(next==='active'?'Active Agent':next)}</button>` : ''}
+      <button class="stage-btn" style="background:var(--blue-soft);color:var(--blue);border:none;" onclick="event.stopPropagation();quickSchedule('${r.id}','rec')">📅</button>
     </div>
   </div>`;
+}
+
+function quickSchedule(id, type) {
+  const r = type === 'rec' ? allRec.find(x=>x.id===id) : allCli.find(x=>x.id===id);
+  if (!r) return;
+  // Pre-fill the appointment modal
+  document.getElementById('a-name').value = r.name || '';
+  document.getElementById('a-phone').value = r.phone || '';
+  document.getElementById('a-date').value = '';
+  document.getElementById('a-time').value = '';
+  document.getElementById('a-type').value = type === 'rec' ? 'discovery' : 'presentation';
+  document.getElementById('a-pre').value = '';
+  document.getElementById('a-id').value = '';
+  document.getElementById('a-delete').classList.add('hidden');
+  openModal('appt-modal');
 }
 
 async function moveRec(id, stage) {
@@ -1230,14 +1273,16 @@ async function saveRec() {
     followup_date: document.getElementById('r-followup').value || null,
     objection: document.getElementById('r-objection').value,
     notes: document.getElementById('r-notes').value,
-    owner_id: myUid()
+    owner_id: myUid(),
+    added: isNew ? new Date().toISOString() : undefined
   };
   if (isNew) {
     await sbFetch('/rest/v1/rec_records', {method:'POST', body: JSON.stringify(data)});
     allRec.unshift(data);
   } else {
-    await sbFetch(`/rest/v1/rec_records?id=eq.${id}`, {method:'PATCH', body: JSON.stringify(data)});
-    const i = allRec.findIndex(r=>r.id===id); if(i>=0) allRec[i] = {...allRec[i],...data};
+    const {added, ...patchData} = data;
+    await sbFetch(`/rest/v1/rec_records?id=eq.${id}`, {method:'PATCH', body: JSON.stringify(patchData)});
+    const i = allRec.findIndex(r=>r.id===id); if(i>=0) allRec[i] = {...allRec[i],...patchData};
   }
   renderRec(); closeModal('rec-modal'); toast('Saved!'); updateDashboard();
 }
@@ -1297,6 +1342,7 @@ function cliCard(r) {
     <div class="pc-actions">
       ${prev ? `<button class="stage-btn back" onclick="event.stopPropagation();moveCli('${r.id}','${prev}')">← ${capitalize(prev)}</button>` : ''}
       ${next ? `<button class="stage-btn fwd" onclick="event.stopPropagation();moveCli('${r.id}','${next}')">→ ${capitalize(next)}</button>` : ''}
+      <button class="stage-btn" style="background:var(--blue-soft);color:var(--blue);border:none;" onclick="event.stopPropagation();quickSchedule('${r.id}','cli')">📅</button>
     </div>
   </div>`;
 }
@@ -1530,6 +1576,11 @@ async function saveAppt() {
     const i = allAppts.findIndex(r=>r.id===id); if(i>=0) allAppts[i] = {...allAppts[i],...data};
   }
   renderAppts(); closeModal('appt-modal'); toast('Saved!');
+
+  // Push to Google Calendar if connected and checkbox checked
+  if (gcalToken && document.getElementById('a-gcal-sync')?.checked) {
+    await pushToGcal(data);
+  }
 }
 
 async function deleteAppt() {
@@ -1566,16 +1617,81 @@ function updateDashboard() {
   const recent = [...allRec.slice(0,3).map(r=>({...r,_type:'recruit'})), ...allCli.slice(0,3).map(r=>({...r,_type:'client'}))];
   recent.sort((a,b)=>new Date(b.added)-new Date(a.added));
   const rl = document.getElementById('recent-list');
-  if (!recent.length) { rl.innerHTML = '<div class="loading-wrap"><p>No recent activity yet.</p></div>'; return; }
-  rl.innerHTML = recent.slice(0,6).map(r => {
-    const icon = r._type==='recruit' ? '🎯' : '👤';
-    const sub = r._type==='recruit' ? `Prospect · ${r.pipeline_stage||'prospect'}` : `${r.product_interest||'Policy'} · ${r.pipeline_stage||'lead'}`;
-    return `<div class="list-item">
-      <div style="font-size:24px">${icon}</div>
-      <div class="li-main"><div class="li-name">${r.name}</div><div class="li-sub">${sub}</div></div>
-      <div class="li-right"><div style="font-size:11px;color:var(--text3)">${r.added||''}</div></div>
-    </div>`;
-  }).join('');
+  if (!recent.length) { rl.innerHTML = '<div class="loading-wrap"><p>No recent activity yet.</p></div>'; }
+  else {
+    rl.innerHTML = recent.slice(0,6).map(r => {
+      const icon = r._type==='recruit' ? '🎯' : '👤';
+      const sub = r._type==='recruit' ? `Prospect · ${r.pipeline_stage||'prospect'}` : `${r.product_interest||'Policy'} · ${r.pipeline_stage||'lead'}`;
+      return `<div class="list-item">
+        <div style="font-size:24px">${icon}</div>
+        <div class="li-main"><div class="li-name">${r.name}</div><div class="li-sub">${sub}</div></div>
+        <div class="li-right"><div style="font-size:11px;color:var(--text3)">${r.added||''}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Daily focus
+  updateDailyFocus();
+}
+
+function updateDailyFocus() {
+  const fl = document.getElementById('focus-list');
+  if (!fl) return;
+  const todayEl = document.getElementById('focus-date');
+  if (todayEl) todayEl.textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().slice(0,10);
+  const staleDate = new Date(today); staleDate.setDate(staleDate.getDate()-7);
+
+  const items = [];
+
+  // Overdue follow-ups — recruiting
+  allRec.forEach(r => {
+    if (!r.followup_date) return;
+    const due = new Date(r.followup_date + 'T12:00:00');
+    if (due < today) items.push({priority:'overdue', icon:'⚠️', label:'Overdue follow-up', name:r.name, sub:'Recruiting prospect', action:`editRec('${r.id}')`, badge:'badge-red', badgeText:'Overdue'});
+    else if (r.followup_date === todayStr) items.push({priority:'today', icon:'📌', label:'Follow-up due today', name:r.name, sub:'Recruiting prospect', action:`editRec('${r.id}')`, badge:'badge-gold', badgeText:'Today'});
+  });
+
+  // Overdue follow-ups — clients
+  allCli.forEach(r => {
+    if (!r.followup_date) return;
+    const due = new Date(r.followup_date + 'T12:00:00');
+    if (due < today) items.push({priority:'overdue', icon:'⚠️', label:'Overdue follow-up', name:r.name, sub:r.product_interest||'Client', action:`editCli('${r.id}')`, badge:'badge-red', badgeText:'Overdue'});
+    else if (r.followup_date === todayStr) items.push({priority:'today', icon:'📌', label:'Follow-up due today', name:r.name, sub:r.product_interest||'Client', action:`editCli('${r.id}')`, badge:'badge-gold', badgeText:'Today'});
+  });
+
+  // Appointments today
+  allAppts.filter(a => a.date === todayStr && a.outcome === 'pending').forEach(a => {
+    items.push({priority:'today', icon:'📅', label:'Appointment today', name:a.name, sub:a.time ? `${a.type||'Meeting'} at ${a.time}` : a.type||'Meeting', action:`editAppt('${a.id}')`, badge:'badge-blue', badgeText:'Appt'});
+  });
+
+  // Stale prospects — no follow-up date set, not contacted in 7+ days
+  allRec.filter(r => !r.followup_date && r.pipeline_stage !== 'active').forEach(r => {
+    const added = r.added ? new Date(r.added) : null;
+    if (!added || added > staleDate) return;
+    items.push({priority:'stale', icon:'💤', label:'No follow-up scheduled', name:r.name, sub:'Prospect · '+( r.pipeline_stage||'prospect'), action:`editRec('${r.id}')`, badge:'badge-gray', badgeText:'Stale'});
+  });
+
+  // Sort: overdue first, then today, then stale
+  const order = {overdue:0, today:1, stale:2};
+  items.sort((a,b) => order[a.priority] - order[b.priority]);
+
+  if (!items.length) {
+    fl.innerHTML = '<div style="padding:20px 18px;text-align:center;color:var(--text3);font-size:13px;">🎉 You&#39;re all caught up! No urgent follow-ups today.</div>';
+    return;
+  }
+
+  fl.innerHTML = items.slice(0,8).map(item => `
+    <div class="list-item" onclick="${item.action}" style="cursor:pointer;">
+      <div style="font-size:22px;flex-shrink:0;">${item.icon}</div>
+      <div class="li-main">
+        <div class="li-name">${item.name}</div>
+        <div class="li-sub">${item.label} · ${item.sub}</div>
+      </div>
+      <div class="li-right"><span class="badge ${item.badge}">${item.badgeText}</span></div>
+    </div>`).join('');
 }
 
 // ═══════════════════════════════════════════════════
@@ -1658,7 +1774,74 @@ function renderProfile(editMode) {
           <span style="font-size:10px;color:var(--text3);">Trainee 30%</span>
           <span style="font-size:10px;color:var(--gold);font-weight:700;">MD 75%</span>
         </div>
+
+      <div style="margin-top:14px;">
+        <button class="btn btn-ghost fw" style="font-size:13px;" onclick="togglePasswordChange()">🔒 Change Password</button>
+        <div id="pw-change-section" style="display:none;margin-top:12px;background:var(--bg);border-radius:12px;padding:14px;">
+          <div class="form-row">
+            <div class="form-group"><label>New Password</label><input id="pw-new" type="password" placeholder="Min 8 characters"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Confirm New Password</label><input id="pw-confirm" type="password" placeholder="Repeat new password"></div>
+          </div>
+          <div id="pw-msg" style="font-size:12px;margin-bottom:8px;display:none;padding:8px 12px;border-radius:8px;"></div>
+          <button class="btn btn-navy btn-sm" onclick="changePassword()">Update Password</button>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;" id="gcal-profile-section">
+        ${gcalToken
+          ? `<div style="background:var(--green-soft);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;">
+               <div style="display:flex;align-items:center;gap:8px;">
+                 <span style="font-size:18px;">&#x1F4C6;</span>
+                 <div>
+                   <div style="font-size:13px;font-weight:700;color:var(--green);">Google Calendar Connected</div>
+                   <div style="font-size:11px;color:var(--text3);">Appointments sync to your calendar</div>
+                 </div>
+               </div>
+               <button class="btn btn-ghost btn-xs" onclick="disconnectGcal()">Disconnect</button>
+             </div>`
+          : `<button class="btn btn-ghost fw" style="font-size:13px;" onclick="connectGcal()">
+               <img src="https://www.google.com/favicon.ico" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"> Connect Google Calendar
+             </button>`
+        }
+      </div>
       </div>`;
+  }
+}
+
+function togglePasswordChange() {
+  const sec = document.getElementById("pw-change-section");
+  if (sec) sec.style.display = sec.style.display === "none" ? "block" : "none";
+}
+
+async function changePassword() {
+  const pw = document.getElementById("pw-new")?.value || "";
+  const pw2 = document.getElementById("pw-confirm")?.value || "";
+  const msg = document.getElementById("pw-msg");
+  const showMsg = (text, ok) => {
+    msg.textContent = text;
+    msg.style.display = "block";
+    msg.style.background = ok ? "var(--green-soft)" : "var(--red-soft)";
+    msg.style.color = ok ? "var(--green)" : "var(--red)";
+  };
+  if (pw.length < 8) { showMsg("Password must be at least 8 characters.", false); return; }
+  if (pw !== pw2) { showMsg("Passwords do not match.", false); return; }
+  try {
+    const token = currentUser?.access_token;
+    const res = await fetch(SB_URL + "/auth/v1/user", {
+      method: "PUT",
+      headers: { "apikey": SB_KEY, "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+      body: JSON.stringify({ password: pw })
+    });
+    const data = await res.json();
+    if (data.error || data.msg) { showMsg(data.message || data.msg || "Error updating password.", false); return; }
+    document.getElementById("pw-new").value = "";
+    document.getElementById("pw-confirm").value = "";
+    showMsg("Password updated successfully!", true);
+    setTimeout(() => { document.getElementById("pw-change-section").style.display = "none"; msg.style.display = "none"; }, 2500);
+  } catch(e) {
+    showMsg("Network error. Try again.", false);
   }
 }
 
@@ -1698,6 +1881,7 @@ function openModal(id) {
   document.getElementById(id).classList.add('open');
   if (id === 'rec-modal' && !document.getElementById('r-id').value) clearRecForm();
   if (id === 'cli-modal' && !document.getElementById('c-id').value) clearCliForm();
+  if (id === 'appt-modal') updateGcalSyncRow();
   if (id === 'appt-modal' && !document.getElementById('a-id').value) clearApptForm();
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -2029,6 +2213,130 @@ function calcCommission() {
 
   document.getElementById('calc-result').style.display = 'block';
 }
+
+// ═══════════════════════════════════════════════════
+//  GOOGLE CALENDAR INTEGRATION
+// ═══════════════════════════════════════════════════
+function initGcalClient() {
+  if (!window.google?.accounts?.oauth2) return;
+  gcalTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GCAL_CLIENT_ID,
+    scope: GCAL_SCOPE,
+    callback: async (resp) => {
+      if (resp.error) { toast('Google Calendar: ' + resp.error); return; }
+      gcalToken = resp.access_token;
+      // Save token to profile in Supabase so it persists
+      try {
+        await sbFetch('/rest/v1/profiles?id=eq.' + myUid(), {
+          method: 'PATCH',
+          body: JSON.stringify({gcal_token: gcalToken})
+        });
+        currentProfile.gcal_token = gcalToken;
+      } catch(e) {}
+      toast('Google Calendar connected!');
+      renderProfile(false);
+      updateGcalSyncRow();
+    }
+  });
+}
+
+function connectGcal() {
+  if (!gcalTokenClient) {
+    // GIS may still be loading — retry once
+    if (window.google?.accounts?.oauth2) {
+      initGcalClient();
+    } else {
+      toast('Google sign-in loading, try again in a moment');
+      return;
+    }
+  }
+  gcalTokenClient.requestAccessToken();
+}
+
+function disconnectGcal() {
+  if (gcalToken) {
+    google.accounts.oauth2.revoke(gcalToken, () => {});
+  }
+  gcalToken = null;
+  currentProfile.gcal_token = null;
+  sbFetch('/rest/v1/profiles?id=eq.' + myUid(), {
+    method: 'PATCH',
+    body: JSON.stringify({gcal_token: null})
+  }).catch(()=>{});
+  toast('Google Calendar disconnected');
+  renderProfile(false);
+  updateGcalSyncRow();
+}
+
+function updateGcalSyncRow() {
+  const row = document.getElementById('gcal-sync-row');
+  const status = document.getElementById('gcal-sync-status');
+  if (!row) return;
+  if (gcalToken) {
+    row.style.opacity = '1';
+    row.style.pointerEvents = '';
+    if (status) status.textContent = '● Connected';
+    if (status) status.style.color = 'var(--green)';
+  } else {
+    row.style.opacity = '.45';
+    row.style.pointerEvents = 'none';
+    if (status) status.textContent = 'Not connected — see Profile';
+    if (status) status.style.color = 'var(--text3)';
+    const cb = document.getElementById('a-gcal-sync');
+    if (cb) cb.checked = false;
+  }
+}
+
+async function pushToGcal(appt) {
+  if (!gcalToken) return;
+  try {
+    const dateStr = appt.date; // YYYY-MM-DD
+    const timeStr = appt.time || '09:00';
+    const startDt = dateStr + 'T' + timeStr + ':00';
+    // parse end time +1hr
+    const [h, m] = timeStr.split(':').map(Number);
+    const endH = String((h + 1) % 24).padStart(2, '0');
+    const endDt = dateStr + 'T' + endH + ':' + String(m).padStart(2, '0') + ':00';
+
+    const typeLabels = {discovery:'Discovery Call', presentation:'Presentation', close:'Close Meeting', 'follow-up':'Follow-Up', onboarding:'Agent Onboarding'};
+    const summary = (typeLabels[appt.type] || 'Appointment') + ' — ' + appt.name;
+    const description = [
+      appt.phone ? 'Phone: ' + appt.phone : '',
+      appt.pre_notes ? 'Notes: ' + appt.pre_notes : '',
+      'via BTG Portal'
+    ].filter(Boolean).join('\n');
+
+    const event = {
+      summary,
+      description,
+      start: {dateTime: startDt, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone},
+      end:   {dateTime: endDt,   timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone},
+      reminders: {useDefault: false, overrides: [{method:'popup', minutes:30}]}
+    };
+
+    const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + gcalToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(event)
+    });
+
+    if (res.status === 401) {
+      // Token expired — clear and prompt reconnect
+      gcalToken = null;
+      toast('Google Calendar session expired — reconnect in Profile');
+      return;
+    }
+    if (!res.ok) { throw new Error('Calendar API error ' + res.status); }
+    toast('Saved + added to Google Calendar!');
+  } catch(e) {
+    console.error('GCal push error:', e);
+    toast('Appointment saved (calendar sync failed)');
+  }
+}
+
 
 // ═══════════════════════════════════════════════════
 //  FOLLOW-UP HELPERS
