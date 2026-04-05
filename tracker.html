@@ -417,6 +417,17 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div class="stat-card" style="--accent:var(--purple)"><div class="stat-icon">📅</div><div class="stat-lbl">Appts Today</div><div class="stat-val" id="ds-appts">0</div><div class="stat-sub">Scheduled meetings</div></div>
     </div>
 
+
+    <!-- AGENT GOAL CARD (non-director only, hidden until goals set) -->
+    <div id="agent-goal-card" class="hidden" style="background:var(--navy);border-radius:var(--r);padding:20px;margin-bottom:20px;color:#fff;">
+      <div style="font-family:var(--display);font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;">🎯 My Goals <span style="font-size:11px;font-weight:400;opacity:.5;">Set by your director</span></div>
+      <div id="agent-goal-bars"></div>
+      <div id="agent-goal-note-wrap" class="hidden" style="margin-top:12px;background:rgba(255,255,255,.07);border-radius:8px;padding:10px 13px;">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.4);margin-bottom:4px;">Director Note</div>
+        <div id="agent-goal-note" style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.5;"></div>
+      </div>
+    </div>
+
     <!-- DAILY FOCUS -->
     <div class="list-card" id="daily-focus-card" style="margin-bottom:16px;">
       <div class="list-card-header">
@@ -776,6 +787,58 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
   </div>
 </div>
 
+<!-- AGENT DETAIL MODAL -->
+<div class="modal-overlay" id="agent-detail-modal">
+  <div class="modal" style="max-height:92vh;">
+    <div class="modal-header">
+      <div class="modal-title" id="adm-title">Agent Dashboard</div>
+      <button class="modal-close" onclick="closeModal('agent-detail-modal')">✕</button>
+    </div>
+    <div id="adm-stats" style="background:var(--navy);border-radius:12px;padding:16px;margin-bottom:16px;color:#fff;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;text-align:center;">
+      <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.45);">Prospects</div><div style="font-family:var(--display);font-size:22px;font-weight:800;" id="adm-rec">0</div></div>
+      <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.45);">Apps</div><div style="font-family:var(--display);font-size:22px;font-weight:800;color:var(--gold2);" id="adm-apps">0</div></div>
+      <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.45);">Clients</div><div style="font-family:var(--display);font-size:22px;font-weight:800;color:var(--green2);" id="adm-cli">0</div></div>
+      <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.45);">Points</div><div style="font-family:var(--display);font-size:22px;font-weight:800;color:var(--purple);" id="adm-pts">0</div></div>
+    </div>
+    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;">🎯 Monthly Goals</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div class="form-group"><label>Apps / Mo</label><input id="adm-goal-apps" type="number" placeholder="0" min="0"></div>
+        <div class="form-group"><label>Points / Mo</label><input id="adm-goal-pts" type="number" placeholder="0" min="0"></div>
+        <div class="form-group"><label>Prospects</label><input id="adm-goal-prospects" type="number" placeholder="0" min="0"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px;"><label>Director Note to Agent</label><textarea id="adm-goal-note" placeholder="Coaching notes, targets, expectations..." style="min-height:60px;"></textarea></div>
+      <div id="adm-progress" style="display:flex;flex-direction:column;gap:8px;margin-top:4px;"></div>
+    </div>
+    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;">📄 Goal Sheet PDF</div>
+      <div id="adm-pdf-preview" class="hidden" style="margin-bottom:10px;">
+        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">📄</span>
+            <div><div style="font-size:13px;font-weight:700;color:var(--navy);" id="adm-pdf-name">goal-sheet.pdf</div><div style="font-size:11px;color:var(--text3);">Uploaded goal sheet</div></div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost btn-xs" onclick="viewAgentPdf()">View</button>
+            <button class="btn btn-red btn-xs" onclick="removeAgentPdf()">Remove</button>
+          </div>
+        </div>
+      </div>
+      <div id="adm-pdf-upload-btn"><button class="btn btn-ghost fw" onclick="document.getElementById('adm-pdf-input').click()">⬆ Upload Goal Sheet PDF</button><input id="adm-pdf-input" type="file" accept="application/pdf" style="display:none" onchange="handleAgentPdf(this)"></div>
+    </div>
+    <div style="background:var(--bg);border-radius:12px;padding:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;">📋 Recent Prospects</div>
+      <div id="adm-recent" style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;"></div>
+    </div>
+    <input type="hidden" id="adm-agent-id">
+    <input type="hidden" id="adm-pdf-data">
+    <div class="modal-footer">
+      <button class="btn btn-navy flex-1" onclick="saveAgentGoals()">Save Goals</button>
+      <button class="btn btn-ghost" onclick="closeModal('agent-detail-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- RECRUITING MODAL -->
 <div class="modal-overlay" id="rec-modal">
   <div class="modal">
@@ -1069,7 +1132,14 @@ function showApp() {
 }
 
 async function loadAll() {
-  await Promise.all([loadRec(), loadCli(), loadAppts(), loadExpenses(), currentProfile.is_director ? loadAgents() : Promise.resolve()]);
+  // Load own goal targets for non-directors
+  if (!currentProfile.is_director) {
+    try {
+      const pg = await sbFetch('/rest/v1/profiles?id=eq.' + myUid() + '&select=goal_apps,goal_pts,goal_prospects,goal_note,goal_pdf');
+      if (pg && pg[0]) Object.assign(currentProfile, pg[0]);
+    } catch(e) {}
+  }
+  await Promise.all([loadRec(), loadCli(), loadAppts(), loadExpenses(), currentProfile.is_director ? loadAgents() : Promise.resolve(), currentProfile.is_director ? loadGoals() : Promise.resolve()]);
   updateDashboard();
   // Restore saved Google Calendar token from localStorage
   try {
@@ -1535,6 +1605,7 @@ function renderAgents() {
           <option ${a.tier==='Director'?'selected':''}>Director</option>
         </select>
         <button class="btn btn-ghost btn-xs" onclick="emailAgent('${a.email}','${a.name}')">✉ Email</button>
+        <button class="btn btn-navy btn-xs" onclick="openAgentDetail('${a.id}')">📊 View</button>
       </div>
     </div>`;
   }).join('');
@@ -1674,6 +1745,35 @@ function updateDashboard() {
     document.getElementById('md-agents-bar').style.width = Math.min(100,activeAgents/15*100)+'%';
     document.getElementById('md-apps-bar').style.width = Math.min(100,totalApps/50*100)+'%';
     document.getElementById('md-points-bar').style.width = Math.min(100,totalPts/75000*100)+'%';
+  }
+
+  // Agent goal progress (non-director view)
+  if (!currentProfile?.is_director) {
+    const gApps = currentProfile.goal_apps || 0;
+    const gPts  = currentProfile.goal_pts  || 0;
+    const gRec  = currentProfile.goal_prospects || 0;
+    const gNote = currentProfile.goal_note || '';
+    const myApps = allCli.filter(r=>r.owner_id===myUid()&&(r.pipeline_stage==='application'||r.pipeline_stage==='client')).length;
+    const myPts  = allCli.filter(r=>r.owner_id===myUid()).reduce((s,r)=>s+(r.points_value||0),0);
+    const myRec  = allRec.filter(r=>r.owner_id===myUid()).length;
+    const goalEl = document.getElementById('agent-goal-card');
+    if (goalEl && (gApps || gPts || gRec || gNote)) {
+      goalEl.classList.remove('hidden');
+      const bars = [];
+      if (gApps) bars.push({label:'Apps',val:myApps,goal:gApps,color:'var(--gold)'});
+      if (gPts)  bars.push({label:'Points',val:myPts,goal:gPts,color:'var(--purple)'});
+      if (gRec)  bars.push({label:'Prospects',val:myRec,goal:gRec,color:'var(--blue)'});
+      document.getElementById('agent-goal-bars').innerHTML = bars.map(b => {
+        const pct = Math.min(100, gApps||gPts||gRec ? Math.round(b.val/b.goal*100) : 0);
+        return '<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:3px;font-size:12px;"><span style="font-weight:600;color:rgba(255,255,255,.8);">'+b.label+'</span><span style="color:rgba(255,255,255,.5);">'+b.val+' / '+b.goal+' ('+pct+'%)</span></div><div style="height:5px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:'+b.color+';border-radius:3px;"></div></div></div>';
+      }).join('');
+      if (gNote) {
+        document.getElementById('agent-goal-note').textContent = gNote;
+        document.getElementById('agent-goal-note-wrap').classList.remove('hidden');
+      } else {
+        document.getElementById('agent-goal-note-wrap').classList.add('hidden');
+      }
+    }
   }
 
   // Recent activity
@@ -2470,6 +2570,127 @@ function exportCSV(type) {
 // ═══════════════════════════════════════════════════
 //  ADD AGENT MANUALLY (Director)
 // ═══════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════
+//  AGENT DETAIL / GOALS (Director)
+// ═══════════════════════════════════════════════════
+let allGoals = {};
+
+async function loadGoals() {
+  try {
+    const rows = await sbFetch('/rest/v1/goals?select=*') || [];
+    rows.forEach(r => { allGoals[r.user_id] = r.data || {}; });
+  } catch(e) { console.warn('goals load:', e); }
+}
+
+async function openAgentDetail(agentId) {
+  const a = allAgents.find(x => x.id === agentId);
+  if (!a) return;
+  const recCount = allRec.filter(r => r.owner_id === agentId).length;
+  const appCount = allCli.filter(r => r.owner_id === agentId && (r.pipeline_stage==='application'||r.pipeline_stage==='client')).length;
+  const cliCount = allCli.filter(r => r.owner_id === agentId && r.pipeline_stage==='client').length;
+  const pts      = allCli.filter(r => r.owner_id === agentId).reduce((s,r) => s+(r.points_value||0), 0);
+
+  document.getElementById('adm-title').textContent = a.name + ' — Dashboard';
+  document.getElementById('adm-agent-id').value = agentId;
+  document.getElementById('adm-rec').textContent  = recCount;
+  document.getElementById('adm-apps').textContent = appCount;
+  document.getElementById('adm-cli').textContent  = cliCount;
+  document.getElementById('adm-pts').textContent  = pts.toLocaleString();
+
+  let profile = a;
+  try {
+    const fresh = await sbFetch('/rest/v1/profiles?id=eq.' + agentId + '&select=goal_apps,goal_pts,goal_prospects,goal_note,goal_pdf');
+    if (fresh && fresh[0]) profile = Object.assign({}, a, fresh[0]);
+  } catch(e) {}
+
+  document.getElementById('adm-goal-apps').value      = profile.goal_apps || '';
+  document.getElementById('adm-goal-pts').value       = profile.goal_pts  || '';
+  document.getElementById('adm-goal-prospects').value = profile.goal_prospects || '';
+  document.getElementById('adm-goal-note').value      = profile.goal_note || '';
+
+  if (profile.goal_pdf) {
+    document.getElementById('adm-pdf-data').value = profile.goal_pdf;
+    document.getElementById('adm-pdf-name').textContent = a.name.replace(' ', '-') + '-goal-sheet.pdf';
+    document.getElementById('adm-pdf-preview').classList.remove('hidden');
+    document.getElementById('adm-pdf-upload-btn').classList.add('hidden');
+  } else {
+    document.getElementById('adm-pdf-data').value = '';
+    document.getElementById('adm-pdf-preview').classList.add('hidden');
+    document.getElementById('adm-pdf-upload-btn').classList.remove('hidden');
+  }
+
+  const goalApps = parseInt(profile.goal_apps) || 0;
+  const goalPts  = parseInt(profile.goal_pts)  || 0;
+  const goalRec  = parseInt(profile.goal_prospects) || 0;
+  const bars = [];
+  if (goalApps) bars.push({label:'Apps', val:appCount, goal:goalApps, color:'var(--gold)'});
+  if (goalPts)  bars.push({label:'Points', val:pts, goal:goalPts, color:'var(--purple)'});
+  if (goalRec)  bars.push({label:'Prospects', val:recCount, goal:goalRec, color:'var(--blue)'});
+  document.getElementById('adm-progress').innerHTML = bars.length ? bars.map(b => {
+    const pct = Math.min(100, Math.round(b.val/b.goal*100));
+    return '<div><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:12px;font-weight:600;color:var(--text2);">' + b.label + '</span><span style="font-size:12px;color:var(--text3);">' + b.val + ' / ' + b.goal + ' (' + pct + '%)</span></div><div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:' + b.color + ';border-radius:3px;transition:width .5s;"></div></div></div>';
+  }).join('') : '<div style="font-size:12px;color:var(--text3);">Set goals above and save to see progress.</div>';
+
+  const recent = allRec.filter(r => r.owner_id === agentId).slice(0, 6);
+  document.getElementById('adm-recent').innerHTML = recent.length
+    ? recent.map(r => '<div style="font-size:12px;padding:6px 10px;background:var(--card);border-radius:6px;border-left:2px solid var(--border);display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;color:var(--navy);">' + r.name + '</span><span style="color:var(--text3);">' + (r.pipeline_stage||'prospect') + '</span></div>').join('')
+    : '<div style="font-size:12px;color:var(--text3);padding:8px;">No prospects yet.</div>';
+
+  openModal('agent-detail-modal');
+}
+
+async function saveAgentGoals() {
+  const agentId = document.getElementById('adm-agent-id').value;
+  if (!agentId) return;
+  const patch = {
+    goal_apps:      parseInt(document.getElementById('adm-goal-apps').value)||0,
+    goal_pts:       parseInt(document.getElementById('adm-goal-pts').value)||0,
+    goal_prospects: parseInt(document.getElementById('adm-goal-prospects').value)||0,
+    goal_note:      document.getElementById('adm-goal-note').value||'',
+    goal_pdf:       document.getElementById('adm-pdf-data').value || null
+  };
+  try {
+    await sbFetch('/rest/v1/profiles?id=eq.' + agentId, {method:'PATCH', body: JSON.stringify(patch)});
+    const a = allAgents.find(x => x.id === agentId);
+    if (a) Object.assign(a, patch);
+    toast('Goals saved for ' + (a ? a.name : 'agent'));
+    closeModal('agent-detail-modal');
+  } catch(e) {
+    console.error('saveAgentGoals:', e);
+    toast('Error saving: ' + (e.message||'check console'));
+  }
+}
+
+function handleAgentPdf(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 4 * 1024 * 1024) { toast('PDF too large — max 4MB'); input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('adm-pdf-data').value = e.target.result;
+    document.getElementById('adm-pdf-name').textContent = file.name;
+    document.getElementById('adm-pdf-preview').classList.remove('hidden');
+    document.getElementById('adm-pdf-upload-btn').classList.add('hidden');
+    toast('PDF ready — hit Save Goals to upload');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function viewAgentPdf() {
+  const data = document.getElementById('adm-pdf-data').value;
+  if (!data) return;
+  const w = window.open();
+  w.document.write('<iframe src="' + data + '" style="width:100%;height:100vh;border:none;"></iframe>');
+}
+
+function removeAgentPdf() {
+  document.getElementById('adm-pdf-data').value = '';
+  document.getElementById('adm-pdf-preview').classList.add('hidden');
+  document.getElementById('adm-pdf-upload-btn').classList.remove('hidden');
+}
+
 function openAddAgentModal() {
   ['aa-name','aa-phone','aa-email','aa-states'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('aa-tier').value = 'Trainee';
