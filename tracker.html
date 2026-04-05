@@ -519,7 +519,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
         </div>
       </div>
     </div>
-    <div style="margin-bottom:12px;display:flex;gap:8px"><button class="export-btn" onclick="bulkApprove()">✓ Approve All Pending</button><button class="export-btn" onclick="exportCSV('agents')">⬇ Export Roster</button></div>
+    <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-navy btn-sm" onclick="openAddAgentModal()">+ Add Agent</button><button class="export-btn" onclick="bulkApprove()">✓ Approve All Pending</button><button class="export-btn" onclick="exportCSV('agents')">⬇ Export Roster</button></div>
     <div id="agents-grid" class="agents-grid"><div class="loading-wrap"><div class="spinner"></div></div></div>
   </div>
 
@@ -742,6 +742,39 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
 
 <!-- TOAST -->
 <div id="toast"></div>
+
+<!-- ADD AGENT MODAL (Director) -->
+<div class="modal-overlay" id="add-agent-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Agent to Roster</div>
+      <button class="modal-close" onclick="closeModal('add-agent-modal')">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:16px;">Manually add an agent who signed up but didn't appear, or create a profile for someone contracting offline.</p>
+    <div class="form-row cols2">
+      <div class="form-group"><label>Full Name *</label><input id="aa-name" placeholder="Jane Smith"></div>
+      <div class="form-group"><label>Phone</label><input id="aa-phone" placeholder="(555) 000-0000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Email *</label><input id="aa-email" type="email" placeholder="jane@email.com"></div>
+    </div>
+    <div class="form-row cols2">
+      <div class="form-group"><label>Tier</label>
+        <select id="aa-tier"><option value="Trainee">Trainee</option><option value="Associate">Associate</option><option value="Field Associate">Field Associate</option><option value="Director">Director</option></select>
+      </div>
+      <div class="form-group"><label>License Status</label>
+        <select id="aa-lic"><option value="unlicensed">Unlicensed</option><option value="licensed">Licensed</option><option value="in-progress">In Progress</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>State(s) Licensed</label><input id="aa-states" placeholder="TX, FL..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-navy flex-1" onclick="addAgentManual()">Add to Roster</button>
+      <button class="btn btn-ghost" onclick="closeModal('add-agent-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- RECRUITING MODAL -->
 <div class="modal-overlay" id="rec-modal">
@@ -1138,14 +1171,32 @@ async function doSignup() {
   showAuthMsg('Creating account...', 'success');
   const res = await sbAuth('/signup', {email, password: pass, data: {name, phone, lic}});
   if (res.error) { showAuthMsg(res.error.message || res.error); return; }
-  // Create profile row
+
+  // Attempt profile row creation — try with access_token first, fallback to anon key
+  const userId = res.user?.id || res.id;
+  const profileData = {id: userId, name, email, phone: phone||'', states: '', tier: 'Trainee', lic, approved: false, is_director: false};
+  const authHeader = res.access_token ? `Bearer ${res.access_token}` : `Bearer ${SB_KEY}`;
+
   try {
-    await fetch(SB_URL + '/rest/v1/profiles', {
+    const profRes = await fetch(SB_URL + '/rest/v1/profiles', {
       method: 'POST',
-      headers: {'apikey': SB_KEY, 'Content-Type': 'application/json', 'Authorization': `Bearer ${res.access_token}`},
-      body: JSON.stringify({id: res.user.id, name, email, states: '', tier: 'Trainee', lic, approved: false, is_director: false})
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(profileData)
     });
-  } catch(e){}
+    if (!profRes.ok && profRes.status !== 409) {
+      // 409 = already exists, which is fine
+      const errBody = await profRes.json().catch(()=>({}));
+      console.warn('Profile insert warning:', errBody);
+    }
+  } catch(e) {
+    console.warn('Profile insert error (non-fatal):', e);
+  }
+
   showAuthMsg('Account requested! Check your email to confirm, then wait for director approval.', 'success');
 }
 
@@ -1262,7 +1313,7 @@ async function saveRec() {
   if (!name) { toast('Name is required'); return; }
   const id = document.getElementById('r-id').value || uid();
   const isNew = !document.getElementById('r-id').value;
-  const data = {
+  const base = {
     id, name,
     phone: document.getElementById('r-phone').value,
     email: document.getElementById('r-email').value,
@@ -1273,18 +1324,22 @@ async function saveRec() {
     followup_date: document.getElementById('r-followup').value || null,
     objection: document.getElementById('r-objection').value,
     notes: document.getElementById('r-notes').value,
-    owner_id: myUid(),
-    added: isNew ? new Date().toISOString() : undefined
+    owner_id: myUid()
   };
-  if (isNew) {
-    await sbFetch('/rest/v1/rec_records', {method:'POST', body: JSON.stringify(data)});
-    allRec.unshift(data);
-  } else {
-    const {added, ...patchData} = data;
-    await sbFetch(`/rest/v1/rec_records?id=eq.${id}`, {method:'PATCH', body: JSON.stringify(patchData)});
-    const i = allRec.findIndex(r=>r.id===id); if(i>=0) allRec[i] = {...allRec[i],...patchData};
+  try {
+    if (isNew) {
+      const saved = await sbFetch('/rest/v1/rec_records', {method:'POST', body: JSON.stringify(base)});
+      const record = Array.isArray(saved) ? saved[0] : base;
+      allRec.unshift(record);
+    } else {
+      await sbFetch(`/rest/v1/rec_records?id=eq.${id}`, {method:'PATCH', body: JSON.stringify(base)});
+      const i = allRec.findIndex(r=>r.id===id); if(i>=0) allRec[i] = {...allRec[i],...base};
+    }
+    renderRec(); closeModal('rec-modal'); toast('Saved!'); updateDashboard();
+  } catch(e) {
+    console.error('saveRec error:', e);
+    toast('Error saving prospect: ' + (e.message || 'check console'));
   }
-  renderRec(); closeModal('rec-modal'); toast('Saved!'); updateDashboard();
 }
 
 async function deleteRec() {
@@ -1731,6 +1786,9 @@ function renderProfile(editMode) {
         <div class="form-group"><label>Email <span style="color:var(--text3);font-weight:400;">(contact director to change)</span></label>
           <input value="${p.email||''}" disabled style="opacity:.5;cursor:not-allowed;">
         </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>License Number / NPN</label><input id="pf-lic" value="${p.lic||''}" placeholder="NPN or license #"></div>
       </div>`;
   } else {
     document.getElementById('profile-content').innerHTML = `
@@ -1774,6 +1832,7 @@ function renderProfile(editMode) {
           <span style="font-size:10px;color:var(--text3);">Trainee 30%</span>
           <span style="font-size:10px;color:var(--gold);font-weight:700;">MD 75%</span>
         </div>
+      </div>
 
       <div style="margin-top:14px;">
         <button class="btn btn-ghost fw" style="font-size:13px;" onclick="togglePasswordChange()">🔒 Change Password</button>
@@ -1853,15 +1912,19 @@ async function saveProfile() {
   const name = document.getElementById('pf-name')?.value.trim();
   const phone = document.getElementById('pf-phone')?.value.trim();
   const states = document.getElementById('pf-states')?.value.trim();
+  const lic = document.getElementById('pf-lic')?.value.trim();
   if (!name) { toast('Name is required'); return; }
   try {
+    const patch = { name, phone: phone||'', states: states||'' };
+    if (lic !== undefined) patch.lic = lic;
     await sbFetch(`/rest/v1/profiles?id=eq.${myUid()}`, {
       method: 'PATCH',
-      body: JSON.stringify({ name, phone, states })
+      body: JSON.stringify(patch)
     });
     currentProfile.name = name;
     currentProfile.phone = phone;
     currentProfile.states = states;
+    if (lic !== undefined) currentProfile.lic = lic;
     // Update topbar
     const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
     document.getElementById('top-av').textContent = initials;
@@ -1869,8 +1932,8 @@ async function saveProfile() {
     renderProfile(false);
     toast('Profile updated!');
   } catch(e) {
-    toast('Error saving profile');
-    console.error(e);
+    toast('Error saving profile: ' + (e.message || 'check console'));
+    console.error('saveProfile error:', e);
   }
 }
 
@@ -2406,7 +2469,63 @@ function exportCSV(type) {
 }
 
 // ═══════════════════════════════════════════════════
-//  BULK APPROVE
+//  ADD AGENT MANUALLY (Director)
+// ═══════════════════════════════════════════════════
+function openAddAgentModal() {
+  ['aa-name','aa-phone','aa-email','aa-states'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('aa-tier').value = 'Trainee';
+  document.getElementById('aa-lic').value = 'unlicensed';
+  openModal('add-agent-modal');
+}
+
+async function addAgentManual() {
+  const name = document.getElementById('aa-name').value.trim();
+  const email = document.getElementById('aa-email').value.trim();
+  if (!name || !email) { toast('Name and email required'); return; }
+  const tier = document.getElementById('aa-tier').value;
+  const lic = document.getElementById('aa-lic').value;
+  const states = document.getElementById('aa-states').value.trim();
+  const phone = document.getElementById('aa-phone').value.trim();
+
+  // Check if agent already exists by email
+  try {
+    const existing = await sbFetch(`/rest/v1/profiles?email=eq.${encodeURIComponent(email)}&select=id,name,email,approved`);
+    if (existing && existing.length > 0) {
+      // Agent exists — just approve them if pending
+      const agent = existing[0];
+      if (!agent.approved) {
+        await sbFetch(`/rest/v1/profiles?id=eq.${agent.id}`, {method:'PATCH', body: JSON.stringify({approved:true, tier, lic, states, phone})});
+        toast('Agent found & approved: ' + agent.name);
+      } else {
+        await sbFetch(`/rest/v1/profiles?id=eq.${agent.id}`, {method:'PATCH', body: JSON.stringify({tier, lic, states, phone})});
+        toast('Agent profile updated: ' + agent.name);
+      }
+      await loadAgents();
+      closeModal('add-agent-modal');
+      return;
+    }
+  } catch(e) { console.warn('Email lookup:', e); }
+
+  // Create new profile row directly
+  const newId = uid();
+  const profileData = {
+    id: newId, name, email,
+    phone: phone||'', states: states||'',
+    tier, lic, approved: true, is_director: false
+  };
+  try {
+    await sbFetch('/rest/v1/profiles', {method:'POST', body: JSON.stringify(profileData)});
+    allAgents.unshift({...profileData});
+    renderAgents();
+    closeModal('add-agent-modal');
+    toast('Agent added: ' + name);
+  } catch(e) {
+    console.error('addAgentManual error:', e);
+    toast('Error adding agent: ' + (e.message || 'check console'));
+  }
+}
+
+// ═══════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════
 async function bulkApprove() {
   const pending = allAgents.filter(a => !a.approved && !a.is_director);
