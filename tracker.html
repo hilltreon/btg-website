@@ -1071,10 +1071,11 @@ function showApp() {
 async function loadAll() {
   await Promise.all([loadRec(), loadCli(), loadAppts(), loadExpenses(), currentProfile.is_director ? loadAgents() : Promise.resolve()]);
   updateDashboard();
-  // Restore saved Google Calendar token from profile
-  if (currentProfile.gcal_token) {
-    gcalToken = currentProfile.gcal_token;
-  }
+  // Restore saved Google Calendar token from localStorage
+  try {
+    const saved = localStorage.getItem('btg_gcal_token');
+    if (saved) gcalToken = saved;
+  } catch(e) {}
   // Init GIS once it's loaded (may still be async-loading)
   const tryInitGcal = () => {
     if (window.google?.accounts?.oauth2) { initGcalClient(); }
@@ -1315,15 +1316,14 @@ async function saveRec() {
   const isNew = !document.getElementById('r-id').value;
   const base = {
     id, name,
-    phone: document.getElementById('r-phone').value,
-    email: document.getElementById('r-email').value,
-    state: document.getElementById('r-state').value,
-    lic: document.getElementById('r-lic').value,
-    source: document.getElementById('r-source').value,
-    pipeline_stage: document.getElementById('r-stage').value,
+    phone: document.getElementById('r-phone').value || null,
+    email: document.getElementById('r-email').value || null,
+    state: document.getElementById('r-state').value || null,
+    source: document.getElementById('r-source').value || null,
+    pipeline_stage: document.getElementById('r-stage').value || 'prospect',
     followup_date: document.getElementById('r-followup').value || null,
-    objection: document.getElementById('r-objection').value,
-    notes: document.getElementById('r-notes').value,
+    objection: document.getElementById('r-objection').value || null,
+    notes: document.getElementById('r-notes').value || null,
     owner_id: myUid()
   };
   try {
@@ -1466,14 +1466,19 @@ async function saveCli() {
     review_date: document.getElementById('c-review').value||null,
     owner_id: myUid()
   };
-  if (isNew) {
-    await sbFetch('/rest/v1/client_records', {method:'POST', body: JSON.stringify(data)});
-    allCli.unshift(data);
-  } else {
-    await sbFetch(`/rest/v1/client_records?id=eq.${id}`, {method:'PATCH', body: JSON.stringify(data)});
-    const i = allCli.findIndex(r=>r.id===id); if(i>=0) allCli[i] = {...allCli[i],...data};
+  try {
+    if (isNew) {
+      await sbFetch('/rest/v1/client_records', {method:'POST', body: JSON.stringify(data)});
+      allCli.unshift(data);
+    } else {
+      await sbFetch(`/rest/v1/client_records?id=eq.${id}`, {method:'PATCH', body: JSON.stringify(data)});
+      const i = allCli.findIndex(r=>r.id===id); if(i>=0) allCli[i] = {...allCli[i],...data};
+    }
+    renderCli(); closeModal('cli-modal'); toast('Saved!'); updateDashboard();
+  } catch(e) {
+    console.error('saveCli:', e);
+    toast('Save failed: ' + (e.message||'unknown error'));
   }
-  renderCli(); closeModal('cli-modal'); toast('Saved!'); updateDashboard();
 }
 
 async function deleteCli() {
@@ -1623,18 +1628,21 @@ async function saveAppt() {
   const id = document.getElementById('a-id').value || uid();
   const isNew = !document.getElementById('a-id').value;
   const data = {id, name, phone: document.getElementById('a-phone').value, date, time: document.getElementById('a-time').value, type: document.getElementById('a-type').value, pre_notes: document.getElementById('a-pre').value, outcome:'pending', owner_id: myUid()};
-  if (isNew) {
-    await sbFetch('/rest/v1/appointments', {method:'POST', body: JSON.stringify(data)});
-    allAppts.push(data); allAppts.sort((a,b)=>a.date>b.date?1:-1);
-  } else {
-    await sbFetch(`/rest/v1/appointments?id=eq.${id}`, {method:'PATCH', body: JSON.stringify(data)});
-    const i = allAppts.findIndex(r=>r.id===id); if(i>=0) allAppts[i] = {...allAppts[i],...data};
-  }
-  renderAppts(); closeModal('appt-modal'); toast('Saved!');
-
-  // Push to Google Calendar if connected and checkbox checked
-  if (gcalToken && document.getElementById('a-gcal-sync')?.checked) {
-    await pushToGcal(data);
+  try {
+    if (isNew) {
+      await sbFetch('/rest/v1/appointments', {method:'POST', body: JSON.stringify(data)});
+      allAppts.push(data); allAppts.sort((a,b)=>a.date>b.date?1:-1);
+    } else {
+      await sbFetch(`/rest/v1/appointments?id=eq.${id}`, {method:'PATCH', body: JSON.stringify(data)});
+      const i = allAppts.findIndex(r=>r.id===id); if(i>=0) allAppts[i] = {...allAppts[i],...data};
+    }
+    renderAppts(); closeModal('appt-modal'); toast('Saved!');
+    if (gcalToken && document.getElementById('a-gcal-sync')?.checked) {
+      await pushToGcal(data);
+    }
+  } catch(e) {
+    console.error('saveAppt:', e);
+    toast('Save failed: ' + (e.message||'unknown error'));
   }
 }
 
@@ -1864,7 +1872,6 @@ function renderProfile(editMode) {
                <img src="https://www.google.com/favicon.ico" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"> Connect Google Calendar
              </button>`
         }
-      </div>
       </div>`;
   }
 }
@@ -2288,14 +2295,9 @@ function initGcalClient() {
     callback: async (resp) => {
       if (resp.error) { toast('Google Calendar: ' + resp.error); return; }
       gcalToken = resp.access_token;
-      // Save token to profile in Supabase so it persists
-      try {
-        await sbFetch('/rest/v1/profiles?id=eq.' + myUid(), {
-          method: 'PATCH',
-          body: JSON.stringify({gcal_token: gcalToken})
-        });
-        currentProfile.gcal_token = gcalToken;
-      } catch(e) {}
+      // Store in-memory only (gcal_token column not in profiles table)
+      // Token will need to be re-authorized each session
+      try { localStorage.setItem('btg_gcal_token', gcalToken); } catch(e) {}
       toast('Google Calendar connected!');
       renderProfile(false);
       updateGcalSyncRow();
@@ -2322,10 +2324,7 @@ function disconnectGcal() {
   }
   gcalToken = null;
   currentProfile.gcal_token = null;
-  sbFetch('/rest/v1/profiles?id=eq.' + myUid(), {
-    method: 'PATCH',
-    body: JSON.stringify({gcal_token: null})
-  }).catch(()=>{});
+  try { localStorage.removeItem('btg_gcal_token'); } catch(e) {}
   toast('Google Calendar disconnected');
   renderProfile(false);
   updateGcalSyncRow();
