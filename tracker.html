@@ -101,6 +101,13 @@ label{font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bot
 #topbar .user-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border-radius:20px;padding:5px 12px 5px 5px;cursor:pointer;}
 #topbar .user-chip .av{width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);}
 #topbar .user-chip .name{font-size:13px;font-weight:600;}
+#topbar .user-chip .av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.avatar-upload-wrap{position:relative;width:80px;height:80px;margin:0 auto 12px;cursor:pointer;}
+.avatar-upload-wrap .av-img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);}
+.avatar-upload-wrap .av-initials{width:80px;height:80px;border-radius:50%;background:var(--gold-soft);color:var(--amber);font-family:var(--display);font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;border:3px solid var(--gold);}
+.avatar-upload-wrap .av-overlay{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;color:#fff;font-size:11px;font-weight:700;letter-spacing:.3px;text-align:center;line-height:1.3;}
+.avatar-upload-wrap:hover .av-overlay{opacity:1;}
 
 /* ── NAV TABS ── */
 #nav{background:var(--card);border-bottom:1.5px solid var(--border);display:flex;flex-shrink:0;overflow-x:auto;scrollbar-width:none;padding:0 16px;}
@@ -365,7 +372,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
   <div class="logo">BTG <span>Portal</span></div>
   <button class="dark-toggle" onclick="toggleDark()" id="dark-btn" title="Toggle dark mode">🌙</button>
   <div class="user-chip" onclick="showProfile()">
-    <div class="av" id="top-av">T</div>
+    <div class="av" id="top-av" style="overflow:hidden;">T</div>
     <div class="name" id="top-name">Agent</div>
   </div>
 </div>
@@ -1137,7 +1144,7 @@ function showApp() {
   document.getElementById('mobnav').classList.remove('hidden');
 
   const initials = (currentProfile.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  document.getElementById('top-av').textContent = initials;
+  updateTopbarAvatar();
   document.getElementById('top-name').textContent = currentProfile.name?.split(' ')[0] || 'Agent';
 
   // Director-only elements
@@ -1616,8 +1623,11 @@ function renderAgents() {
     const cliCount = allCli.filter(r=>r.owner_id===a.id).length;
     const appCount = allCli.filter(r=>r.owner_id===a.id && (r.pipeline_stage==='application'||r.pipeline_stage==='client')).length;
     const pts = allCli.filter(r=>r.owner_id===a.id).reduce((s,r)=>s+(r.points_value||0),0);
+    const avHtml = a.avatar_url
+      ? `<img src="${a.avatar_url}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="${initials}">`
+      : `<div class="av" style="background:${color}20;color:${color}">${initials}</div>`;
     return `<div class="agent-card" style="cursor:pointer;" onclick="openAgentDetail('${a.id}')">
-      <div class="av" style="background:${color}20;color:${color}">${initials}</div>
+      ${avHtml}
       <div class="ac-info">
         <div class="ac-name">${a.name} ${a.is_director?'<span class="director-tag">DIRECTOR</span>':''}</div>
         <div class="ac-sub">${a.email} · ${a.tier||'Trainee'}</div>
@@ -1897,6 +1907,70 @@ function updateDailyFocus() {
 }
 
 // ═══════════════════════════════════════════════════
+//  AVATAR
+// ═══════════════════════════════════════════════════
+function updateTopbarAvatar() {
+  const av = document.getElementById('top-av');
+  if (!av) return;
+  const initials = (currentProfile.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  if (currentProfile.avatar_url) {
+    av.innerHTML = `<img src="${currentProfile.avatar_url}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="${initials}">`;
+    av.textContent = '';
+  } else {
+    av.innerHTML = '';
+    av.textContent = initials;
+  }
+}
+
+async function uploadAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('Image too large — max 5MB'); input.value = ''; return; }
+
+  toast('Uploading photo…');
+  try {
+    const token = currentUser?.access_token;
+    const uid = myUid();
+    const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+    const filePath = uid + '/avatar.' + ext;
+
+    const uploadRes = await fetch(`${SB_URL}/storage/v1/object/avatars/${filePath}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true'
+      },
+      body: file
+    });
+
+    if (!uploadRes.ok) {
+      const err = await uploadRes.json().catch(()=>({}));
+      throw new Error(err.message || uploadRes.statusText);
+    }
+
+    // Build public URL (bucket is public)
+    const publicUrl = `${SB_URL}/storage/v1/object/public/avatars/${filePath}`;
+
+    // Save URL to profile
+    await sbFetch(`/rest/v1/profiles?id=eq.${uid}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ avatar_url: publicUrl })
+    });
+
+    currentProfile.avatar_url = publicUrl;
+    updateTopbarAvatar();
+    renderProfile(false);
+    toast('Photo updated!');
+  } catch(e) {
+    console.error('Avatar upload error:', e);
+    toast('Upload failed: ' + (e.message || 'check console'));
+  }
+  input.value = '';
+}
+
+// ═══════════════════════════════════════════════════
 //  PROFILE
 // ═══════════════════════════════════════════════════
 function showProfile() {
@@ -1919,7 +1993,13 @@ function renderProfile(editMode) {
   if (editMode) {
     document.getElementById('profile-content').innerHTML = `
       <div style="text-align:center;margin-bottom:20px;">
-        <div style="width:64px;height:64px;border-radius:50%;background:var(--gold-soft);color:var(--amber);font-family:var(--display);font-size:24px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">${initials}</div>
+        <div class="avatar-upload-wrap" onclick="document.getElementById('av-file-input-edit').click()" title="Tap to change photo">
+          ${p.avatar_url
+            ? `<img class="av-img" src="${p.avatar_url}?t=${Date.now()}" alt="avatar">`
+            : `<div class="av-initials">${initials}</div>`}
+          <div class="av-overlay">📷<br>Change<br>Photo</div>
+        </div>
+        <input type="file" id="av-file-input-edit" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="uploadAvatar(this)">
         ${p.is_director ? '<span class="director-tag">DIRECTOR</span>' : `<span class="badge badge-gold">${p.tier||'Trainee'} · ${tierPct}%</span>`}
       </div>
       <div class="form-row">
@@ -1940,7 +2020,13 @@ function renderProfile(editMode) {
   } else {
     document.getElementById('profile-content').innerHTML = `
       <div style="text-align:center;margin-bottom:20px;">
-        <div style="width:64px;height:64px;border-radius:50%;background:var(--gold-soft);color:var(--amber);font-family:var(--display);font-size:24px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">${initials}</div>
+        <div class="avatar-upload-wrap" onclick="document.getElementById('av-file-input').click()" title="Tap to change photo">
+          ${p.avatar_url
+            ? `<img class="av-img" src="${p.avatar_url}?t=${Date.now()}" alt="avatar">`
+            : `<div class="av-initials">${initials}</div>`}
+          <div class="av-overlay">📷<br>Change<br>Photo</div>
+        </div>
+        <input type="file" id="av-file-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="uploadAvatar(this)">
         <div style="font-family:var(--display);font-size:18px;font-weight:800;">${p.name||'—'}</div>
         <div style="font-size:13px;color:var(--text3);margin-top:3px;">${p.email||''}</div>
         ${p.phone ? `<div style="font-size:13px;color:var(--text3);margin-top:2px;">${p.phone}</div>` : ''}
@@ -2072,8 +2158,7 @@ async function saveProfile() {
     currentProfile.states = states;
     if (lic !== undefined) currentProfile.lic = lic;
     // Update topbar
-    const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-    document.getElementById('top-av').textContent = initials;
+    updateTopbarAvatar();
     document.getElementById('top-name').textContent = name.split(' ')[0];
     renderProfile(false);
     toast('Profile updated!');
