@@ -1049,7 +1049,38 @@ let recFilter = '', cliFilter = '', productFilter = 'all', agentFilter = 'all', 
 let recView = 'mine'; // 'mine' = only my prospects, 'all' = all agents (director only)
 
 // ── HTTP helpers ──
-async function sbFetch(path, opts={}) {
+let _refreshPromise = null;
+
+async function refreshSession() {
+  // Only one refresh at a time
+  if (_refreshPromise) return _refreshPromise;
+  _refreshPromise = (async () => {
+    try {
+      const refreshToken = currentUser?.refresh_token;
+      if (!refreshToken) throw new Error('No refresh token');
+      const r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', {
+        method: 'POST',
+        headers: {'apikey': SB_KEY, 'Content-Type': 'application/json'},
+        body: JSON.stringify({refresh_token: refreshToken})
+      });
+      const data = await r.json();
+      if (data.access_token) {
+        currentUser = normalizeSession({...currentUser, ...data});
+        saveSession(currentUser);
+        return true;
+      }
+      return false;
+    } catch(e) {
+      console.warn('Token refresh failed:', e);
+      return false;
+    } finally {
+      _refreshPromise = null;
+    }
+  })();
+  return _refreshPromise;
+}
+
+async function sbFetch(path, opts={}, _retry=true) {
   const token = currentUser?.access_token;
   const r = await fetch(SB_URL + path, {
     ...opts,
@@ -1061,6 +1092,17 @@ async function sbFetch(path, opts={}) {
       ...(opts.headers||{})
     }
   });
+
+  // Auto-refresh on 401 JWT expired, then retry once
+  if (r.status === 401 && _retry) {
+    const refreshed = await refreshSession();
+    if (refreshed) return sbFetch(path, opts, false);
+    // Refresh failed — session is dead, kick to login
+    clearSession(); currentUser = null;
+    location.reload();
+    return;
+  }
+
   if (!r.ok && r.status !== 406) {
     const e = await r.json().catch(()=>({}));
     throw new Error(e.message || r.statusText);
@@ -1081,6 +1123,22 @@ async function sbAuth(path, body) {
 function saveSession(s) { try { localStorage.setItem('btg_session', JSON.stringify(s)); } catch(e){} }
 function loadSession() { try { return JSON.parse(localStorage.getItem('btg_session')); } catch(e){ return null; } }
 function clearSession() { try { localStorage.removeItem('btg_session'); } catch(e){} }
+
+// ── Proactive token refresh — refresh 5 min before expiry ──
+function scheduleTokenRefresh() {
+  try {
+    if (!currentUser?.access_token) return;
+    // Decode expiry from JWT payload
+    const payload = JSON.parse(atob(currentUser.access_token.split('.')[1]));
+    const expiresAt = payload.exp * 1000; // ms
+    const refreshAt = expiresAt - 5 * 60 * 1000; // 5 min early
+    const delay = Math.max(refreshAt - Date.now(), 10000); // at least 10s
+    setTimeout(async () => {
+      await refreshSession();
+      scheduleTokenRefresh(); // reschedule after refresh
+    }, delay);
+  } catch(e) { console.warn('scheduleTokenRefresh:', e); }
+}
 
 // ═══════════════════════════════════════════════════
 //  INIT
@@ -1128,6 +1186,7 @@ async function initApp() {
       clearSession(); currentUser = null; return;
     }
     showApp();
+    scheduleTokenRefresh();
     await loadAll();
   } catch(e) {
     console.error('initApp error:', e);
