@@ -1021,7 +1021,18 @@ let gcalTokenClient = null; // GIS token client instance
 
 let currentUser = null;
 let currentProfile = null;
-function myUid() { return currentUser?.user?.id || currentUser?.id || ''; }
+function myUid() {
+  // Supabase token response: { access_token, user: { id } }
+  // Also handle flat shapes: { id } or { sub }
+  return currentUser?.user?.id || currentUser?.id || currentUser?.sub || '';
+}
+function normalizeSession(s) {
+  if (!s) return s;
+  // Ensure user.id is always populated from wherever it lives
+  if (!s.user) s.user = {};
+  if (!s.user.id) s.user.id = s.id || s.sub || s.user?.sub || '';
+  return s;
+}
 let allRec = [], allCli = [], allAgents = [], allAppts = [];
 let recFilter = '', cliFilter = '', productFilter = 'all', agentFilter = 'all', apptFilter = 'all';
 
@@ -1082,7 +1093,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
   const saved = loadSession();
   if (saved?.access_token) {
-    currentUser = saved;
+    currentUser = normalizeSession(saved);
     await initApp();
   }
 });
@@ -1201,8 +1212,8 @@ async function doSetPassword(token) {
   const authRes = await sbAuth('/token?grant_type=password', {email, password: pass});
   if (authRes.access_token) {
     if (!authRes.user) authRes.user = {id: authRes.id || authRes.sub, email};
-    currentUser = authRes;
-    saveSession(authRes);
+    currentUser = normalizeSession(authRes);
+    saveSession(currentUser);
     window.location.hash = '';
     await initApp();
   } else {
@@ -1223,8 +1234,8 @@ async function doLogin() {
     // Normalize: Supabase token endpoint may return user fields at top level
     if (!res.user) res.user = {id: res.id || res.sub, email: res.email};
     if (!res.user?.id) { showAuthMsg('Login failed — unexpected response. Try again.'); return; }
-    currentUser = res;
-    saveSession(res);
+    currentUser = normalizeSession(res);
+    saveSession(currentUser);
     await initApp();
   } catch(e) {
     showAuthMsg('Network error. Check connection and try again.');
@@ -1713,7 +1724,7 @@ async function saveAppt() {
     }
   } catch(e) {
     console.error('saveAppt:', e);
-    toast('Save failed: ' + (e.message||'unknown error'));
+    toast('Save failed: ' + (e.message || 'check console'), 4000);
   }
 }
 
