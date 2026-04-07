@@ -451,6 +451,10 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div><div class="section-title">Recruiting Pipeline</div><div class="section-sub">Track prospects from first contact to active agent</div></div>
       <div class="flex gap8"><button class="export-btn" onclick="exportCSV('rec')">⬇ Export</button><button class="btn btn-navy" onclick="openModal('rec-modal')">+ Add Prospect</button></div>
     </div>
+    <div id="rec-view-toggle" class="filter-chips director-only" style="margin-bottom:12px;">
+      <div class="chip active" onclick="setRecView('mine',this)">👤 My Prospects</div>
+      <div class="chip" onclick="setRecView('all',this)">🏢 All Agents</div>
+    </div>
     <div class="search-bar"><span class="si">🔍</span><input placeholder="Search prospects..." oninput="filterRec(this.value)" id="rec-search"></div>
     <div class="pipeline-wrap" id="rec-pipeline">
       <div class="pipeline-col">
@@ -1035,6 +1039,7 @@ function normalizeSession(s) {
 }
 let allRec = [], allCli = [], allAgents = [], allAppts = [];
 let recFilter = '', cliFilter = '', productFilter = 'all', agentFilter = 'all', apptFilter = 'all';
+let recView = 'mine'; // 'mine' = only my prospects, 'all' = all agents (director only)
 
 // ── HTTP helpers ──
 async function sbFetch(path, opts={}) {
@@ -1320,9 +1325,21 @@ async function loadRec() {
   } catch(e) { allRec = []; }
 }
 
+function setRecView(view, el) {
+  recView = view;
+  document.querySelectorAll('#rec-view-toggle .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderRec();
+}
+
 function renderRec() {
   const q = recFilter.toLowerCase();
-  const filtered = allRec.filter(r => !q || r.name?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q));
+  // Directors: filter by view toggle (mine vs all). Agents: always their own.
+  let viewFiltered = allRec;
+  if (currentProfile?.is_director && recView === 'mine') {
+    viewFiltered = allRec.filter(r => r.owner_id === myUid());
+  }
+  const filtered = viewFiltered.filter(r => !q || r.name?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q));
   const stages = ['prospect','contracting','active'];
   stages.forEach(s => {
     const col = document.getElementById('col-' + s);
@@ -1330,7 +1347,7 @@ function renderRec() {
     document.getElementById('col-' + s + '-count').textContent = items.length;
     col.innerHTML = items.length ? items.map(r => recCard(r)).join('') : `<div class="empty-col"><div class="empty-icon">📋</div>No records</div>`;
   });
-  document.getElementById('rec-count').textContent = allRec.length;
+  document.getElementById('rec-count').textContent = filtered.length;
 }
 
 function recCard(r) {
@@ -2659,12 +2676,13 @@ async function openAgentDetail(agentId) {
 async function saveAgentGoals() {
   const agentId = document.getElementById('adm-agent-id').value;
   if (!agentId) return;
+  const pdfPath = document.getElementById('adm-pdf-data').value || null;
   const patch = {
     goal_apps:      parseInt(document.getElementById('adm-goal-apps').value)||0,
     goal_pts:       parseInt(document.getElementById('adm-goal-pts').value)||0,
     goal_prospects: parseInt(document.getElementById('adm-goal-prospects').value)||0,
     goal_note:      document.getElementById('adm-goal-note').value||'',
-    goal_pdf:       document.getElementById('adm-pdf-data').value || null
+    goal_pdf:       pdfPath
   };
   try {
     await sbFetch('/rest/v1/profiles?id=eq.' + agentId, {method:'PATCH', body: JSON.stringify(patch)});
@@ -2678,31 +2696,64 @@ async function saveAgentGoals() {
   }
 }
 
-function handleAgentPdf(input) {
+async function handleAgentPdf(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 4 * 1024 * 1024) { toast('PDF too large — max 4MB'); input.value = ''; return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('adm-pdf-data').value = e.target.result;
+  if (file.size > 10 * 1024 * 1024) { toast('PDF too large — max 10MB'); input.value = ''; return; }
+  const agentId = document.getElementById('adm-agent-id').value;
+  if (!agentId) { toast('No agent selected'); return; }
+
+  toast('Uploading PDF…');
+  try {
+    const token = currentUser?.access_token;
+    const filePath = agentId + '/goal-sheet.pdf';
+    const uploadRes = await fetch(`${SB_URL}/storage/v1/object/goal-pdfs/${filePath}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/pdf',
+        'x-upsert': 'true'
+      },
+      body: file
+    });
+    if (!uploadRes.ok) {
+      const err = await uploadRes.json().catch(()=>({}));
+      throw new Error(err.message || uploadRes.statusText);
+    }
+    // Store the path (not base64) in the hidden field
+    document.getElementById('adm-pdf-data').value = filePath;
     document.getElementById('adm-pdf-name').textContent = file.name;
     document.getElementById('adm-pdf-preview').classList.remove('hidden');
     document.getElementById('adm-pdf-upload-btn').classList.add('hidden');
-    toast('PDF ready — hit Save Goals to upload');
-  };
-  reader.readAsDataURL(file);
+    toast('PDF uploaded — hit Save Goals to confirm');
+  } catch(e) {
+    console.error('PDF upload error:', e);
+    toast('Upload failed: ' + (e.message || 'check console'));
+  }
   input.value = '';
 }
 
-function viewAgentPdf() {
-  const data = document.getElementById('adm-pdf-data').value;
-  if (!data) return;
-  const w = window.open();
-  w.document.write('<iframe src="' + data + '" style="width:100%;height:100vh;border:none;"></iframe>');
+async function viewAgentPdf() {
+  const path = document.getElementById('adm-pdf-data').value;
+  if (!path) return;
+  try {
+    const token = currentUser?.access_token;
+    const res = await fetch(`${SB_URL}/storage/v1/object/goal-pdfs/${path}`, {
+      headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Could not fetch PDF');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  } catch(e) {
+    toast('Could not open PDF: ' + (e.message || 'check console'));
+  }
 }
 
 function removeAgentPdf() {
   document.getElementById('adm-pdf-data').value = '';
+  document.getElementById('adm-pdf-name').textContent = 'goal-sheet.pdf';
   document.getElementById('adm-pdf-preview').classList.add('hidden');
   document.getElementById('adm-pdf-upload-btn').classList.remove('hidden');
 }
