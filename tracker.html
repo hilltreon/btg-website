@@ -463,6 +463,37 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div class="chip" onclick="setRecView('all',this)">🏢 All Agents</div>
     </div>
     <div class="search-bar"><span class="si">🔍</span><input placeholder="Search prospects..." oninput="filterRec(this.value)" id="rec-search"></div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="lbl" style="flex-shrink:0;">Source</span>
+        <div class="filter-chips" id="rec-source-filters" style="margin:0;gap:5px;">
+          <div class="chip active" onclick="filterRecSource('all',this)">All</div>
+          <div class="chip" onclick="filterRecSource('Indeed',this)">Indeed</div>
+          <div class="chip" onclick="filterRecSource('LinkedIn',this)">LinkedIn</div>
+          <div class="chip" onclick="filterRecSource('referral',this)">Referral</div>
+          <div class="chip" onclick="filterRecSource('social',this)">Social</div>
+          <div class="chip" onclick="filterRecSource('cold-call',this)">Cold Call</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="lbl" style="flex-shrink:0;">License</span>
+        <div class="filter-chips" id="rec-lic-filters" style="margin:0;gap:5px;">
+          <div class="chip active" onclick="filterRecLic('all',this)">All</div>
+          <div class="chip" onclick="filterRecLic('unlicensed',this)">Unlicensed</div>
+          <div class="chip" onclick="filterRecLic('in-progress',this)">In Progress</div>
+          <div class="chip" onclick="filterRecLic('licensed',this)">Licensed</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="lbl" style="flex-shrink:0;">Follow-Up</span>
+        <div class="filter-chips" id="rec-fu-filters" style="margin:0;gap:5px;">
+          <div class="chip active" onclick="filterRecFu('all',this)">All</div>
+          <div class="chip" onclick="filterRecFu('overdue',this)" style="color:var(--red);border-color:var(--red);">🔴 Overdue</div>
+          <div class="chip" onclick="filterRecFu('soon',this)" style="color:var(--amber);border-color:var(--amber);">🟡 Due Soon</div>
+          <div class="chip" onclick="filterRecFu('none',this)">No Date Set</div>
+        </div>
+      </div>
+    </div>
     <div class="pipeline-wrap" id="rec-pipeline">
       <div class="pipeline-col">
         <div class="pipeline-col-header">
@@ -495,12 +526,47 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div class="flex gap8"><button class="export-btn" onclick="exportCSV('cli')">⬇ Export</button><button class="btn btn-gold" onclick="openCliModal()">+ Add Lead</button></div>
     </div>
     <div class="search-bar"><span class="si">🔍</span><input placeholder="Search clients..." oninput="filterCli(this.value)" id="cli-search"></div>
-    <div class="filter-chips" id="product-filters">
-      <div class="chip active" onclick="filterByProduct('all',this)">All Products</div>
-      <div class="chip" onclick="filterByProduct('IUL',this)">IUL</div>
-      <div class="chip" onclick="filterByProduct('Term',this)">Term</div>
-      <div class="chip" onclick="filterByProduct('Whole Life',this)">Whole Life</div>
-      <div class="chip" onclick="filterByProduct('Group',this)">Group Benefits</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="lbl" style="flex-shrink:0;">Product</span>
+        <div class="filter-chips" id="product-filters" style="margin:0;gap:5px;">
+          <div class="chip active" onclick="filterByProduct('all',this)">All Products</div>
+          <div class="chip" onclick="filterByProduct('IUL',this)">IUL</div>
+          <div class="chip" onclick="filterByProduct('Term',this)">Term</div>
+          <div class="chip" onclick="filterByProduct('Whole Life',this)">Whole Life</div>
+          <div class="chip" onclick="filterByProduct('Group',this)">Group Benefits</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="lbl" style="flex-shrink:0;">UW Status</span>
+        <div class="filter-chips" id="cli-uw-filters" style="margin:0;gap:5px;">
+          <div class="chip active" onclick="filterCliUw('all',this)">All</div>
+          <div class="chip" onclick="filterCliUw('pending',this)">Pending</div>
+          <div class="chip" onclick="filterCliUw('approved',this)" style="color:var(--green);border-color:var(--green);">Approved</div>
+          <div class="chip" onclick="filterCliUw('rated',this)">Rated</div>
+          <div class="chip" onclick="filterCliUw('declined',this)" style="color:var(--red);border-color:var(--red);">Declined</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="lbl" style="flex-shrink:0;">Source</span>
+        <div class="filter-chips" id="cli-source-filters" style="margin:0;gap:5px;">
+          <div class="chip active" onclick="filterCliSource('all',this)">All</div>
+          <div class="chip" onclick="filterCliSource('agent-referral',this)">Agent Referral</div>
+          <div class="chip" onclick="filterCliSource('personal-referral',this)">Personal Referral</div>
+          <div class="chip" onclick="filterCliSource('lead',this)">Purchased Lead</div>
+          <div class="chip" onclick="filterCliSource('social',this)">Social</div>
+          <div class="chip" onclick="filterCliSource('cold',this)">Cold</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="lbl" style="flex-shrink:0;">Follow-Up</span>
+        <div class="filter-chips" id="cli-fu-filters" style="margin:0;gap:5px;">
+          <div class="chip active" onclick="filterCliFu('all',this)">All</div>
+          <div class="chip" onclick="filterCliFu('overdue',this)" style="color:var(--red);border-color:var(--red);">🔴 Overdue</div>
+          <div class="chip" onclick="filterCliFu('soon',this)" style="color:var(--amber);border-color:var(--amber);">🟡 Due Soon</div>
+          <div class="chip" onclick="filterCliFu('none',this)">No Date Set</div>
+        </div>
+      </div>
     </div>
     <div class="pipeline-wrap" id="cli-pipeline">
       <div class="pipeline-col">
@@ -1046,6 +1112,8 @@ function normalizeSession(s) {
 }
 let allRec = [], allCli = [], allAgents = [], allAppts = [];
 let recFilter = '', cliFilter = '', productFilter = 'all', agentFilter = 'all', apptFilter = 'all';
+let recSourceFilter = 'all', recLicFilter = 'all', recFuFilter = 'all';
+let cliFuFilter = 'all', cliUwFilter = 'all', cliSourceFilter = 'all';
 let recView = 'mine'; // 'mine' = only my prospects, 'all' = all agents (director only)
 
 // ── HTTP helpers ──
@@ -1400,12 +1468,24 @@ function setRecView(view, el) {
 
 function renderRec() {
   const q = recFilter.toLowerCase();
+  const today = new Date().toISOString().slice(0,10);
   // Directors: filter by view toggle (mine vs all). Agents: always their own.
   let viewFiltered = allRec;
   if (currentProfile?.is_director && recView === 'mine') {
     viewFiltered = allRec.filter(r => r.owner_id === myUid());
   }
-  const filtered = viewFiltered.filter(r => !q || r.name?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q));
+  const filtered = viewFiltered.filter(r => {
+    const matchQ = !q || r.name?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q);
+    const matchSource = recSourceFilter === 'all' || (r.source || '') === recSourceFilter;
+    const matchLic = recLicFilter === 'all' || (r.lic || 'unlicensed') === recLicFilter;
+    let matchFu = true;
+    if (recFuFilter === 'overdue') matchFu = r.followup_date && r.followup_date < today;
+    else if (recFuFilter === 'soon') {
+      const soon = new Date(); soon.setDate(soon.getDate()+3);
+      matchFu = r.followup_date && r.followup_date >= today && r.followup_date <= soon.toISOString().slice(0,10);
+    } else if (recFuFilter === 'none') matchFu = !r.followup_date;
+    return matchQ && matchSource && matchLic && matchFu;
+  });
   const stages = ['new-lead','licensing','licensed-agent'];
   stages.forEach(s => {
     const col = document.getElementById('col-' + s);
@@ -1531,10 +1611,19 @@ async function loadCli() {
 
 function renderCli() {
   const q = cliFilter.toLowerCase();
+  const today = new Date().toISOString().slice(0,10);
   const filtered = allCli.filter(r => {
     const matchQ = !q || r.name?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q);
     const matchP = productFilter === 'all' || r.product_interest === productFilter;
-    return matchQ && matchP;
+    const matchUw = cliUwFilter === 'all' || (r.uw_status || '') === cliUwFilter;
+    const matchSrc = cliSourceFilter === 'all' || (r.source || '') === cliSourceFilter;
+    let matchFu = true;
+    if (cliFuFilter === 'overdue') matchFu = r.followup_date && r.followup_date < today;
+    else if (cliFuFilter === 'soon') {
+      const soon = new Date(); soon.setDate(soon.getDate()+3);
+      matchFu = r.followup_date && r.followup_date >= today && r.followup_date <= soon.toISOString().slice(0,10);
+    } else if (cliFuFilter === 'none') matchFu = !r.followup_date;
+    return matchQ && matchP && matchUw && matchSrc && matchFu;
   });
   const stages = ['lead','application','client'];
   stages.forEach(s => {
@@ -1578,6 +1667,43 @@ function filterCli(v) { cliFilter = v; renderCli(); }
 function filterByProduct(p, el) {
   productFilter = p;
   document.querySelectorAll('#product-filters .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderCli();
+}
+
+function filterRecSource(v, el) {
+  recSourceFilter = v;
+  document.querySelectorAll('#rec-source-filters .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderRec();
+}
+function filterRecLic(v, el) {
+  recLicFilter = v;
+  document.querySelectorAll('#rec-lic-filters .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderRec();
+}
+function filterRecFu(v, el) {
+  recFuFilter = v;
+  document.querySelectorAll('#rec-fu-filters .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderRec();
+}
+function filterCliUw(v, el) {
+  cliUwFilter = v;
+  document.querySelectorAll('#cli-uw-filters .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderCli();
+}
+function filterCliSource(v, el) {
+  cliSourceFilter = v;
+  document.querySelectorAll('#cli-source-filters .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderCli();
+}
+function filterCliFu(v, el) {
+  cliFuFilter = v;
+  document.querySelectorAll('#cli-fu-filters .chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   renderCli();
 }
