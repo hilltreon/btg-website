@@ -967,7 +967,12 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div class="form-group"><label>Objection Tag</label><select id="r-objection"><option value="">None</option><option value="fee">Fee Concern</option><option value="time">No Time</option><option value="other-agency">Other Agency</option><option value="not-interested">Not Interested</option></select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Notes / Objections</label><textarea id="r-notes" placeholder="Any notes, objections, or follow-up reminders..."></textarea></div>
+      <div class="form-group">
+        <label>Prospect Qualities <span style="font-size:10px;font-weight:400;color:var(--text3);">— tap to tag</span></label>
+        <div id="trait-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+        <label>Notes / Objections</label>
+        <textarea id="r-notes" placeholder="Any notes, objections, or follow-up reminders..."></textarea>
+      </div>
     </div>
     <input type="hidden" id="r-id">
     <div class="modal-footer">
@@ -1592,6 +1597,13 @@ function recCard(r) {
   const prev = stage === 'licensing' ? 'new-lead' : stage === 'licensed-agent' ? 'licensing' : null;
   const next = stage === 'new-lead' ? 'licensing' : stage === 'licensing' ? 'licensed-agent' : null;
   const fuClass = getFollowupClass(r.followup_date);
+  const traitMatch = (r.notes||'').match(/^Qualities:\s*(.+)/m);
+  const traitBadges = traitMatch
+    ? traitMatch[1].split(',').map(t => t.trim()).filter(Boolean).map(t => {
+        const trait = PROSPECT_TRAITS.find(x => x.v === t);
+        return `<span class="badge badge-purple" style="font-size:10px;">${trait ? trait.e+' ' : ''}${t}</span>`;
+      }).join('')
+    : '';
   return `<div class="pipeline-card ${fuClass}" onclick="editRec('${r.id}')">
     <div class="pc-name">${r.name}</div>
     <div class="pc-sub">${r.phone||''} ${r.state ? '· '+r.state : ''}</div>
@@ -1600,6 +1612,7 @@ function recCard(r) {
       ${r.source ? `<span class="badge badge-gray">${r.source}</span>` : ''}
       ${r.followup_date ? followupBadge(r.followup_date) : ''}
     </div>
+    ${traitBadges ? `<div class="pc-meta" style="margin-top:5px;">${traitBadges}</div>` : ''}
     <div class="pc-actions">
       ${prev ? `<button class="stage-btn back" onclick="event.stopPropagation();moveRec('${r.id}','${prev}')">← ${capitalize(prev)}</button>` : ''}
       ${next ? `<button class="stage-btn fwd" onclick="event.stopPropagation();moveRec('${r.id}','${next}')">→ ${capitalize(next==='licensed-agent'?'Licensed Agent':next)}</button>` : ''}
@@ -1635,6 +1648,7 @@ function openRecModal(rec=null) {
   document.getElementById('r-id').value = rec?.id || '';
   document.getElementById('rec-modal-title').textContent = rec ? 'Edit Prospect' : 'Add Prospect';
   document.getElementById('r-delete').classList.toggle('hidden', !rec);
+  loadTraitsFromNotes(rec?.notes||'');
   openModal('rec-modal');
 }
 
@@ -1950,6 +1964,65 @@ async function deleteIllustration(id, filePath) {
     toast('Delete failed: ' + (e.message || 'check console'));
   }
 }
+// ─── PROSPECT TRAIT PICKER ───────────────────────────
+const PROSPECT_TRAITS = [
+  {v:'Ambitious',      e:'🔥'},
+  {v:'Competitive',    e:'🏆'},
+  {v:'Entrepreneur',   e:'💡'},
+  {v:'Open-Minded',    e:'🧠'},
+  {v:'Money-Motivated',e:'💰'},
+  {v:'People Person',  e:'🤝'},
+  {v:'Self-Starter',   e:'⚡'},
+  {v:'Goal-Oriented',  e:'🎯'},
+  {v:'Coachable',      e:'📈'},
+  {v:'Reliable',       e:'✅'},
+  {v:'Leader',         e:'👑'},
+  {v:'Hungry',         e:'😤'},
+];
+let selectedTraits = new Set();
+
+function renderTraitChips() {
+  const container = document.getElementById('trait-chips');
+  if (!container) return;
+  container.innerHTML = PROSPECT_TRAITS.map(t => {
+    const active = selectedTraits.has(t.v);
+    return `<div onclick="toggleTrait('${t.v}')" style="
+      padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;
+      border:1.5px solid ${active ? 'var(--navy)' : 'var(--border)'};
+      background:${active ? 'var(--navy)' : 'var(--card)'};
+      color:${active ? '#fff' : 'var(--text2)'};
+      transition:all .15s;user-select:none;
+    ">${t.e} ${t.v}</div>`;
+  }).join('');
+}
+
+function toggleTrait(v) {
+  if (selectedTraits.has(v)) { selectedTraits.delete(v); } else { selectedTraits.add(v); }
+  renderTraitChips();
+  syncTraitsToNotes();
+}
+
+function syncTraitsToNotes() {
+  const ta = document.getElementById('r-notes');
+  if (!ta) return;
+  let text = ta.value.replace(/^Qualities:.*\n?/m, '').trimStart();
+  if (selectedTraits.size > 0) {
+    text = 'Qualities: ' + [...selectedTraits].join(', ') + (text ? '\n' + text : '');
+  }
+  ta.value = text;
+}
+
+function loadTraitsFromNotes(notes) {
+  selectedTraits.clear();
+  const match = (notes||'').match(/^Qualities:\s*(.+)/m);
+  if (match) {
+    match[1].split(',').map(s => s.trim()).forEach(v => {
+      if (PROSPECT_TRAITS.find(t => t.v === v)) selectedTraits.add(v);
+    });
+  }
+  renderTraitChips();
+}
+
 const REC_SORTS = [
   {v:'newest', l:'Newest First'},
   {v:'oldest', l:'Oldest First'},
@@ -2749,6 +2822,8 @@ function clearRecForm() {
   document.getElementById('r-id').value='';
   document.getElementById('rec-modal-title').textContent='Add Prospect';
   document.getElementById('r-delete').classList.add('hidden');
+  selectedTraits.clear();
+  renderTraitChips();
 }
 
 function clearCliForm() {
