@@ -980,69 +980,109 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
 
 <!-- CLIENT MODAL -->
 <div class="modal-overlay" id="cli-modal">
-  <div class="modal">
+  <div class="modal" style="max-height:92vh;">
     <div class="modal-header">
       <div class="modal-title" id="cli-modal-title">Add Lead</div>
       <button class="modal-close" onclick="closeModal('cli-modal')">✕</button>
     </div>
-    <div class="form-row cols2">
-      <div class="form-group"><label>Full Name *</label><input id="c-name" placeholder="John Doe"></div>
-      <div class="form-group"><label>Phone</label><input id="c-phone" placeholder="(555) 000-0000"></div>
+    <!-- Modal tabs -->
+    <div class="auth-tabs" style="margin-bottom:16px;">
+      <div class="auth-tab active" id="cli-tab-details" onclick="switchCliTab('details')">📋 Details</div>
+      <div class="auth-tab" id="cli-tab-illustrations" onclick="switchCliTab('illustrations')">📄 Illustrations</div>
     </div>
-    <div class="form-row cols2">
-      <div class="form-group"><label>Email</label><input id="c-email" type="email" placeholder="john@email.com"></div>
-      <div class="form-group"><label>Source</label>
-        <select id="c-source"><option value="agent-referral">Agent Referral</option><option value="direct">Direct</option><option value="campaign">Campaign</option><option value="walk-in">Walk-in</option></select>
-      </div>
-    </div>
-    <div class="form-row cols2">
-      <div class="form-group"><label>Product Interest</label>
-        <select id="c-product"><option value="IUL">IUL</option><option value="Term">Term Life</option><option value="Whole Life">Whole Life</option><option value="Group">Group Benefits</option></select>
-      </div>
-      <div class="form-group"><label>Pipeline Stage</label>
-        <select id="c-stage" onchange="toggleCliFields(this.value)">
-          <option value="lead">Lead</option>
-          <option value="application">Application</option>
-          <option value="client">Client</option>
-        </select>
-      </div>
-    </div>
-    <!-- Application fields -->
-    <div id="cli-app-fields" class="hidden">
+
+    <!-- DETAILS TAB -->
+    <div id="cli-pane-details">
       <div class="form-row cols2">
-        <div class="form-group"><label>Carrier</label><input id="c-carrier" placeholder="Pacific Life, AIG..."></div>
-        <div class="form-group"><label>Face Amount ($)</label><input id="c-face" type="number" placeholder="500000"></div>
+        <div class="form-group"><label>Full Name *</label><input id="c-name" placeholder="John Doe"></div>
+        <div class="form-group"><label>Phone</label><input id="c-phone" placeholder="(555) 000-0000"></div>
       </div>
       <div class="form-row cols2">
-        <div class="form-group"><label>Monthly Premium ($)</label><input id="c-premium" type="number" placeholder="250"></div>
-        <div class="form-group"><label>Points Value</label><input id="c-points" type="number" placeholder="0"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>UW Status</label>
-          <select id="c-uw"><option value="pending">Pending</option><option value="approved">Approved</option><option value="rated">Rated</option><option value="declined">Declined</option></select>
+        <div class="form-group"><label>Email</label><input id="c-email" type="email" placeholder="john@email.com"></div>
+        <div class="form-group"><label>Source</label>
+          <select id="c-source"><option value="agent-referral">Agent Referral</option><option value="direct">Direct</option><option value="campaign">Campaign</option><option value="walk-in">Walk-in</option></select>
         </div>
       </div>
-    </div>
-    <!-- Client fields -->
-    <div id="cli-client-fields" class="hidden">
       <div class="form-row cols2">
-        <div class="form-group"><label>Policy Number</label><input id="c-policy" placeholder="POL-000000"></div>
-        <div class="form-group"><label>Annual Premium ($)</label><input id="c-annual" type="number" placeholder="3000"></div>
+        <div class="form-group"><label>Product Interest</label>
+          <select id="c-product"><option value="IUL">IUL</option><option value="Term">Term Life</option><option value="Whole Life">Whole Life</option><option value="Group">Group Benefits</option></select>
+        </div>
+        <div class="form-group"><label>Pipeline Stage</label>
+          <select id="c-stage" onchange="toggleCliFields(this.value)">
+            <option value="lead">Lead</option>
+            <option value="application">Application</option>
+            <option value="client">Client</option>
+          </select>
+        </div>
+      </div>
+      <div id="cli-app-fields" class="hidden">
+        <div class="form-row cols2">
+          <div class="form-group"><label>Carrier</label><input id="c-carrier" placeholder="Pacific Life, AIG..."></div>
+          <div class="form-group"><label>Face Amount ($)</label><input id="c-face" type="number" placeholder="500000"></div>
+        </div>
+        <div class="form-row cols2">
+          <div class="form-group"><label>Monthly Premium ($)</label><input id="c-premium" type="number" placeholder="250"></div>
+          <div class="form-group"><label>Points Value</label><input id="c-points" type="number" placeholder="0"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>UW Status</label>
+            <select id="c-uw"><option value="pending">Pending</option><option value="approved">Approved</option><option value="rated">Rated</option><option value="declined">Declined</option></select>
+          </div>
+        </div>
+      </div>
+      <div id="cli-client-fields" class="hidden">
+        <div class="form-row cols2">
+          <div class="form-group"><label>Policy Number</label><input id="c-policy" placeholder="POL-000000"></div>
+          <div class="form-group"><label>Annual Premium ($)</label><input id="c-annual" type="number" placeholder="3000"></div>
+        </div>
+        <div class="form-row cols2">
+          <div class="form-group"><label>Issue Date</label><input id="c-issue" type="date"></div>
+          <div class="form-group"><label>Review Date</label><input id="c-review" type="date"></div>
+        </div>
       </div>
       <div class="form-row cols2">
-        <div class="form-group"><label>Issue Date</label><input id="c-issue" type="date"></div>
-        <div class="form-group"><label>Review Date</label><input id="c-review" type="date"></div>
+        <div class="form-group"><label>Follow-Up Date</label><input id="c-followup" type="date"></div>
+        <div class="form-group"><label>Income Range</label><select id="c-income"><option value="">Unknown</option><option value="30-50k">$30K-$50K</option><option value="50-75k">$50K-$75K</option><option value="75-100k">$75K-$100K</option><option value="100k+">$100K+</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Notes</label><textarea id="c-notes" placeholder="Coverage needs, household info, follow-up..."></textarea></div>
       </div>
     </div>
-    <div class="form-row cols2">
-      <div class="form-group"><label>Follow-Up Date</label><input id="c-followup" type="date"></div>
-      <div class="form-group"><label>Income Range</label><select id="c-income"><option value="">Unknown</option><option value="30-50k">$30K-$50K</option><option value="50-75k">$50K-$75K</option><option value="75-100k">$75K-$100K</option><option value="100k+">$100K+</option></select></div>
+
+    <!-- ILLUSTRATIONS TAB -->
+    <div id="cli-pane-illustrations" class="hidden">
+      <div id="illus-new-client-msg" class="hidden" style="background:var(--amber-soft);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--amber);margin-bottom:14px;">
+        💾 Save the client record first, then come back to attach illustrations.
+      </div>
+      <!-- Upload area -->
+      <div id="illus-upload-area" style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;margin-bottom:16px;cursor:pointer;transition:border-color .15s;" onclick="document.getElementById('illus-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--navy)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleIllusDrop(event)">
+        <div style="font-size:28px;margin-bottom:6px;">📎</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text2);">Drop illustration here or tap to upload</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">PDF, PNG, JPG — max 20MB</div>
+        <input id="illus-file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" style="display:none" onchange="handleIllusFile(this.files[0])">
+      </div>
+      <!-- Upload meta fields (shown after file selected) -->
+      <div id="illus-meta-fields" class="hidden" style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px;" id="illus-selected-name"></div>
+        <div class="form-row cols2">
+          <div class="form-group"><label>Carrier</label><input id="illus-carrier" placeholder="Pacific Life, AIG..."></div>
+          <div class="form-group"><label>Product</label>
+            <select id="illus-product"><option value="IUL">IUL</option><option value="Term">Term</option><option value="Whole Life">Whole Life</option><option value="Group">Group Benefits</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Notes</label><input id="illus-notes" placeholder="e.g. 500k face, non-smoker rates..."></div>
+        </div>
+        <button class="btn btn-navy fw" onclick="uploadIllustration()">⬆ Upload Illustration</button>
+      </div>
+      <!-- Saved illustrations list -->
+      <div id="illus-list" style="display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:12px;color:var(--text3);text-align:center;padding:16px;">Loading illustrations...</div>
+      </div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>Notes</label><textarea id="c-notes" placeholder="Coverage needs, household info, follow-up..."></textarea></div>
-    </div>
+
     <input type="hidden" id="c-id">
-    <div class="modal-footer">
+    <div class="modal-footer" id="cli-modal-footer">
       <button class="btn btn-gold flex-1" onclick="saveCli()">Save</button>
       <button class="btn btn-ghost" onclick="closeModal('cli-modal')">Cancel</button>
       <button class="btn btn-red btn-sm hidden" id="c-delete" onclick="deleteCli()">Delete</button>
@@ -1057,6 +1097,27 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div class="modal-title">Schedule Appointment</div>
       <button class="modal-close" onclick="closeModal('appt-modal')">✕</button>
     </div>
+
+    <!-- CONTACT PICKER -->
+    <div style="margin-bottom:16px;">
+      <label>Link to Client or Prospect</label>
+      <div style="position:relative;">
+        <input id="a-contact-search" placeholder="Search by name..." autocomplete="off"
+          oninput="searchApptContacts(this.value)"
+          onfocus="searchApptContacts(this.value)"
+          style="padding-left:36px;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;">🔍</span>
+        <div id="a-contact-dropdown" class="hidden" style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1.5px solid var(--border);border-radius:10px;box-shadow:var(--shadow2);z-index:600;max-height:200px;overflow-y:auto;"></div>
+      </div>
+      <div id="a-contact-selected" class="hidden" style="margin-top:8px;background:var(--navy);color:#fff;border-radius:8px;padding:9px 13px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:13px;font-weight:700;" id="a-contact-selected-name"></div>
+          <div style="font-size:11px;opacity:.6;" id="a-contact-selected-sub"></div>
+        </div>
+        <button onclick="clearApptContact()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;">✕ Clear</button>
+      </div>
+    </div>
+
     <div class="form-row cols2">
       <div class="form-group"><label>Name *</label><input id="a-name" placeholder="Contact name"></div>
       <div class="form-group"><label>Phone</label><input id="a-phone" placeholder="(555) 000-0000"></div>
@@ -1074,6 +1135,8 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div class="form-group"><label>Pre-meeting Notes</label><textarea id="a-pre" placeholder="What to prepare, goals for this meeting..."></textarea></div>
     </div>
     <input type="hidden" id="a-id">
+    <input type="hidden" id="a-linked-id">
+    <input type="hidden" id="a-linked-type">
     <div id="gcal-sync-row" style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px 13px;background:var(--bg);border-radius:10px;">
       <input type="checkbox" id="a-gcal-sync" style="width:16px;height:16px;accent-color:var(--navy);" checked>
       <label for="a-gcal-sync" style="font-size:13px;font-weight:500;color:var(--text2);margin:0;cursor:pointer;">Add to Google Calendar</label>
@@ -1548,15 +1611,10 @@ function recCard(r) {
 function quickSchedule(id, type) {
   const r = type === 'rec' ? allRec.find(x=>x.id===id) : allCli.find(x=>x.id===id);
   if (!r) return;
-  // Pre-fill the appointment modal
-  document.getElementById('a-name').value = r.name || '';
-  document.getElementById('a-phone').value = r.phone || '';
-  document.getElementById('a-date').value = '';
-  document.getElementById('a-time').value = '';
+  openApptModal();
+  const linkedType = type === 'rec' ? 'prospect' : 'client';
+  setApptContact(r, linkedType);
   document.getElementById('a-type').value = type === 'rec' ? 'discovery' : 'presentation';
-  document.getElementById('a-pre').value = '';
-  document.getElementById('a-id').value = '';
-  document.getElementById('a-delete').classList.add('hidden');
   openModal('appt-modal');
 }
 
@@ -1745,7 +1803,153 @@ function filterCliFu(v, el) {
   renderCli();
 }
 
-// ─── SORT POPOVER ───────────────────────────────────
+// ─── CLIENT MODAL TAB SWITCHING ─────────────────────
+let _illusFile = null;
+
+function switchCliTab(tab) {
+  document.getElementById('cli-tab-details').classList.toggle('active', tab === 'details');
+  document.getElementById('cli-tab-illustrations').classList.toggle('active', tab === 'illustrations');
+  document.getElementById('cli-pane-details').classList.toggle('hidden', tab !== 'details');
+  document.getElementById('cli-pane-illustrations').classList.toggle('hidden', tab === 'details');
+  document.getElementById('cli-modal-footer').classList.toggle('hidden', tab !== 'details');
+  if (tab === 'illustrations') loadIllustrations();
+}
+
+// ─── ILLUSTRATIONS ───────────────────────────────────
+async function loadIllustrations() {
+  const clientId = document.getElementById('c-id').value;
+  const list = document.getElementById('illus-list');
+  const newMsg = document.getElementById('illus-new-client-msg');
+  const uploadArea = document.getElementById('illus-upload-area');
+
+  if (!clientId) {
+    newMsg.classList.remove('hidden');
+    uploadArea.classList.add('hidden');
+    list.innerHTML = '';
+    return;
+  }
+  newMsg.classList.add('hidden');
+  uploadArea.classList.remove('hidden');
+  list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px;">Loading...</div>';
+  try {
+    const rows = await sbFetch(`/rest/v1/client_illustrations?client_id=eq.${clientId}&order=uploaded_at.desc`) || [];
+    if (!rows.length) {
+      list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:16px;">No illustrations yet — upload one above.</div>';
+      return;
+    }
+    list.innerHTML = rows.map(r => `
+      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;">
+        <div style="font-size:24px;flex-shrink:0;">${r.file_name.endsWith('.pdf') ? '📄' : '🖼'}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.file_name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">${r.carrier||''} ${r.product ? '· '+r.product : ''} ${r.notes ? '· '+r.notes : ''}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">${new Date(r.uploaded_at).toLocaleDateString()}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button class="btn btn-ghost btn-xs" onclick="viewIllustration('${r.file_path}')">View</button>
+          <button class="btn btn-red btn-xs" onclick="deleteIllustration('${r.id}','${r.file_path}')">✕</button>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--red);padding:12px;">Error loading illustrations.</div>';
+  }
+}
+
+function handleIllusFile(file) {
+  if (!file) return;
+  if (file.size > 20 * 1024 * 1024) { toast('File too large — max 20MB'); return; }
+  _illusFile = file;
+  document.getElementById('illus-selected-name').textContent = '📎 ' + file.name;
+  document.getElementById('illus-meta-fields').classList.remove('hidden');
+}
+
+function handleIllusDrop(e) {
+  e.preventDefault();
+  document.getElementById('illus-upload-area').style.borderColor = 'var(--border)';
+  const file = e.dataTransfer.files[0];
+  if (file) handleIllusFile(file);
+}
+
+async function uploadIllustration() {
+  const clientId = document.getElementById('c-id').value;
+  if (!clientId) { toast('Save client first'); return; }
+  if (!_illusFile) { toast('No file selected'); return; }
+
+  const carrier = document.getElementById('illus-carrier').value.trim();
+  const product = document.getElementById('illus-product').value;
+  const notes   = document.getElementById('illus-notes').value.trim();
+  const filePath = `${clientId}/${Date.now()}-${_illusFile.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+
+  toast('Uploading…');
+  try {
+    const token = currentUser?.access_token;
+    const uploadRes = await fetch(`${SB_URL}/storage/v1/object/illustrations/${filePath}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': _illusFile.type || 'application/octet-stream',
+        'x-upsert': 'true'
+      },
+      body: _illusFile
+    });
+    if (!uploadRes.ok) {
+      const err = await uploadRes.json().catch(()=>({}));
+      throw new Error(err.message || uploadRes.statusText);
+    }
+    await sbFetch('/rest/v1/client_illustrations', {
+      method: 'POST',
+      body: JSON.stringify({
+        client_id: clientId,
+        owner_id: myUid(),
+        file_name: _illusFile.name,
+        file_path: filePath,
+        file_size: _illusFile.size,
+        carrier, product, notes
+      })
+    });
+    _illusFile = null;
+    document.getElementById('illus-file-input').value = '';
+    document.getElementById('illus-meta-fields').classList.add('hidden');
+    document.getElementById('illus-carrier').value = '';
+    document.getElementById('illus-notes').value = '';
+    toast('Illustration uploaded!');
+    loadIllustrations();
+  } catch(e) {
+    console.error('uploadIllustration:', e);
+    toast('Upload failed: ' + (e.message || 'check console'));
+  }
+}
+
+async function viewIllustration(filePath) {
+  try {
+    const token = currentUser?.access_token;
+    const res = await fetch(`${SB_URL}/storage/v1/object/illustrations/${filePath}`, {
+      headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Could not fetch file');
+    const blob = await res.blob();
+    window.open(URL.createObjectURL(blob), '_blank');
+  } catch(e) {
+    toast('Could not open file: ' + (e.message || 'check console'));
+  }
+}
+
+async function deleteIllustration(id, filePath) {
+  if (!confirm('Delete this illustration?')) return;
+  try {
+    const token = currentUser?.access_token;
+    await fetch(`${SB_URL}/storage/v1/object/illustrations/${filePath}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${token}` }
+    });
+    await sbFetch(`/rest/v1/client_illustrations?id=eq.${id}`, { method: 'DELETE' });
+    toast('Deleted');
+    loadIllustrations();
+  } catch(e) {
+    toast('Delete failed: ' + (e.message || 'check console'));
+  }
+}
 const REC_SORTS = [
   {v:'newest', l:'Newest First'},
   {v:'oldest', l:'Oldest First'},
@@ -1808,6 +2012,10 @@ function toggleCliFields(stage) {
 }
 
 function openCliModal(rec=null) {
+  switchCliTab('details');
+  _illusFile = null;
+  document.getElementById('illus-meta-fields').classList.add('hidden');
+  document.getElementById('illus-file-input').value = '';
   const map = {name:'c-name',phone:'c-phone',email:'c-email',source:'c-source',product_interest:'c-product',pipeline_stage:'c-stage',notes:'c-notes',carrier:'c-carrier',face_amount:'c-face',monthly_premium:'c-premium',points_value:'c-points',uw_status:'c-uw',policy_number:'c-policy',annual_premium:'c-annual',issue_date:'c-issue',review_date:'c-review'};
   Object.entries(map).forEach(([k,id]) => { const el = document.getElementById(id); if(el) el.value = rec?.[k] || ''; });
   if (!rec) {
@@ -2007,11 +2215,63 @@ function filterAppts(f, el) {
   renderAppts();
 }
 
+// ─── APPOINTMENT CONTACT PICKER ─────────────────────
+function searchApptContacts(q) {
+  const dd = document.getElementById('a-contact-dropdown');
+  const term = q.toLowerCase().trim();
+  const prospects = allRec.filter(r => !term || r.name?.toLowerCase().includes(term)).slice(0,5).map(r => ({...r, _type:'prospect'}));
+  const clients   = allCli.filter(r => !term || r.name?.toLowerCase().includes(term)).slice(0,5).map(r => ({...r, _type:'client'}));
+  const combined  = [...clients, ...prospects].slice(0,8);
+  if (!combined.length) { dd.classList.add('hidden'); return; }
+  dd.innerHTML = combined.map(r => {
+    const icon = r._type === 'client' ? '👥' : '🎯';
+    const sub  = r._type === 'client'
+      ? (r.product_interest||'') + (r.pipeline_stage ? ' · ' + capitalize(r.pipeline_stage) : '')
+      : (r.source||'') + (r.pipeline_stage ? ' · ' + capitalize(r.pipeline_stage) : '');
+    return `<div onclick="setApptContact(${JSON.stringify(r).replace(/"/g,'&quot;')},'${r._type}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+      <span style="font-size:18px;">${icon}</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--navy);">${r.name}</div>
+        <div style="font-size:11px;color:var(--text3);">${r._type === 'client' ? 'Client' : 'Prospect'} ${sub ? '· '+sub : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  dd.classList.remove('hidden');
+  setTimeout(() => document.addEventListener('click', () => dd.classList.add('hidden'), {once:true}), 50);
+}
+
+function setApptContact(r, type) {
+  document.getElementById('a-name').value  = r.name  || '';
+  document.getElementById('a-phone').value = r.phone || '';
+  document.getElementById('a-linked-id').value   = r.id;
+  document.getElementById('a-linked-type').value = type;
+  document.getElementById('a-contact-search').value = '';
+  document.getElementById('a-contact-dropdown').classList.add('hidden');
+  document.getElementById('a-contact-selected-name').textContent = r.name;
+  document.getElementById('a-contact-selected-sub').textContent  =
+    (type === 'client' ? '👥 Client' : '🎯 Prospect') +
+    (r.phone ? ' · ' + r.phone : '') +
+    (r.product_interest ? ' · ' + r.product_interest : '');
+  document.getElementById('a-contact-selected').classList.remove('hidden');
+  document.getElementById('a-contact-search').parentElement.querySelector('input').blur();
+}
+
+function clearApptContact() {
+  document.getElementById('a-contact-search').value = '';
+  document.getElementById('a-contact-dropdown').classList.add('hidden');
+  document.getElementById('a-contact-selected').classList.add('hidden');
+  document.getElementById('a-linked-id').value = '';
+  document.getElementById('a-linked-type').value = '';
+}
+
 function openApptModal() {
   ['a-name','a-phone','a-date','a-time','a-pre'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('a-type').value = 'discovery';
   document.getElementById('a-id').value = '';
+  document.getElementById('a-linked-id').value = '';
+  document.getElementById('a-linked-type').value = '';
   document.getElementById('a-delete').classList.add('hidden');
+  clearApptContact();
   openModal('appt-modal');
 }
 
@@ -2024,7 +2284,15 @@ function editAppt(id) {
   document.getElementById('a-type').value = a.type||'discovery';
   document.getElementById('a-pre').value = a.pre_notes||'';
   document.getElementById('a-id').value = a.id;
+  document.getElementById('a-linked-id').value = a.linked_id||'';
+  document.getElementById('a-linked-type').value = a.linked_type||'';
   document.getElementById('a-delete').classList.remove('hidden');
+  // Restore contact chip if linked
+  clearApptContact();
+  if (a.linked_id && a.linked_type) {
+    const rec = a.linked_type === 'prospect' ? allRec.find(r=>r.id===a.linked_id) : allCli.find(r=>r.id===a.linked_id);
+    if (rec) setApptContact(rec, a.linked_type);
+  }
   openModal('appt-modal');
 }
 
@@ -2034,7 +2302,7 @@ async function saveAppt() {
   if (!name || !date) { toast('Name and date required'); return; }
   const id = document.getElementById('a-id').value || uid();
   const isNew = !document.getElementById('a-id').value;
-  const data = {id, name, phone: document.getElementById('a-phone').value, date, time: document.getElementById('a-time').value, type: document.getElementById('a-type').value, pre_notes: document.getElementById('a-pre').value, outcome:'pending', owner_id: myUid()};
+  const data = {id, name, phone: document.getElementById('a-phone').value, date, time: document.getElementById('a-time').value, type: document.getElementById('a-type').value, pre_notes: document.getElementById('a-pre').value, outcome:'pending', owner_id: myUid(), linked_id: document.getElementById('a-linked-id').value || null, linked_type: document.getElementById('a-linked-type').value || null};
   try {
     if (isNew) {
       await sbFetch('/rest/v1/appointments', {method:'POST', body: JSON.stringify(data)});
