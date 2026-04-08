@@ -456,7 +456,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
   <div class="page" id="page-recruiting">
     <div class="section-header">
       <div><div class="section-title">Recruiting Pipeline</div><div class="section-sub">Track prospects from first contact to active agent</div></div>
-      <div class="flex gap8"><button class="export-btn" onclick="exportCSV('rec')">⬇ Export</button><button class="btn btn-navy" onclick="openRecModal()">+ Add Prospect</button></div>
+      <div class="flex gap8"><button class="export-btn" onclick="exportCSV('rec')">⬇ Export</button><button class="btn btn-ghost btn-sm" onclick="openRecSort()" id="rec-sort-btn">↕ Sort: Newest</button><button class="btn btn-navy" onclick="openRecModal()">+ Add Prospect</button></div>
     </div>
     <div id="rec-view-toggle" class="filter-chips director-only" style="margin-bottom:12px;">
       <div class="chip active" onclick="setRecView('mine',this)">👤 My Prospects</div>
@@ -468,8 +468,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
         <span class="lbl" style="flex-shrink:0;">Source</span>
         <div class="filter-chips" id="rec-source-filters" style="margin:0;gap:5px;">
           <div class="chip active" onclick="filterRecSource('all',this)">All</div>
-          <div class="chip" onclick="filterRecSource('Indeed',this)">Indeed</div>
-          <div class="chip" onclick="filterRecSource('LinkedIn',this)">LinkedIn</div>
+          <div class="chip" onclick="filterRecSource('job-board',this)">Job Board</div>
           <div class="chip" onclick="filterRecSource('referral',this)">Referral</div>
           <div class="chip" onclick="filterRecSource('social',this)">Social</div>
           <div class="chip" onclick="filterRecSource('cold-call',this)">Cold Call</div>
@@ -523,7 +522,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
   <div class="page" id="page-clients">
     <div class="section-header">
       <div><div class="section-title">Client Pipeline</div><div class="section-sub">Lead → Application → Policy in Force</div></div>
-      <div class="flex gap8"><button class="export-btn" onclick="exportCSV('cli')">⬇ Export</button><button class="btn btn-gold" onclick="openCliModal()">+ Add Lead</button></div>
+      <div class="flex gap8"><button class="export-btn" onclick="exportCSV('cli')">⬇ Export</button><button class="btn btn-ghost btn-sm" onclick="openCliSort()" id="cli-sort-btn">↕ Sort: Newest</button><button class="btn btn-gold" onclick="openCliModal()">+ Add Lead</button></div>
     </div>
     <div class="search-bar"><span class="si">🔍</span><input placeholder="Search clients..." oninput="filterCli(this.value)" id="cli-search"></div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
@@ -857,6 +856,10 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
     <div class="form-row">
       <div class="form-group"><label>State(s) Licensed</label><input id="aa-states" placeholder="TX, FL..."></div>
     </div>
+    <div class="form-row cols2">
+      <div class="form-group"><label>Start Date</label><input id="aa-start-date" type="date"></div>
+      <div class="form-group"><label>License Date</label><input id="aa-license-date" type="date"></div>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-navy flex-1" onclick="addAgentManual()">Add to Roster</button>
       <button class="btn btn-ghost" onclick="closeModal('add-agent-modal')">Cancel</button>
@@ -876,6 +879,21 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.45);">Apps</div><div style="font-family:var(--display);font-size:22px;font-weight:800;color:var(--gold2);" id="adm-apps">0</div></div>
       <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.45);">Clients</div><div style="font-family:var(--display);font-size:22px;font-weight:800;color:var(--green2);" id="adm-cli">0</div></div>
       <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.45);">Points</div><div style="font-family:var(--display);font-size:22px;font-weight:800;color:var(--purple);" id="adm-pts">0</div></div>
+    </div>
+    <!-- DATE MILESTONES -->
+    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;">📅 Agent Timeline</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label>Start Date</label>
+          <input id="adm-start-date" type="date">
+        </div>
+        <div class="form-group">
+          <label>License Date</label>
+          <input id="adm-license-date" type="date">
+        </div>
+      </div>
+      <div id="adm-tenure-display" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;"></div>
     </div>
     <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:14px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;">🎯 Monthly Goals</div>
@@ -1114,7 +1132,8 @@ let allRec = [], allCli = [], allAgents = [], allAppts = [];
 let recFilter = '', cliFilter = '', productFilter = 'all', agentFilter = 'all', apptFilter = 'all';
 let recSourceFilter = 'all', recLicFilter = 'all', recFuFilter = 'all';
 let cliFuFilter = 'all', cliUwFilter = 'all', cliSourceFilter = 'all';
-let recView = 'mine'; // 'mine' = only my prospects, 'all' = all agents (director only)
+let recSort = 'newest', cliSort = 'newest';
+let recView = 'mine';
 
 // ── HTTP helpers ──
 let _refreshPromise = null;
@@ -1487,9 +1506,17 @@ function renderRec() {
     return matchQ && matchSource && matchLic && matchFu;
   });
   const stages = ['new-lead','licensing','licensed-agent'];
+  const sorted = [...filtered].sort((a,b) => {
+    if (recSort === 'newest') return (b.added||'').localeCompare(a.added||'');
+    if (recSort === 'oldest') return (a.added||'').localeCompare(b.added||'');
+    if (recSort === 'name-az') return (a.name||'').localeCompare(b.name||'');
+    if (recSort === 'name-za') return (b.name||'').localeCompare(a.name||'');
+    if (recSort === 'followup') return (a.followup_date||'9999').localeCompare(b.followup_date||'9999');
+    return 0;
+  });
   stages.forEach(s => {
     const col = document.getElementById('col-' + s);
-    const items = filtered.filter(r => (r.pipeline_stage || 'new-lead') === s);
+    const items = sorted.filter(r => (r.pipeline_stage || 'new-lead') === s);
     document.getElementById('col-' + s + '-count').textContent = items.length;
     col.innerHTML = items.length ? items.map(r => recCard(r)).join('') : `<div class="empty-col"><div class="empty-icon">📋</div>No records</div>`;
   });
@@ -1626,9 +1653,19 @@ function renderCli() {
     return matchQ && matchP && matchUw && matchSrc && matchFu;
   });
   const stages = ['lead','application','client'];
+  const sorted = [...filtered].sort((a,b) => {
+    if (cliSort === 'newest') return (b.added||'').localeCompare(a.added||'');
+    if (cliSort === 'oldest') return (a.added||'').localeCompare(b.added||'');
+    if (cliSort === 'name-az') return (a.name||'').localeCompare(b.name||'');
+    if (cliSort === 'name-za') return (b.name||'').localeCompare(a.name||'');
+    if (cliSort === 'followup') return (a.followup_date||'9999').localeCompare(b.followup_date||'9999');
+    if (cliSort === 'points-hi') return (b.points_value||0)-(a.points_value||0);
+    if (cliSort === 'premium-hi') return (b.annual_premium||0)-(a.annual_premium||0);
+    return 0;
+  });
   stages.forEach(s => {
     const col = document.getElementById('col-' + s);
-    const items = filtered.filter(r => (r.pipeline_stage || 'lead') === s);
+    const items = sorted.filter(r => (r.pipeline_stage || 'lead') === s);
     document.getElementById('col-' + s + '-count').textContent = items.length;
     col.innerHTML = items.length ? items.map(r => cliCard(r)).join('') : `<div class="empty-col"><div class="empty-icon">📋</div>No records</div>`;
   });
@@ -1707,6 +1744,63 @@ function filterCliFu(v, el) {
   el.classList.add('active');
   renderCli();
 }
+
+// ─── SORT POPOVER ───────────────────────────────────
+const REC_SORTS = [
+  {v:'newest', l:'Newest First'},
+  {v:'oldest', l:'Oldest First'},
+  {v:'name-az', l:'Name A→Z'},
+  {v:'name-za', l:'Name Z→A'},
+  {v:'followup', l:'Follow-Up Date'},
+];
+const CLI_SORTS = [
+  {v:'newest', l:'Newest First'},
+  {v:'oldest', l:'Oldest First'},
+  {v:'name-az', l:'Name A→Z'},
+  {v:'name-za', l:'Name Z→A'},
+  {v:'followup', l:'Follow-Up Date'},
+  {v:'points-hi', l:'Points (High→Low)'},
+  {v:'premium-hi', l:'Premium (High→Low)'},
+];
+
+function openRecSort() {
+  showSortPopover('rec-sort-btn', REC_SORTS, recSort, v => {
+    recSort = v;
+    const lbl = REC_SORTS.find(s=>s.v===v)?.l || v;
+    document.getElementById('rec-sort-btn').textContent = '↕ Sort: ' + lbl;
+    renderRec();
+  });
+}
+function openCliSort() {
+  showSortPopover('cli-sort-btn', CLI_SORTS, cliSort, v => {
+    cliSort = v;
+    const lbl = CLI_SORTS.find(s=>s.v===v)?.l || v;
+    document.getElementById('cli-sort-btn').textContent = '↕ Sort: ' + lbl;
+    renderCli();
+  });
+}
+
+function showSortPopover(anchorId, options, current, onSelect) {
+  document.querySelector('.sort-popover')?.remove();
+  const anchor = document.getElementById(anchorId);
+  const rect = anchor.getBoundingClientRect();
+  const pop = document.createElement('div');
+  pop.className = 'sort-popover';
+  pop.style.cssText = `position:fixed;top:${rect.bottom+6}px;left:${rect.left}px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;box-shadow:var(--shadow2);z-index:500;min-width:190px;overflow:hidden;`;
+  pop.innerHTML = options.map(o => `
+    <div onclick="__sortPick(this,'${o.v}')" style="padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--text);background:${o.v===current?'var(--bg)':'transparent'};">
+      ${o.l}${o.v===current?' <span style="color:var(--gold)">✓</span>':''}
+    </div>`).join('');
+  pop.__onSelect = onSelect;
+  pop.__options = options;
+  document.body.appendChild(pop);
+  setTimeout(() => document.addEventListener('click', __closeSortPopover, {once:true}), 10);
+}
+function __sortPick(el, v) {
+  const pop = el.closest('.sort-popover');
+  if (pop) { pop.__onSelect(v); pop.remove(); }
+}
+function __closeSortPopover() { document.querySelector('.sort-popover')?.remove(); }
 
 function toggleCliFields(stage) {
   document.getElementById('cli-app-fields').classList.toggle('hidden', stage !== 'application');
@@ -1821,6 +1915,8 @@ function renderAgents() {
           <span class="badge badge-gray">${recCount} prospects</span>
           <span class="badge badge-gray">${appCount} apps</span>
           <span class="badge badge-purple">${pts.toLocaleString()} pts</span>
+          ${a.start_date ? `<span class="badge badge-blue" title="Start Date">🗓 ${fmtDateShort(a.start_date)}</span>` : ''}
+          ${a.license_date ? `<span class="badge badge-green" title="License Date">✅ Licensed ${fmtDateShort(a.license_date)}</span>` : ''}
         </div>
       </div>
       <div class="ac-right" style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
@@ -1842,6 +1938,12 @@ function filterAgents(f, el) {
   document.querySelectorAll('#page-agents .chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   renderAgents();
+}
+
+function fmtDateShort(d) {
+  if (!d) return '';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'2-digit'});
 }
 
 async function approveAgent(id) {
@@ -2910,7 +3012,7 @@ async function openAgentDetail(agentId) {
 
   let profile = a;
   try {
-    const fresh = await sbFetch('/rest/v1/profiles?id=eq.' + agentId + '&select=goal_apps,goal_pts,goal_prospects,goal_note,goal_pdf');
+    const fresh = await sbFetch('/rest/v1/profiles?id=eq.' + agentId + '&select=goal_apps,goal_pts,goal_prospects,goal_note,goal_pdf,start_date,license_date');
     if (fresh && fresh[0]) profile = Object.assign({}, a, fresh[0]);
   } catch(e) {}
 
@@ -2918,6 +3020,32 @@ async function openAgentDetail(agentId) {
   document.getElementById('adm-goal-pts').value       = profile.goal_pts  || '';
   document.getElementById('adm-goal-prospects').value = profile.goal_prospects || '';
   document.getElementById('adm-goal-note').value      = profile.goal_note || '';
+  document.getElementById('adm-start-date').value     = profile.start_date || '';
+  document.getElementById('adm-license-date').value   = profile.license_date || '';
+
+  // Tenure / time-to-license display
+  const today = new Date(); today.setHours(0,0,0,0);
+  const chips = [];
+  if (profile.start_date) {
+    const sd = new Date(profile.start_date + 'T00:00:00');
+    const days = Math.floor((today - sd) / 86400000);
+    const wks = Math.floor(days / 7);
+    chips.push({label:'Tenure', val: wks >= 8 ? Math.floor(days/30) + ' mo' : days + ' days', color:'var(--blue)'});
+  }
+  if (profile.start_date && profile.license_date) {
+    const sd = new Date(profile.start_date + 'T00:00:00');
+    const ld = new Date(profile.license_date + 'T00:00:00');
+    const diff = Math.floor((ld - sd) / 86400000);
+    chips.push({label:'Time to License', val: diff + ' days', color: diff <= 30 ? 'var(--green)' : diff <= 60 ? 'var(--amber)' : 'var(--red)'});
+  }
+  if (profile.license_date && !profile.start_date) {
+    const ld = new Date(profile.license_date + 'T00:00:00');
+    const days = Math.floor((today - ld) / 86400000);
+    chips.push({label:'Licensed', val: days + ' days ago', color:'var(--green)'});
+  }
+  document.getElementById('adm-tenure-display').innerHTML = chips.length
+    ? chips.map(c => `<div style="background:var(--card);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);">${c.label}</div><div style="font-size:15px;font-weight:800;color:${c.color};font-family:var(--display);">${c.val}</div></div>`).join('')
+    : '<div style="font-size:12px;color:var(--text3);">Enter dates above and save to track tenure and time-to-license.</div>';
 
   if (profile.goal_pdf) {
     document.getElementById('adm-pdf-data').value = profile.goal_pdf;
@@ -2963,7 +3091,9 @@ async function saveAgentGoals() {
     goal_pts:       parseInt(document.getElementById('adm-goal-pts').value)||0,
     goal_prospects: parseInt(document.getElementById('adm-goal-prospects').value)||0,
     goal_note:      document.getElementById('adm-goal-note').value||'',
-    goal_pdf:       pdfPath
+    goal_pdf:       pdfPath,
+    start_date:     document.getElementById('adm-start-date').value || null,
+    license_date:   document.getElementById('adm-license-date').value || null
   };
   try {
     await sbFetch('/rest/v1/profiles?id=eq.' + agentId, {method:'PATCH', body: JSON.stringify(patch)});
@@ -3040,7 +3170,7 @@ function removeAgentPdf() {
 }
 
 function openAddAgentModal() {
-  ['aa-name','aa-phone','aa-email','aa-states'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['aa-name','aa-phone','aa-email','aa-states','aa-start-date','aa-license-date'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('aa-tier').value = 'Trainee';
   document.getElementById('aa-lic').value = 'unlicensed';
   openModal('add-agent-modal');
@@ -3079,7 +3209,9 @@ async function addAgentManual() {
   const profileData = {
     id: newId, name, email,
     phone: phone||'', states: states||'',
-    tier, lic, approved: true, is_director: false
+    tier, lic, approved: true, is_director: false,
+    start_date: document.getElementById('aa-start-date').value || null,
+    license_date: document.getElementById('aa-license-date').value || null
   };
   try {
     await sbFetch('/rest/v1/profiles', {method:'POST', body: JSON.stringify(profileData)});
