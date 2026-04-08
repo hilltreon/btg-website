@@ -3036,7 +3036,9 @@ async function openAgentDetail(agentId) {
     const sd = new Date(profile.start_date + 'T00:00:00');
     const ld = new Date(profile.license_date + 'T00:00:00');
     const diff = Math.floor((ld - sd) / 86400000);
-    chips.push({label:'Time to License', val: diff + ' days', color: diff <= 30 ? 'var(--green)' : diff <= 60 ? 'var(--amber)' : 'var(--red)'});
+    const tag = diff <= 14 ? '🔥 Fast' : diff <= 30 ? '✅ On Track' : diff <= 45 ? '⚠️ Slow' : '🔴 Very Slow';
+    const color = diff <= 14 ? 'var(--green)' : diff <= 30 ? 'var(--blue)' : 'var(--amber)';
+    chips.push({label:'Start → Licensed', val: diff + ' days  ' + tag, color});
   }
   if (profile.license_date && !profile.start_date) {
     const ld = new Date(profile.license_date + 'T00:00:00');
