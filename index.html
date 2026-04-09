@@ -145,8 +145,9 @@ body{background:var(--black);color:var(--text);font-family:'DM Sans',sans-serif;
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--black)}::-webkit-scrollbar-thumb{background:var(--blue);border-radius:2px}
 
 /* ─── PAGE SWITCHER ─── */
-.page{display:none}
+.page{display:none;animation:pageIn .22s ease both}
 .page.active{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* ─── PATH SELECTOR ─── */
 .path-select{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:2rem}
@@ -210,17 +211,16 @@ body{background:var(--black);color:var(--text);font-family:'DM Sans',sans-serif;
 .biz-sc-result strong{color:var(--green);font-weight:600}
 .biz-sc-number{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--amber);line-height:1;margin-bottom:.2rem}
 
-/* ─── NAV ─── */
-nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:.75rem 4%;background:rgba(13,17,23,0.96);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
-.logo{text-decoration:none;line-height:1}
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:.75rem 4%;background:rgba(13,17,23,0.96);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+.logo{text-decoration:none;line-height:1;-webkit-tap-highlight-color:transparent}
 .logo-main{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.1em;color:var(--white)}
 .logo-main span{color:var(--blue)}
 .logo-sub{font-family:'Barlow Condensed',sans-serif;font-size:.52rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
 .nav-center{display:flex;gap:.3rem;background:var(--dark);border:1px solid var(--border);padding:.25rem;border-radius:2px}
-.nav-tab{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .75rem;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap}
+.nav-tab{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .75rem;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .nav-tab.active{background:var(--blue);color:var(--black)}
 .nav-right{display:flex;gap:.6rem}
-.nbtn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;padding:.45rem 1rem;border:none;cursor:pointer;text-decoration:none;transition:all .2s;display:inline-block;white-space:nowrap}
+.nbtn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;padding:.45rem 1rem;border:none;cursor:pointer;text-decoration:none;transition:all .2s;display:inline-block;white-space:nowrap;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .nbtn-g{background:var(--green);color:var(--black)}
 .nbtn-g:hover{background:var(--green2);box-shadow:0 4px 16px rgba(34,197,94,.35)}
 .nbtn-o{background:transparent;color:var(--green);border:1px solid var(--green)}
@@ -228,25 +228,93 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 @media(max-width:680px){.nav-center{display:none}.logo-sub{display:none}}
 @media(max-width:400px){.nbtn-o{display:none}}
 @media(max-width:480px){
-  nav{padding:.6rem 3%}
-  .logo-main{font-size:1.1rem}
-  .nav-right{gap:.35rem}
-  .nbtn{font-size:.62rem;padding:.4rem .7rem;letter-spacing:.08em}
+  nav{padding:.55rem 3.5%}
+  .logo-main{font-size:1.15rem}
+  .nav-right{gap:.3rem}
+  .nbtn{font-size:.64rem;padding:.42rem .75rem;letter-spacing:.07em}
 }
 
 /* ─── MOBILE BOTTOM TAB BAR ─── */
-.mob-tabs{display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(10,15,12,.97);border-top:1px solid var(--border);padding:.35rem 0 calc(.35rem + env(safe-area-inset-bottom))}
-.mob-tabs-inner{display:flex;justify-content:space-around}
-.mob-tab{display:flex;flex-direction:column;align-items:center;gap:.18rem;font-family:'Barlow Condensed',sans-serif;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;border:none;background:none;padding:.4rem .3rem;transition:color .2s;flex:1;min-height:50px;min-width:0}
+.mob-tabs{
+  display:none;
+  position:fixed;
+  bottom:0;left:0;right:0;
+  z-index:600;
+  background:rgba(11,16,22,0.98);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(74,144,226,.2);
+  padding:.3rem 0 calc(.3rem + env(safe-area-inset-bottom));
+  box-shadow:0 -4px 32px rgba(0,0,0,.5);
+}
+.mob-tabs-inner{display:flex;justify-content:space-around;align-items:stretch}
+.mob-tab{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.22rem;
+  font-family:'Barlow Condensed',sans-serif;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);cursor:pointer;border:none;background:none;
+  padding:.5rem .2rem .4rem;
+  transition:color .15s;flex:1;min-height:54px;min-width:0;
+  position:relative;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.mob-tab::before{
+  content:'';
+  position:absolute;
+  top:0;left:50%;transform:translateX(-50%);
+  width:0;height:2px;
+  background:var(--blue);
+  border-radius:0 0 2px 2px;
+  transition:width .2s ease;
+}
 .mob-tab.active{color:var(--blue)}
-.mob-tab-icon{font-size:1.25rem;line-height:1}
-@media(max-width:680px){.mob-tabs{display:block};body{padding-bottom:130px}}
+.mob-tab.active::before{width:28px}
+.mob-tab-icon{
+  font-size:1.3rem;line-height:1;
+  transition:transform .15s ease;
+}
+.mob-tab.active .mob-tab-icon{transform:translateY(-1px)}
+.mob-tab-label{font-size:.58rem;letter-spacing:.05em;font-weight:700;line-height:1}
 
-/* ─── FLOAT CTA ─── */
-.float-cta{display:none;position:fixed;bottom:92px;right:1rem;z-index:490}
-.float-btn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;background:var(--blue);color:var(--black);border:none;padding:.7rem 1.2rem;cursor:pointer;box-shadow:0 6px 24px rgba(74,144,226,.4);animation:popIn .4s .5s ease both}
+@media(max-width:680px){
+  .mob-tabs{display:block}
+  body{padding-bottom:calc(58px + env(safe-area-inset-bottom))}
+}
+
+/* ─── FLOAT CTA — removed, replaced by tab bar CTA button ─── */
+.float-cta{display:none !important}
+
+/* ─── MOBILE QUICK ACTION STRIP (above tab bar) ─── */
+.mob-action-strip{
+  display:none;
+  position:fixed;
+  bottom:calc(58px + env(safe-area-inset-bottom));
+  left:0;right:0;
+  z-index:590;
+  padding:.5rem .75rem;
+  background:linear-gradient(to top,rgba(11,16,22,.98) 60%,transparent);
+  pointer-events:none;
+}
+.mob-action-strip a,.mob-action-strip button{
+  pointer-events:all;
+}
+.mob-action-btns{
+  display:flex;gap:.5rem;
+}
+.mob-act-btn{
+  flex:1;
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:.65rem .5rem;border:none;cursor:pointer;text-decoration:none;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  transition:opacity .15s;
+}
+.mob-act-btn:active{opacity:.8}
+.mob-act-call{background:var(--green);color:var(--black)}
+.mob-act-consult{background:var(--blue);color:var(--black)}
+
+@media(max-width:680px){.mob-action-strip{display:block}}
 @keyframes popIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
-@media(max-width:680px){.float-cta{display:block}}
 
 /* ─── SHARED ─── */
 .sec{padding:4rem 4%}
@@ -620,10 +688,7 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
 .social-link{display:inline-flex;align-items:center;gap:.4rem;font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:.35rem .75rem;transition:all .2s}
 .social-link:hover{color:var(--white);border-color:var(--blue)}
 
-/* ─── MOBILE CALL BUTTON ─── */
-.mob-call-bar{display:none;position:fixed;bottom:60px;left:0;right:0;z-index:480;padding:0 1rem}
-.mob-call-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;background:var(--green);color:var(--black);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.88rem;letter-spacing:.14em;text-transform:uppercase;padding:.85rem;text-decoration:none;box-shadow:0 4px 20px rgba(34,197,94,.4)}
-@media(max-width:680px){.mob-call-bar{display:block}.float-cta{bottom:156px}}
+/* ─── MOBILE CALL BUTTON ─── (merged into action strip) */
 
 /* ─── HERO MOBILE IMPROVEMENTS ─── */
 @media(max-width:480px){
@@ -823,11 +888,12 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
   .biz-sc-title{font-size:.88rem}
   .biz-sc-situation,.biz-sc-result{font-size:.74rem}
 
-  /* ── 4-tab bottom bar: hide labels on very small screens ── */
+  /* ── 4-tab bottom bar: smaller on very small screens ── */
   @media(max-width:360px){
-    .mob-tab{font-size:.52rem;padding:.35rem .2rem;min-height:46px}
-    .mob-tab-icon{font-size:1.1rem}
-    body{padding-bottom:120px}
+    .mob-tab{font-size:.52rem;padding:.4rem .2rem;min-height:50px}
+    .mob-tab-icon{font-size:1.15rem}
+    .mob-tab-label{font-size:.52rem}
+    body{padding-bottom:calc(52px + env(safe-area-inset-bottom))}
   }
 }
 </style>
@@ -880,36 +946,40 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
   <div class="trust-item"><span>🤝</span><span><strong>24+</strong> Carrier Partners · Independent Broker</span></div>
 </div>
 
+<!-- MOBILE QUICK ACTION STRIP -->
+<div class="mob-action-strip" id="mob-action-strip">
+  <div class="mob-action-btns">
+    <a href="tel:3463364587" class="mob-act-btn mob-act-call">📞 Call Now</a>
+    <button class="mob-act-btn mob-act-consult" onclick="showPage('home',null,'consult')">📅 Free Consult</button>
+  </div>
+</div>
+
 <!-- MOBILE BOTTOM TAB BAR -->
 <div class="mob-tabs">
   <div class="mob-tabs-inner">
     <button class="mob-tab active" id="mob-home" onclick="showPage('home',null,null,'mob')">
-      <span class="mob-tab-icon">🛡️</span>Protect
+      <span class="mob-tab-icon">🛡️</span>
+      <span class="mob-tab-label">Protect</span>
     </button>
     <button class="mob-tab" id="mob-products" onclick="showPage('products',null,null,'mob')">
-      <span class="mob-tab-icon">📋</span>Products
+      <span class="mob-tab-icon">📋</span>
+      <span class="mob-tab-label">Products</span>
     </button>
     <button class="mob-tab" id="mob-about" onclick="showPage('about',null,null,'mob')">
-      <span class="mob-tab-icon">👤</span>About
+      <span class="mob-tab-icon">👤</span>
+      <span class="mob-tab-label">About</span>
     </button>
     <button class="mob-tab" id="mob-careers" onclick="showPage('careers',null,null,'mob')">
-      <span class="mob-tab-icon">💼</span>Careers
+      <span class="mob-tab-icon">💼</span>
+      <span class="mob-tab-label">Careers</span>
     </button>
   </div>
 </div>
 
 <!-- LIVE CHAT WIDGET -->
 
-<!-- FLOAT CTA -->
-<div class="float-cta" id="float-cta">
-  <button class="float-btn" onclick="showPage('home',null,'consult')">📅 Book Free Consult</button>
-</div>
-
-
-<!-- MOBILE CALL BAR -->
-<div class="mob-call-bar">
-  <a href="tel:3463364587" class="mob-call-btn">📞 Call Now — (346) 336-4587</a>
-</div>
+<!-- float-cta kept as empty shell for JS references -->
+<div id="float-cta" style="display:none"></div>
 
 <!-- ═══════ HOME PAGE ═══════ -->
 <div class="page active" id="page-home">
@@ -1980,15 +2050,21 @@ function showPage(page, tabEl, anchor, src) {
     if (el) el.classList.add('active');
   }
 
-  // update float cta
-  const fc = document.getElementById('float-cta');
-  if (page === 'careers') {
-    fc.querySelector('.float-btn').textContent = '✏️ Apply Now';
-    fc.querySelector('.float-btn').onclick = () => showPage('careers', null, 'apply');
-  } else {
-    fc.querySelector('.float-btn').textContent = '📅 Book Free Consult';
-    fc.querySelector('.float-btn').onclick = () => showPage('home', null, 'consult');
+  // update mobile action strip
+  const strip = document.getElementById('mob-action-strip');
+  if (strip) {
+    if (page === 'careers') {
+      strip.querySelector('.mob-action-btns').innerHTML =
+        '<a href="tel:3463364587" class="mob-act-btn mob-act-call">📞 Call Now</a>' +
+        '<button class="mob-act-btn mob-act-consult" onclick="showPage(\'careers\',null,\'apply\')">✏️ Apply Now</button>';
+    } else {
+      strip.querySelector('.mob-action-btns').innerHTML =
+        '<a href="tel:3463364587" class="mob-act-btn mob-act-call">📞 Call Now</a>' +
+        '<button class="mob-act-btn mob-act-consult" onclick="showPage(\'home\',null,\'consult\')">📅 Free Consult</button>';
+    }
   }
+
+  // float-cta removed — action strip handles mobile CTAs
 
   window.scrollTo({ top: 0, behavior: 'instant' });
 
@@ -2299,10 +2375,12 @@ window.addEventListener('scroll', () => {
 
 // ── ADJUST HERO PADDING FOR TRUST STRIP ──
 window.addEventListener('load', () => {
+  const nav = document.getElementById('main-nav');
   const strip = document.querySelector('.trust-strip');
+  const navH = nav ? nav.offsetHeight : 48;
   const stripH = strip ? strip.offsetHeight : 0;
   document.querySelectorAll('.hero, .careers-hero').forEach(h => {
-    h.style.paddingTop = (5.5 * 16 + stripH + 56) + 'px';
+    h.style.paddingTop = (navH + stripH + 20) + 'px';
   });
 });
 </script>
