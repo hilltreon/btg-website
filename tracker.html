@@ -994,6 +994,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
     <div class="auth-tabs" style="margin-bottom:16px;">
       <div class="auth-tab active" id="cli-tab-details" onclick="switchCliTab('details')">📋 Details</div>
       <div class="auth-tab" id="cli-tab-illustrations" onclick="switchCliTab('illustrations')">📄 Illustrations</div>
+      <div class="auth-tab" id="cli-tab-appt-history" onclick="switchCliTab('appt-history')">📅 Appt History</div>
     </div>
 
     <!-- DETAILS TAB -->
@@ -1086,6 +1087,13 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       </div>
     </div>
 
+    <!-- APPT HISTORY TAB -->
+    <div id="cli-pane-appt-history" class="hidden" style="min-height:180px;">
+      <div id="cli-appt-history-list" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;color:var(--text3);text-align:center;padding:24px;">Loading appointment history…</div>
+      </div>
+    </div>
+
     <input type="hidden" id="c-id">
     <div class="modal-footer" id="cli-modal-footer">
       <button class="btn btn-gold flex-1" onclick="saveCli()">Save</button>
@@ -1142,6 +1150,20 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
     <input type="hidden" id="a-id">
     <input type="hidden" id="a-linked-id">
     <input type="hidden" id="a-linked-type">
+
+    <!-- COMPLETE APPOINTMENT SECTION (shown when editing an existing appt) -->
+    <div id="a-complete-section" class="hidden" style="background:var(--green-soft);border:1.5px solid var(--green);border-radius:12px;padding:14px;margin-top:4px;">
+      <div style="font-size:12px;font-weight:700;color:var(--green);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;">✓ Mark as Complete</div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label>What happened? (outcome note)</label>
+        <textarea id="a-outcome-note" placeholder="e.g. Presented IUL, client interested — follow up next week..." style="min-height:64px;"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-green flex-1" onclick="completeAppt('completed')" style="font-size:13px;">✓ Mark Completed</button>
+        <button class="btn btn-ghost" onclick="completeAppt('no-show')" style="font-size:13px;">⚠ No-Show</button>
+        <button class="btn btn-ghost" onclick="completeAppt('cancelled')" style="font-size:13px;">✕ Cancelled</button>
+      </div>
+    </div>
     <div id="gcal-sync-row" style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px 13px;background:var(--bg);border-radius:10px;">
       <input type="checkbox" id="a-gcal-sync" style="width:16px;height:16px;accent-color:var(--navy);" checked>
       <label for="a-gcal-sync" style="font-size:13px;font-weight:500;color:var(--text2);margin:0;cursor:pointer;">Add to Google Calendar</label>
@@ -1823,10 +1845,13 @@ let _illusFile = null;
 function switchCliTab(tab) {
   document.getElementById('cli-tab-details').classList.toggle('active', tab === 'details');
   document.getElementById('cli-tab-illustrations').classList.toggle('active', tab === 'illustrations');
+  document.getElementById('cli-tab-appt-history').classList.toggle('active', tab === 'appt-history');
   document.getElementById('cli-pane-details').classList.toggle('hidden', tab !== 'details');
-  document.getElementById('cli-pane-illustrations').classList.toggle('hidden', tab === 'details');
+  document.getElementById('cli-pane-illustrations').classList.toggle('hidden', tab !== 'illustrations');
+  document.getElementById('cli-pane-appt-history').classList.toggle('hidden', tab !== 'appt-history');
   document.getElementById('cli-modal-footer').classList.toggle('hidden', tab !== 'details');
   if (tab === 'illustrations') loadIllustrations();
+  if (tab === 'appt-history') loadCliApptHistory();
 }
 
 // ─── ILLUSTRATIONS ───────────────────────────────────
@@ -2267,15 +2292,25 @@ function renderAppts() {
     const day = d ? d.getDate() : '?';
     const mon = d ? d.toLocaleString('default',{month:'short'}).toUpperCase() : '';
     const typeColors = {discovery:'badge-blue',presentation:'badge-gold',close:'badge-green','follow-up':'badge-gray',onboarding:'badge-purple'};
-    return `<div class="appt-card" onclick="editAppt('${a.id}')">
-      <div class="appt-date"><div class="ad-day">${day}</div><div class="ad-mon">${mon}</div></div>
-      <div class="appt-body">
+    const isDone = a.outcome && a.outcome !== 'pending';
+    const outcomeLabels = { completed:'✓ Completed', 'no-show':'⚠ No-Show', cancelled:'✕ Cancelled' };
+    const outcomeColors = { completed:'var(--green)', 'no-show':'var(--amber)', cancelled:'var(--red)' };
+    const cleanPhone = a.phone ? a.phone.replace(/\D/g,'') : '';
+    const smsLink = cleanPhone ? `<a href="sms:${cleanPhone}" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:3px;background:var(--green);color:#fff;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;text-decoration:none;">💬 Text</a>` : '';
+    return `<div class="appt-card" onclick="editAppt('${a.id}')" style="${isDone ? 'opacity:.7;' : ''}">
+      <div class="appt-date" style="${isDone ? 'background:var(--text3);' : ''}""><div class="ad-day">${day}</div><div class="ad-mon">${mon}</div></div>
+      <div class="appt-body" style="flex:1;min-width:0;">
         <div class="appt-name">${a.name}</div>
         <div class="appt-sub">${a.time||''} ${a.phone ? '· '+a.phone : ''}</div>
-        <div class="flex gap6" style="flex-wrap:wrap">
+        <div class="flex gap6" style="flex-wrap:wrap;align-items:center;">
           <span class="badge ${typeColors[a.type]||'badge-gray'}">${a.type||'meeting'}</span>
-          ${a.outcome !== 'pending' ? '<span class="badge badge-green">✓ Done</span>' : '<span class="badge badge-gold">Upcoming</span>'}
+          ${isDone
+            ? `<span class="badge" style="background:${outcomeColors[a.outcome]||'var(--green)'};color:#fff;">${outcomeLabels[a.outcome]||a.outcome}</span>`
+            : `<span class="badge badge-gold">Upcoming</span>`
+          }
+          ${!isDone && smsLink ? smsLink : ''}
         </div>
+        ${isDone && a.outcome_note ? `<div style="font-size:12px;color:var(--text2);background:var(--bg);border-radius:7px;padding:6px 9px;margin-top:7px;"><span style="font-weight:700;">Note: </span>${a.outcome_note}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -2344,6 +2379,8 @@ function openApptModal() {
   document.getElementById('a-linked-id').value = '';
   document.getElementById('a-linked-type').value = '';
   document.getElementById('a-delete').classList.add('hidden');
+  document.getElementById('a-complete-section').classList.add('hidden');
+  document.getElementById('a-outcome-note').value = '';
   clearApptContact();
   openModal('appt-modal');
 }
@@ -2360,6 +2397,10 @@ function editAppt(id) {
   document.getElementById('a-linked-id').value = a.linked_id||'';
   document.getElementById('a-linked-type').value = a.linked_type||'';
   document.getElementById('a-delete').classList.remove('hidden');
+  // Show complete section only for pending appointments
+  const isPending = !a.outcome || a.outcome === 'pending';
+  document.getElementById('a-complete-section').classList.toggle('hidden', !isPending);
+  document.getElementById('a-outcome-note').value = a.outcome_note || '';
   // Restore contact chip if linked
   clearApptContact();
   if (a.linked_id && a.linked_type) {
@@ -2375,7 +2416,8 @@ async function saveAppt() {
   if (!name || !date) { toast('Name and date required'); return; }
   const id = document.getElementById('a-id').value || uid();
   const isNew = !document.getElementById('a-id').value;
-  const data = {id, name, phone: document.getElementById('a-phone').value, date, time: document.getElementById('a-time').value, type: document.getElementById('a-type').value, pre_notes: document.getElementById('a-pre').value, outcome:'pending', owner_id: myUid(), linked_id: document.getElementById('a-linked-id').value || null, linked_type: document.getElementById('a-linked-type').value || null};
+  const existing = allAppts.find(r=>r.id===id);
+  const data = {id, name, phone: document.getElementById('a-phone').value, date, time: document.getElementById('a-time').value, type: document.getElementById('a-type').value, pre_notes: document.getElementById('a-pre').value, outcome: isNew ? 'pending' : (existing?.outcome||'pending'), owner_id: myUid(), linked_id: document.getElementById('a-linked-id').value || null, linked_type: document.getElementById('a-linked-type').value || null};
   try {
     if (isNew) {
       await sbFetch('/rest/v1/appointments', {method:'POST', body: JSON.stringify(data)});
@@ -2400,6 +2442,66 @@ async function deleteAppt() {
   await sbFetch(`/rest/v1/appointments?id=eq.${id}`, {method:'DELETE'});
   allAppts = allAppts.filter(r=>r.id!==id);
   renderAppts(); closeModal('appt-modal'); toast('Deleted');
+}
+
+async function completeAppt(outcome) {
+  const id = document.getElementById('a-id').value; if(!id) return;
+  const note = document.getElementById('a-outcome-note').value.trim();
+  const completedAt = new Date().toISOString();
+  const patch = { outcome, outcome_note: note, completed_at: completedAt };
+  try {
+    await sbFetch(`/rest/v1/appointments?id=eq.${id}`, { method:'PATCH', body: JSON.stringify(patch) });
+    const i = allAppts.findIndex(r=>r.id===id);
+    if (i>=0) allAppts[i] = { ...allAppts[i], ...patch };
+    // If linked to a client, refresh their record context
+    const appt = allAppts[i];
+    renderAppts(); closeModal('appt-modal');
+    const labels = { completed:'Appointment completed! ✓', 'no-show':'Marked as no-show', cancelled:'Appointment cancelled' };
+    toast(labels[outcome] || 'Updated');
+    updateDashboard();
+  } catch(e) {
+    toast('Failed to update: ' + (e.message||'unknown'));
+  }
+}
+
+// Load appointment history for the currently-open client record
+async function loadCliApptHistory() {
+  const clientId = document.getElementById('c-id').value;
+  const list = document.getElementById('cli-appt-history-list');
+  if (!clientId) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:24px;">Save the client record first to view appointment history.</div>';
+    return;
+  }
+  list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto 8px;"></div>Loading…</div>';
+  try {
+    const rows = await sbFetch(`/rest/v1/appointments?linked_id=eq.${clientId}&order=date.desc`) || [];
+    if (!rows.length) {
+      list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:24px;">No appointment history yet.</div>';
+      return;
+    }
+    const outcomeColors = { completed:'var(--green)', 'no-show':'var(--amber)', cancelled:'var(--red)', pending:'var(--blue)' };
+    const outcomeLabels = { completed:'✓ Completed', 'no-show':'⚠ No-Show', cancelled:'✕ Cancelled', pending:'⏳ Pending' };
+    list.innerHTML = rows.map(a => {
+      const d = a.date ? new Date(a.date + 'T12:00:00') : null;
+      const dateStr = d ? d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+      const oc = a.outcome || 'pending';
+      const col = outcomeColors[oc] || 'var(--text3)';
+      const completedInfo = a.completed_at
+        ? `<div style="font-size:11px;color:var(--text3);margin-top:2px;">Completed ${new Date(a.completed_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>`
+        : '';
+      return `<div style="background:var(--bg);border-radius:10px;padding:13px 14px;border-left:3px solid ${col};">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);">${dateStr} ${a.time ? '· ' + a.time : ''}</div>
+          <span style="font-size:11px;font-weight:700;color:${col};">${outcomeLabels[oc]||oc}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:${a.outcome_note?'6px':'0'};">${capitalize(a.type||'meeting')}${a.pre_notes ? ' · ' + a.pre_notes : ''}</div>
+        ${a.outcome_note ? `<div style="font-size:12px;color:var(--text);background:var(--card);border-radius:7px;padding:7px 10px;margin-top:4px;"><span style="font-weight:700;color:var(--text2);">Note: </span>${a.outcome_note}</div>` : ''}
+        ${completedInfo}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--red);padding:12px;">Error loading history.</div>';
+  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -2490,28 +2592,28 @@ function updateDailyFocus() {
   allRec.forEach(r => {
     if (!r.followup_date) return;
     const due = new Date(r.followup_date + 'T12:00:00');
-    if (due < today) items.push({priority:'overdue', icon:'⚠️', label:'Overdue follow-up', name:r.name, sub:'Recruiting prospect', action:`editRec('${r.id}')`, badge:'badge-red', badgeText:'Overdue'});
-    else if (r.followup_date === todayStr) items.push({priority:'today', icon:'📌', label:'Follow-up due today', name:r.name, sub:'Recruiting prospect', action:`editRec('${r.id}')`, badge:'badge-gold', badgeText:'Today'});
+    if (due < today) items.push({priority:'overdue', icon:'⚠️', label:'Overdue follow-up', name:r.name, sub:'Recruiting prospect', phone:r.phone||'', action:`editRec('${r.id}')`, badge:'badge-red', badgeText:'Overdue'});
+    else if (r.followup_date === todayStr) items.push({priority:'today', icon:'📌', label:'Follow-up due today', name:r.name, sub:'Recruiting prospect', phone:r.phone||'', action:`editRec('${r.id}')`, badge:'badge-gold', badgeText:'Today'});
   });
 
   // Overdue follow-ups — clients
   allCli.forEach(r => {
     if (!r.followup_date) return;
     const due = new Date(r.followup_date + 'T12:00:00');
-    if (due < today) items.push({priority:'overdue', icon:'⚠️', label:'Overdue follow-up', name:r.name, sub:r.product_interest||'Client', action:`editCli('${r.id}')`, badge:'badge-red', badgeText:'Overdue'});
-    else if (r.followup_date === todayStr) items.push({priority:'today', icon:'📌', label:'Follow-up due today', name:r.name, sub:r.product_interest||'Client', action:`editCli('${r.id}')`, badge:'badge-gold', badgeText:'Today'});
+    if (due < today) items.push({priority:'overdue', icon:'⚠️', label:'Overdue follow-up', name:r.name, sub:r.product_interest||'Client', phone:r.phone||'', action:`editCli('${r.id}')`, badge:'badge-red', badgeText:'Overdue'});
+    else if (r.followup_date === todayStr) items.push({priority:'today', icon:'📌', label:'Follow-up due today', name:r.name, sub:r.product_interest||'Client', phone:r.phone||'', action:`editCli('${r.id}')`, badge:'badge-gold', badgeText:'Today'});
   });
 
   // Appointments today
   allAppts.filter(a => a.date === todayStr && a.outcome === 'pending').forEach(a => {
-    items.push({priority:'today', icon:'📅', label:'Appointment today', name:a.name, sub:a.time ? `${a.type||'Meeting'} at ${a.time}` : a.type||'Meeting', action:`editAppt('${a.id}')`, badge:'badge-blue', badgeText:'Appt'});
+    items.push({priority:'today', icon:'📅', label:'Appointment today', name:a.name, sub:a.time ? `${a.type||'Meeting'} at ${a.time}` : a.type||'Meeting', phone:a.phone||'', action:`editAppt('${a.id}')`, badge:'badge-blue', badgeText:'Appt'});
   });
 
   // Stale prospects — no follow-up date set, not contacted in 7+ days
   allRec.filter(r => !r.followup_date && r.pipeline_stage !== 'active').forEach(r => {
     const added = r.added ? new Date(r.added) : null;
     if (!added || added > staleDate) return;
-    items.push({priority:'stale', icon:'💤', label:'No follow-up scheduled', name:r.name, sub:'Prospect · '+( r.pipeline_stage||'prospect'), action:`editRec('${r.id}')`, badge:'badge-gray', badgeText:'Stale'});
+    items.push({priority:'stale', icon:'💤', label:'No follow-up scheduled', name:r.name, sub:'Prospect · '+( r.pipeline_stage||'prospect'), phone:r.phone||'', action:`editRec('${r.id}')`, badge:'badge-gray', badgeText:'Stale'});
   });
 
   // Sort: overdue first, then today, then stale
@@ -2523,15 +2625,25 @@ function updateDailyFocus() {
     return;
   }
 
-  fl.innerHTML = items.slice(0,8).map(item => `
-    <div class="list-item" onclick="${item.action}" style="cursor:pointer;">
+  fl.innerHTML = items.slice(0,8).map(item => {
+    const cleanPhone = item.phone ? item.phone.replace(/\D/g,'') : '';
+    const smsBtn = cleanPhone
+      ? `<a href="sms:${cleanPhone}" onclick="event.stopPropagation()" style="flex-shrink:0;display:inline-flex;align-items:center;gap:4px;background:var(--green);color:#fff;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">💬 Text</a>`
+      : '';
+    return `
+    <div class="list-item" onclick="${item.action}" style="cursor:pointer;gap:10px;">
       <div style="font-size:22px;flex-shrink:0;">${item.icon}</div>
-      <div class="li-main">
+      <div class="li-main" style="min-width:0;">
         <div class="li-name">${item.name}</div>
         <div class="li-sub">${item.label} · ${item.sub}</div>
+        ${item.phone ? `<div style="font-size:11px;color:var(--text3);margin-top:2px;">📞 ${item.phone}</div>` : ''}
       </div>
-      <div class="li-right"><span class="badge ${item.badge}">${item.badgeText}</span></div>
-    </div>`).join('');
+      <div class="li-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+        <span class="badge ${item.badge}">${item.badgeText}</span>
+        ${smsBtn}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ═══════════════════════════════════════════════════
