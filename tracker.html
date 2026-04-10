@@ -2638,7 +2638,10 @@ function updateDailyFocus() {
     return;
   }
 
+  // Store items in a global map — no JSON embedded in onclick attributes
+  window._focusItems = {};
   fl.innerHTML = items.slice(0,8).map((item, idx) => {
+    window._focusItems[idx] = item;
     const cleanPhone = item.phone ? item.phone.replace(/\D/g,'') : '';
     const smsBtn = cleanPhone
       ? `<a href="sms:${cleanPhone}" onclick="event.stopPropagation()" style="flex-shrink:0;display:inline-flex;align-items:center;gap:4px;background:var(--green);color:#fff;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">💬 Text</a>`
@@ -2649,9 +2652,9 @@ function updateDailyFocus() {
     return `
     <div class="swipe-wrap" id="swipe-wrap-${idx}">
       <div class="swipe-actions" id="swipe-actions-${idx}">
-        <button class="sa sa-done" onclick="swipeAction('done','${idx}',${JSON.stringify(item).replace(/'/g,'&#39;').replace(/"/g,'&quot;')})"><span>✓</span>Done</button>
-        <button class="sa sa-followup" onclick="swipeAction('followup','${idx}',${JSON.stringify(item).replace(/'/g,'&#39;').replace(/"/g,'&quot;')})"><span>📅</span>Follow-up</button>
-        <button class="sa sa-note" onclick="swipeAction('note','${idx}',${JSON.stringify(item).replace(/'/g,'&#39;').replace(/"/g,'&quot;')})"><span>📝</span>Note</button>
+        <button class="sa sa-done" onclick="swipeAction('done',${idx})"><span>✓</span>Done</button>
+        <button class="sa sa-followup" onclick="swipeAction('followup',${idx})"><span>📅</span>Follow-up</button>
+        <button class="sa sa-note" onclick="swipeAction('note',${idx})"><span>📝</span>Note</button>
       </div>
       <div class="swipe-inner list-item" id="swipe-inner-${idx}" onclick="${item.action}" style="cursor:pointer;gap:10px;">
         <div style="font-size:22px;flex-shrink:0;">${item.icon}</div>
@@ -2751,7 +2754,9 @@ function initSwipeRows() {
 // Swipe quick-action modal
 let _swipeItem = null;
 
-function swipeAction(type, idx, item) {
+function swipeAction(type, idx) {
+  const item = (window._focusItems || {})[idx];
+  if (!item) { toast('Could not find item — refresh the page'); return; }
   _swipeItem = item;
   // Close the swipe row
   const inner = document.getElementById(`swipe-inner-${idx}`);
