@@ -3796,6 +3796,11 @@ async function saveAgentGoals() {
     await sbFetch('/rest/v1/profiles?id=eq.' + agentId, {method:'PATCH', body: JSON.stringify(patch)});
     const a = allAgents.find(x => x.id === agentId);
     if (a) Object.assign(a, patch);
+    // If the saved agent is the current user, update currentProfile so goal card refreshes
+    if (agentId === myUid()) {
+      Object.assign(currentProfile, patch);
+      updateDashboard();
+    }
     toast('Goals saved for ' + (a ? a.name : 'agent'));
     closeModal('agent-detail-modal');
   } catch(e) {
