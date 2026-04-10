@@ -2826,7 +2826,7 @@ async function submitSwipeDone(outcome) {
     } else if (recMatch) {
       const rec = allRec.find(r=>r.id===recMatch[1]); if(!rec) return;
       const newNote = note ? (rec.notes ? rec.notes + '\n[' + new Date().toLocaleDateString() + '] ' + note : '[' + new Date().toLocaleDateString() + '] ' + note) : rec.notes;
-      await sbFetch(`/rest/v1/recruiting_pipeline?id=eq.${recMatch[1]}`, { method:'PATCH', body: JSON.stringify({ followup_date: null, notes: newNote }) });
+      await sbFetch(`/rest/v1/rec_records?id=eq.${recMatch[1]}`, { method:'PATCH', body: JSON.stringify({ followup_date: null, notes: newNote }) });
       const i = allRec.findIndex(r=>r.id===recMatch[1]); if(i>=0) allRec[i] = {...allRec[i], followup_date:null, notes:newNote};
     }
     closeModal('swipe-modal'); toast('Marked done ✓'); updateDashboard();
@@ -2848,7 +2848,7 @@ async function submitSwipeFollowup() {
     } else if (recMatch) {
       const rec = allRec.find(r=>r.id===recMatch[1]); if(!rec) return;
       const newNote = note ? (rec.notes ? rec.notes + '\n[' + new Date().toLocaleDateString() + '] Follow-up set: ' + note : '[' + new Date().toLocaleDateString() + '] ' + note) : rec.notes;
-      await sbFetch(`/rest/v1/recruiting_pipeline?id=eq.${recMatch[1]}`, { method:'PATCH', body: JSON.stringify({ followup_date: date, notes: newNote }) });
+      await sbFetch(`/rest/v1/rec_records?id=eq.${recMatch[1]}`, { method:'PATCH', body: JSON.stringify({ followup_date: date, notes: newNote }) });
       const i = allRec.findIndex(r=>r.id===recMatch[1]); if(i>=0) allRec[i] = {...allRec[i], followup_date:date, notes:newNote};
     }
     closeModal('swipe-modal'); toast('Follow-up set for ' + date + ' 📅'); updateDashboard();
@@ -2871,7 +2871,7 @@ async function submitSwipeNote() {
     } else if (recMatch) {
       const rec = allRec.find(r=>r.id===recMatch[1]); if(!rec) return;
       const newNote = rec.notes ? rec.notes + '\n' + stamp + note : stamp + note;
-      await sbFetch(`/rest/v1/recruiting_pipeline?id=eq.${recMatch[1]}`, { method:'PATCH', body: JSON.stringify({ notes: newNote }) });
+      await sbFetch(`/rest/v1/rec_records?id=eq.${recMatch[1]}`, { method:'PATCH', body: JSON.stringify({ notes: newNote }) });
       const i = allRec.findIndex(r=>r.id===recMatch[1]); if(i>=0) allRec[i] = {...allRec[i], notes:newNote};
     } else if (apptMatch) {
       await sbFetch(`/rest/v1/appointments?id=eq.${apptMatch[1]}`, { method:'PATCH', body: JSON.stringify({ pre_notes: note }) });
