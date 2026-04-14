@@ -894,19 +894,19 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
     <div class="pw-review-card">
       <div class="pw-review-section">
         <div class="pw-review-label">🏆 Wins This Week <span style="font-size:10px;font-weight:400;text-transform:none;">What went well? What drove the best results?</span></div>
-        <textarea class="pw-review-ta" id="pw-wins" oninput="schedulePWAutoSave()" placeholder="e.g. Booked 3 KTPs, completed 5 RIs, hit my call count 4 out of 5 days..."></textarea>
+        <textarea class="pw-review-ta" id="pw-wins" placeholder="e.g. Booked 3 KTPs, completed 5 RIs, hit my call count 4 out of 5 days..."></textarea>
       </div>
       <div class="pw-review-section">
         <div class="pw-review-label">📉 Areas to Improve <span style="font-size:10px;font-weight:400;text-transform:none;">What did you miss? What behavior changes next week?</span></div>
-        <textarea class="pw-review-ta" id="pw-improve" oninput="schedulePWAutoSave()" placeholder="e.g. Only made 80 calls Mon/Tue — need to block 8-10am daily..."></textarea>
+        <textarea class="pw-review-ta" id="pw-improve" placeholder="e.g. Only made 80 calls Mon/Tue — need to block 8-10am daily..."></textarea>
       </div>
       <div class="pw-review-section">
         <div class="pw-review-label">🎯 Goals for Next Week <span style="font-size:10px;font-weight:400;text-transform:none;">Top 3 priorities entering next week</span></div>
-        <textarea class="pw-review-ta" id="pw-goals-next" oninput="schedulePWAutoSave()" placeholder="1. Hit 200 calls&#10;2. Schedule 2 KTPs&#10;3. Follow up with 5 warm prospects..."></textarea>
+        <textarea class="pw-review-ta" id="pw-goals-next" placeholder="1. Hit 200 calls&#10;2. Schedule 2 KTPs&#10;3. Follow up with 5 warm prospects..."></textarea>
       </div>
       <div class="pw-review-section">
         <div class="pw-review-label">📓 Notes / Reflections</div>
-        <textarea class="pw-review-ta" id="pw-notes" oninput="schedulePWAutoSave()" placeholder="Anything else — mindset, observations, coaching notes..."></textarea>
+        <textarea class="pw-review-ta" id="pw-notes" placeholder="Anything else — mindset, observations, coaching notes..."></textarea>
       </div>
     </div>
 
@@ -1074,6 +1074,20 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div id="adm-tenure-display" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;"></div>
     </div>
     <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;">📍 Location & Licensing</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
+        <div class="form-group">
+          <label>Home State</label>
+          <input id="adm-home-state" placeholder="TX" maxlength="2" style="text-transform:uppercase;">
+        </div>
+        <div class="form-group">
+          <label>Licensed States</label>
+          <input id="adm-licensed-states" placeholder="TX, CA, FL" style="text-transform:uppercase;" oninput="renderLicensedStateChips(this.value)">
+        </div>
+      </div>
+      <div id="adm-licensed-state-chips" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+    </div>
+    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:14px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;">🎯 Monthly Goals</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
         <div class="form-group"><label>Apps / Mo</label><input id="adm-goal-apps" type="number" placeholder="0" min="0"></div>
@@ -1105,24 +1119,6 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
     </div>
     <input type="hidden" id="adm-agent-id">
     <input type="hidden" id="adm-pdf-data">
-    <!-- Remove Agent Section -->
-    <div id="adm-remove-section" style="background:var(--red-soft);border:1.5px solid var(--red);border-radius:12px;padding:14px;margin-top:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--red);margin-bottom:10px;">⚠️ Remove Agent</div>
-      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:flex-end;">
-        <div class="form-group" style="margin:0;">
-          <label style="color:var(--red);">Reason for Removal</label>
-          <select id="adm-remove-reason" style="border-color:var(--red);">
-            <option value="">— Select reason —</option>
-            <option value="resigned">Resigned</option>
-            <option value="terminated">Terminated / Fired</option>
-            <option value="inactive">Inactive / No Production</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <button class="btn btn-red" onclick="removeAgent()" style="flex-shrink:0;">🗑 Remove Agent</button>
-      </div>
-      <div style="font-size:11px;color:var(--red);margin-top:8px;opacity:.8;">This will permanently delete this agent from your roster. Their recruiting prospects and client records will remain.</div>
-    </div>
     <div class="modal-footer">
       <button class="btn btn-navy flex-1" onclick="saveAgentGoals()">Save Goals</button>
       <button class="btn btn-ghost" onclick="closeModal('agent-detail-modal')">Close</button>
@@ -1170,7 +1166,30 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
         <textarea id="r-notes" placeholder="Any notes, objections, or follow-up reminders..."></textarea>
       </div>
     </div>
+    <!-- PROSPECT ORIGIN HISTORY (shown when editing existing) -->
+    <div id="r-origin-section" class="hidden" style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1.5px solid var(--border);">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:8px;">📋 Prospect History</div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;">
+          <span style="color:var(--text2);font-weight:600;">Added by</span>
+          <span id="r-history-created-by" style="color:var(--navy);font-weight:700;">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;">
+          <span style="color:var(--text2);font-weight:600;">Originally under</span>
+          <span id="r-history-originally-under" style="color:var(--navy);font-weight:700;">—</span>
+        </div>
+        <div id="r-history-current-wrap" style="display:flex;justify-content:space-between;font-size:12px;">
+          <span style="color:var(--text2);font-weight:600;">Currently assigned to</span>
+          <span id="r-history-current-owner" style="color:var(--navy);font-weight:700;">—</span>
+        </div>
+      </div>
+    </div>
     <input type="hidden" id="r-id">
+    <input type="hidden" id="r-owner-id">
+    <input type="hidden" id="r-created-by">
+    <input type="hidden" id="r-created-by-name">
+    <input type="hidden" id="r-originally-under">
+    <input type="hidden" id="r-originally-under-name">
     <div class="modal-footer">
       <button class="btn btn-navy flex-1" onclick="saveRec()">Save Prospect</button>
       <button class="btn btn-ghost" onclick="closeModal('rec-modal')">Cancel</button>
@@ -1291,6 +1310,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
     </div>
 
     <input type="hidden" id="c-id">
+    <input type="hidden" id="c-owner-id">
     <div class="modal-footer" id="cli-modal-footer">
       <button class="btn btn-gold flex-1" onclick="saveCli()">Save</button>
       <button class="btn btn-ghost" onclick="closeModal('cli-modal')">Cancel</button>
@@ -1344,6 +1364,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
       <div class="form-group"><label>Pre-meeting Notes</label><textarea id="a-pre" placeholder="What to prepare, goals for this meeting..."></textarea></div>
     </div>
     <input type="hidden" id="a-id">
+    <input type="hidden" id="a-owner-id">
     <input type="hidden" id="a-linked-id">
     <input type="hidden" id="a-linked-type">
 
@@ -1839,6 +1860,7 @@ function recCard(r) {
       ${r.followup_date ? followupBadge(r.followup_date) : ''}
     </div>
     ${traitBadges ? `<div class="pc-meta" style="margin-top:5px;">${traitBadges}</div>` : ''}
+    ${(currentProfile?.is_director && r.created_by_name && r.created_by_name !== currentProfile?.name) ? `<div style="font-size:10px;color:var(--text3);margin-top:4px;">✏️ Added by <strong>${r.created_by_name}</strong>${r.originally_under_name && r.originally_under_name !== r.created_by_name ? ` · Under <strong>${r.originally_under_name}</strong>` : ''}</div>` : ''}
     <div class="pc-actions">
       ${prev ? `<button class="stage-btn back" onclick="event.stopPropagation();moveRec('${r.id}','${prev}')">← ${capitalize(prev)}</button>` : ''}
       ${next ? `<button class="stage-btn fwd" onclick="event.stopPropagation();moveRec('${r.id}','${next}')">→ ${capitalize(next==='licensed-agent'?'Licensed Agent':next)}</button>` : ''}
@@ -1872,7 +1894,26 @@ function openRecModal(rec=null) {
   const ro=document.getElementById('r-objection'); if(ro) ro.value=rec?.objection||'';
   const rn=document.getElementById('r-notes'); if(rn) rn.value=rec?.notes||'';
   document.getElementById('r-id').value = rec?.id || '';
+  document.getElementById('r-owner-id').value = rec?.owner_id || '';
+  document.getElementById('r-created-by').value = rec?.created_by || '';
+  document.getElementById('r-created-by-name').value = rec?.created_by_name || '';
+  document.getElementById('r-originally-under').value = rec?.originally_under || '';
+  document.getElementById('r-originally-under-name').value = rec?.originally_under_name || '';
   document.getElementById('rec-modal-title').textContent = rec ? 'Edit Prospect' : 'Add Prospect';
+  // Populate origin history section
+  const originSec = document.getElementById('r-origin-section');
+  if (rec && (rec.created_by_name || rec.originally_under_name)) {
+    originSec.classList.remove('hidden');
+    document.getElementById('r-history-created-by').textContent = rec.created_by_name || '—';
+    document.getElementById('r-history-originally-under').textContent = rec.originally_under_name || '—';
+    const ownerAgent = allAgents.find(a => a.id === rec.owner_id);
+    const ownerName = ownerAgent ? ownerAgent.name : (rec.owner_id === myUid() ? (currentProfile?.name || 'You') : rec.owner_id);
+    document.getElementById('r-history-current-owner').textContent = ownerName || '—';
+    // Hide current owner row if same as originally under
+    document.getElementById('r-history-current-wrap').style.display = (rec.owner_id === rec.originally_under) ? 'none' : 'flex';
+  } else {
+    originSec.classList.add('hidden');
+  }
   document.getElementById('r-delete').classList.toggle('hidden', !rec);
   loadTraitsFromNotes(rec?.notes||'');
   openModal('rec-modal');
@@ -1895,7 +1936,11 @@ async function saveRec() {
     followup_date: document.getElementById('r-followup').value || null,
     objection: document.getElementById('r-objection').value || null,
     notes: document.getElementById('r-notes').value || null,
-    owner_id: myUid()
+    owner_id: document.getElementById('r-owner-id').value || myUid(),
+    created_by: isNew ? myUid() : (document.getElementById('r-created-by').value || myUid()),
+    created_by_name: isNew ? (currentProfile?.name || '') : (document.getElementById('r-created-by-name').value || currentProfile?.name || ''),
+    originally_under: isNew ? myUid() : (document.getElementById('r-originally-under').value || myUid()),
+    originally_under_name: isNew ? (currentProfile?.name || '') : (document.getElementById('r-originally-under-name').value || currentProfile?.name || '')
   };
   try {
     if (isNew) {
@@ -2330,6 +2375,7 @@ function openCliModal(rec=null) {
   const cf=document.getElementById('c-followup'); if(cf) cf.value=rec?.followup_date||'';
   const ci=document.getElementById('c-income'); if(ci) ci.value=rec?.income_range||'';
   document.getElementById('c-id').value = rec?.id || '';
+  document.getElementById('c-owner-id').value = rec?.owner_id || '';
   document.getElementById('cli-modal-title').textContent = rec ? 'Edit Client' : 'Add Lead';
   document.getElementById('c-delete').classList.toggle('hidden', !rec);
   openModal('cli-modal');
@@ -2361,7 +2407,7 @@ async function saveCli() {
     annual_premium: parseFloat(document.getElementById('c-annual').value)||null,
     issue_date: document.getElementById('c-issue').value||null,
     review_date: document.getElementById('c-review').value||null,
-    owner_id: myUid()
+    owner_id: document.getElementById('c-owner-id').value || myUid()
   };
   try {
     if (isNew) {
@@ -2419,7 +2465,7 @@ function renderAgents() {
       ${avHtml}
       <div class="ac-info">
         <div class="ac-name">${a.name} ${a.is_director?'<span class="director-tag">DIRECTOR</span>':''}</div>
-        <div class="ac-sub">${a.email} · ${a.tier||'Trainee'}</div>
+        <div class="ac-sub">${a.email} · ${a.tier||'Trainee'}${a.home_state ? ' · 📍 '+a.home_state : ''}</div>
         <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
           ${!a.approved && !a.is_director ? `<button class="btn btn-green btn-xs" onclick="event.stopPropagation();approveAgent('${a.id}')">Approve</button>` : ''}
           <span class="badge badge-gray">${recCount} prospects</span>
@@ -2581,6 +2627,7 @@ function openApptModal() {
   ['a-name','a-phone','a-date','a-time','a-pre'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('a-type').value = 'discovery';
   document.getElementById('a-id').value = '';
+  document.getElementById('a-owner-id').value = '';
   document.getElementById('a-linked-id').value = '';
   document.getElementById('a-linked-type').value = '';
   document.getElementById('a-delete').classList.add('hidden');
@@ -2599,6 +2646,7 @@ function editAppt(id) {
   document.getElementById('a-type').value = a.type||'discovery';
   document.getElementById('a-pre').value = a.pre_notes||'';
   document.getElementById('a-id').value = a.id;
+  document.getElementById('a-owner-id').value = a.owner_id || '';
   document.getElementById('a-linked-id').value = a.linked_id||'';
   document.getElementById('a-linked-type').value = a.linked_type||'';
   document.getElementById('a-delete').classList.remove('hidden');
@@ -2622,7 +2670,7 @@ async function saveAppt() {
   const id = document.getElementById('a-id').value || uid();
   const isNew = !document.getElementById('a-id').value;
   const existing = allAppts.find(r=>r.id===id);
-  const data = {id, name, phone: document.getElementById('a-phone').value, date, time: document.getElementById('a-time').value, type: document.getElementById('a-type').value, pre_notes: document.getElementById('a-pre').value, outcome: isNew ? 'pending' : (existing?.outcome||'pending'), owner_id: myUid(), linked_id: document.getElementById('a-linked-id').value || null, linked_type: document.getElementById('a-linked-type').value || null};
+  const data = {id, name, phone: document.getElementById('a-phone').value, date, time: document.getElementById('a-time').value, type: document.getElementById('a-type').value, pre_notes: document.getElementById('a-pre').value, outcome: isNew ? 'pending' : (existing?.outcome||'pending'), owner_id: document.getElementById('a-owner-id').value || myUid(), linked_id: document.getElementById('a-linked-id').value || null, linked_type: document.getElementById('a-linked-type').value || null};
   try {
     if (isNew) {
       await sbFetch('/rest/v1/appointments', {method:'POST', body: JSON.stringify(data)});
@@ -3909,6 +3957,13 @@ async function openAgentDetail(agentId) {
   document.getElementById('adm-goal-note').value      = profile.goal_note || '';
   document.getElementById('adm-start-date').value     = profile.start_date || '';
   document.getElementById('adm-license-date').value   = profile.license_date || '';
+  document.getElementById('adm-home-state').value      = profile.home_state || '';
+  document.getElementById('adm-licensed-states').value = Array.isArray(profile.licensed_states) ? profile.licensed_states.join(', ') : (profile.licensed_states || '');
+  // Render licensed state chips
+  const licStates = Array.isArray(profile.licensed_states) ? profile.licensed_states : [];
+  document.getElementById('adm-licensed-state-chips').innerHTML = licStates.map(s =>
+    `<span class="badge badge-blue" style="font-size:11px;font-weight:700;">${s}</span>`
+  ).join('');
 
   // Tenure / time-to-license display
   const today = new Date(); today.setHours(0,0,0,0);
@@ -3971,6 +4026,15 @@ async function openAgentDetail(agentId) {
   }
 }
 
+function renderLicensedStateChips(val) {
+  const states = val.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+  const container = document.getElementById('adm-licensed-state-chips');
+  if (!container) return;
+  container.innerHTML = states.map(s =>
+    `<span class="badge badge-blue" style="font-size:11px;font-weight:700;">${s}</span>`
+  ).join('');
+}
+
 async function saveAgentGoals() {
   const agentId = document.getElementById('adm-agent-id').value;
   if (!agentId) return;
@@ -3982,7 +4046,11 @@ async function saveAgentGoals() {
     goal_note:      document.getElementById('adm-goal-note').value||'',
     goal_pdf:       pdfPath,
     start_date:     document.getElementById('adm-start-date').value || null,
-    license_date:   document.getElementById('adm-license-date').value || null
+    license_date:   document.getElementById('adm-license-date').value || null,
+    home_state:     document.getElementById('adm-home-state').value.toUpperCase() || null,
+    licensed_states: document.getElementById('adm-licensed-states').value
+      ? document.getElementById('adm-licensed-states').value.split(',').map(s => s.trim().toUpperCase()).filter(Boolean)
+      : []
   };
   try {
     await sbFetch('/rest/v1/profiles?id=eq.' + agentId, {method:'PATCH', body: JSON.stringify(patch)});
@@ -3998,29 +4066,6 @@ async function saveAgentGoals() {
   } catch(e) {
     console.error('saveAgentGoals:', e);
     toast('Error saving: ' + (e.message||'check console'));
-  }
-}
-
-async function removeAgent() {
-  const agentId = document.getElementById('adm-agent-id').value;
-  if (!agentId) return;
-  const reason = document.getElementById('adm-remove-reason').value;
-  if (!reason) { toast('Please select a reason for removal'); return; }
-  const agent = allAgents.find(x => x.id === agentId);
-  const name = agent?.name || 'this agent';
-  const reasonLabels = { resigned:'Resigned', terminated:'Terminated / Fired', inactive:'Inactive / No Production', other:'Other' };
-  const confirmed = confirm(`Remove ${name} from the roster?\n\nReason: ${reasonLabels[reason]}\n\nThis will permanently delete their profile. Their recruiting and client records will remain. This cannot be undone.`);
-  if (!confirmed) return;
-  try {
-    await sbFetch(`/rest/v1/profiles?id=eq.${agentId}`, { method: 'DELETE' });
-    allAgents = allAgents.filter(x => x.id !== agentId);
-    renderAgents();
-    updateDashboard();
-    closeModal('agent-detail-modal');
-    toast(`${name} removed from roster (${reasonLabels[reason]})`);
-  } catch(e) {
-    console.error('removeAgent:', e);
-    toast('Error removing agent — check console');
   }
 }
 
@@ -4303,23 +4348,6 @@ function renderPWMetricRows() {
   updatePWSummary();
 }
 
-let _pwAutoSaveTimer = null;
-function schedulePWAutoSave() {
-  clearTimeout(_pwAutoSaveTimer);
-  // Show subtle saving indicator
-  const lbl = document.getElementById('pw-week-label');
-  if (lbl) lbl.textContent = formatWeekLabel(pwCurrentWeek) + ' · saving…';
-  _pwAutoSaveTimer = setTimeout(async () => {
-    await savePerfectWeek(true);
-    const lbl2 = document.getElementById('pw-week-label');
-    if (lbl2) lbl2.textContent = formatWeekLabel(pwCurrentWeek) + ' · saved ✓';
-    setTimeout(() => {
-      const lbl3 = document.getElementById('pw-week-label');
-      if (lbl3) lbl3.textContent = formatWeekLabel(pwCurrentWeek);
-    }, 2000);
-  }, 1200);
-}
-
 function onPWMetricChange(key, input) {
   const m = PW_METRICS.find(x => x.key === key);
   if (!m) return;
@@ -4338,7 +4366,6 @@ function onPWMetricChange(key, input) {
     pctEl.textContent = pct + '%';
   }
   updatePWSummary();
-  schedulePWAutoSave();
 }
 
 function updatePWSummary() {
@@ -4391,7 +4418,6 @@ function togglePWHabit(hi, di) {
   const isChecked = el.classList.contains('checked');
   el.classList.toggle('checked', !isChecked);
   el.textContent = isChecked ? '' : '✓';
-  schedulePWAutoSave();
 }
 
 // ── RENDER LEADERSHIP LID ────────────────────────
@@ -4458,7 +4484,7 @@ function collectPWData() {
 }
 
 // ── SAVE WEEK ─────────────────────────────────────
-async function savePerfectWeek(silent = false) {
+async function savePerfectWeek() {
   const data = collectPWData();
   try {
     if (pwCurrentEntry?.id) {
@@ -4473,10 +4499,10 @@ async function savePerfectWeek(silent = false) {
       if (currentProfile?.is_director) buildWeekOptions('pw-dir-week-select', pwWeeks, pwCurrentWeek);
     }
     pwCurrentEntry = {...(pwCurrentEntry||{}), ...data, metrics: JSON.parse(data.metrics), habits: JSON.parse(data.habits)};
-    if (!silent) toast('Perfect Week saved! ✓');
+    toast('Perfect Week saved! ✓');
   } catch(e) {
     console.error('savePerfectWeek:', e);
-    if (!silent) toast('Save failed — table may need setup. See console.');
+    toast('Save failed — table may need setup. See console.');
   }
 }
 
