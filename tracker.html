@@ -894,19 +894,19 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
     <div class="pw-review-card">
       <div class="pw-review-section">
         <div class="pw-review-label">🏆 Wins This Week <span style="font-size:10px;font-weight:400;text-transform:none;">What went well? What drove the best results?</span></div>
-        <textarea class="pw-review-ta" id="pw-wins" placeholder="e.g. Booked 3 KTPs, completed 5 RIs, hit my call count 4 out of 5 days..."></textarea>
+        <textarea class="pw-review-ta" id="pw-wins" oninput="schedulePWAutoSave()" placeholder="e.g. Booked 3 KTPs, completed 5 RIs, hit my call count 4 out of 5 days..."></textarea>
       </div>
       <div class="pw-review-section">
         <div class="pw-review-label">📉 Areas to Improve <span style="font-size:10px;font-weight:400;text-transform:none;">What did you miss? What behavior changes next week?</span></div>
-        <textarea class="pw-review-ta" id="pw-improve" placeholder="e.g. Only made 80 calls Mon/Tue — need to block 8-10am daily..."></textarea>
+        <textarea class="pw-review-ta" id="pw-improve" oninput="schedulePWAutoSave()" placeholder="e.g. Only made 80 calls Mon/Tue — need to block 8-10am daily..."></textarea>
       </div>
       <div class="pw-review-section">
         <div class="pw-review-label">🎯 Goals for Next Week <span style="font-size:10px;font-weight:400;text-transform:none;">Top 3 priorities entering next week</span></div>
-        <textarea class="pw-review-ta" id="pw-goals-next" placeholder="1. Hit 200 calls&#10;2. Schedule 2 KTPs&#10;3. Follow up with 5 warm prospects..."></textarea>
+        <textarea class="pw-review-ta" id="pw-goals-next" oninput="schedulePWAutoSave()" placeholder="1. Hit 200 calls&#10;2. Schedule 2 KTPs&#10;3. Follow up with 5 warm prospects..."></textarea>
       </div>
       <div class="pw-review-section">
         <div class="pw-review-label">📓 Notes / Reflections</div>
-        <textarea class="pw-review-ta" id="pw-notes" placeholder="Anything else — mindset, observations, coaching notes..."></textarea>
+        <textarea class="pw-review-ta" id="pw-notes" oninput="schedulePWAutoSave()" placeholder="Anything else — mindset, observations, coaching notes..."></textarea>
       </div>
     </div>
 
@@ -1105,6 +1105,24 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
     </div>
     <input type="hidden" id="adm-agent-id">
     <input type="hidden" id="adm-pdf-data">
+    <!-- Remove Agent Section -->
+    <div id="adm-remove-section" style="background:var(--red-soft);border:1.5px solid var(--red);border-radius:12px;padding:14px;margin-top:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--red);margin-bottom:10px;">⚠️ Remove Agent</div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:flex-end;">
+        <div class="form-group" style="margin:0;">
+          <label style="color:var(--red);">Reason for Removal</label>
+          <select id="adm-remove-reason" style="border-color:var(--red);">
+            <option value="">— Select reason —</option>
+            <option value="resigned">Resigned</option>
+            <option value="terminated">Terminated / Fired</option>
+            <option value="inactive">Inactive / No Production</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <button class="btn btn-red" onclick="removeAgent()" style="flex-shrink:0;">🗑 Remove Agent</button>
+      </div>
+      <div style="font-size:11px;color:var(--red);margin-top:8px;opacity:.8;">This will permanently delete this agent from your roster. Their recruiting prospects and client records will remain.</div>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-navy flex-1" onclick="saveAgentGoals()">Save Goals</button>
       <button class="btn btn-ghost" onclick="closeModal('agent-detail-modal')">Close</button>
@@ -3983,6 +4001,29 @@ async function saveAgentGoals() {
   }
 }
 
+async function removeAgent() {
+  const agentId = document.getElementById('adm-agent-id').value;
+  if (!agentId) return;
+  const reason = document.getElementById('adm-remove-reason').value;
+  if (!reason) { toast('Please select a reason for removal'); return; }
+  const agent = allAgents.find(x => x.id === agentId);
+  const name = agent?.name || 'this agent';
+  const reasonLabels = { resigned:'Resigned', terminated:'Terminated / Fired', inactive:'Inactive / No Production', other:'Other' };
+  const confirmed = confirm(`Remove ${name} from the roster?\n\nReason: ${reasonLabels[reason]}\n\nThis will permanently delete their profile. Their recruiting and client records will remain. This cannot be undone.`);
+  if (!confirmed) return;
+  try {
+    await sbFetch(`/rest/v1/profiles?id=eq.${agentId}`, { method: 'DELETE' });
+    allAgents = allAgents.filter(x => x.id !== agentId);
+    renderAgents();
+    updateDashboard();
+    closeModal('agent-detail-modal');
+    toast(`${name} removed from roster (${reasonLabels[reason]})`);
+  } catch(e) {
+    console.error('removeAgent:', e);
+    toast('Error removing agent — check console');
+  }
+}
+
 async function handleAgentPdf(input) {
   const file = input.files[0];
   if (!file) return;
@@ -4262,6 +4303,23 @@ function renderPWMetricRows() {
   updatePWSummary();
 }
 
+let _pwAutoSaveTimer = null;
+function schedulePWAutoSave() {
+  clearTimeout(_pwAutoSaveTimer);
+  // Show subtle saving indicator
+  const lbl = document.getElementById('pw-week-label');
+  if (lbl) lbl.textContent = formatWeekLabel(pwCurrentWeek) + ' · saving…';
+  _pwAutoSaveTimer = setTimeout(async () => {
+    await savePerfectWeek(true);
+    const lbl2 = document.getElementById('pw-week-label');
+    if (lbl2) lbl2.textContent = formatWeekLabel(pwCurrentWeek) + ' · saved ✓';
+    setTimeout(() => {
+      const lbl3 = document.getElementById('pw-week-label');
+      if (lbl3) lbl3.textContent = formatWeekLabel(pwCurrentWeek);
+    }, 2000);
+  }, 1200);
+}
+
 function onPWMetricChange(key, input) {
   const m = PW_METRICS.find(x => x.key === key);
   if (!m) return;
@@ -4280,6 +4338,7 @@ function onPWMetricChange(key, input) {
     pctEl.textContent = pct + '%';
   }
   updatePWSummary();
+  schedulePWAutoSave();
 }
 
 function updatePWSummary() {
@@ -4332,6 +4391,7 @@ function togglePWHabit(hi, di) {
   const isChecked = el.classList.contains('checked');
   el.classList.toggle('checked', !isChecked);
   el.textContent = isChecked ? '' : '✓';
+  schedulePWAutoSave();
 }
 
 // ── RENDER LEADERSHIP LID ────────────────────────
@@ -4398,7 +4458,7 @@ function collectPWData() {
 }
 
 // ── SAVE WEEK ─────────────────────────────────────
-async function savePerfectWeek() {
+async function savePerfectWeek(silent = false) {
   const data = collectPWData();
   try {
     if (pwCurrentEntry?.id) {
@@ -4413,10 +4473,10 @@ async function savePerfectWeek() {
       if (currentProfile?.is_director) buildWeekOptions('pw-dir-week-select', pwWeeks, pwCurrentWeek);
     }
     pwCurrentEntry = {...(pwCurrentEntry||{}), ...data, metrics: JSON.parse(data.metrics), habits: JSON.parse(data.habits)};
-    toast('Perfect Week saved! ✓');
+    if (!silent) toast('Perfect Week saved! ✓');
   } catch(e) {
     console.error('savePerfectWeek:', e);
-    toast('Save failed — table may need setup. See console.');
+    if (!silent) toast('Save failed — table may need setup. See console.');
   }
 }
 
