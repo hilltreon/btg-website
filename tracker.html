@@ -536,7 +536,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
   <div class="page" id="page-recruiting">
     <div class="section-header">
       <div><div class="section-title">Recruiting Pipeline</div><div class="section-sub">Track prospects from first contact to active agent</div></div>
-      <div class="flex gap8"><button class="export-btn" onclick="exportCSV('rec')">⬇ Export</button><button class="btn btn-ghost btn-sm" onclick="openRecSort()" id="rec-sort-btn">↕ Sort: Newest</button><button class="btn btn-navy" onclick="openRecModal()">+ Add Prospect</button></div>
+      <div class="flex gap8"><button class="export-btn" onclick="exportCSV('rec')">⬇ Export</button><button class="btn btn-ghost btn-sm" onclick="openRecSort()" id="rec-sort-btn">↕ Sort: Newest</button><button class="btn btn-ghost btn-sm" onclick="openRecContactModal()">📞 Add Contact</button><button class="btn btn-navy" onclick="openRecModal()">+ Add Prospect</button></div>
     </div>
     <div id="rec-view-toggle" class="filter-chips director-only" style="margin-bottom:12px;">
       <div class="chip active" onclick="setRecView('mine',this)">👤 My Prospects</div>
@@ -602,7 +602,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
   <div class="page" id="page-clients">
     <div class="section-header">
       <div><div class="section-title">Client Pipeline</div><div class="section-sub">Lead → Application → Policy in Force</div></div>
-      <div class="flex gap8"><button class="export-btn" onclick="exportCSV('cli')">⬇ Export</button><button class="btn btn-ghost btn-sm" onclick="openCliSort()" id="cli-sort-btn">↕ Sort: Newest</button><button class="btn btn-gold" onclick="openCliModal()">+ Add Lead</button></div>
+      <div class="flex gap8"><button class="export-btn" onclick="exportCSV('cli')">⬇ Export</button><button class="btn btn-ghost btn-sm" onclick="openCliSort()" id="cli-sort-btn">↕ Sort: Newest</button><button class="btn btn-ghost btn-sm" onclick="openCliContactModal()">📞 Add Contact</button><button class="btn btn-gold" onclick="openCliModal()">+ Add Lead</button></div>
     </div>
     <div class="search-bar"><span class="si">🔍</span><input placeholder="Search clients..." oninput="filterCli(this.value)" id="cli-search"></div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
@@ -686,7 +686,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
         </div>
       </div>
     </div>
-    <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-navy btn-sm" onclick="openAddAgentModal()">+ Add Agent</button><button class="export-btn" onclick="bulkApprove()">✓ Approve All Pending</button><button class="export-btn" onclick="exportCSV('agents')">⬇ Export Roster</button></div>
+    <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-navy btn-sm" onclick="openAddAgentModal()">+ Add Agent</button><button class="btn btn-gold btn-sm" onclick="openAddAgentContactModal()">+ Add Contact</button><button class="export-btn" onclick="bulkApprove()">✓ Approve All Pending</button><button class="export-btn" onclick="exportCSV('agents')">⬇ Export Roster</button></div>
     <div id="agents-grid" class="agents-grid"><div class="loading-wrap"><div class="spinner"></div></div></div>
   </div>
 
@@ -1865,6 +1865,8 @@ function recCard(r) {
       ${prev ? `<button class="stage-btn back" onclick="event.stopPropagation();moveRec('${r.id}','${prev}')">← ${capitalize(prev)}</button>` : ''}
       ${next ? `<button class="stage-btn fwd" onclick="event.stopPropagation();moveRec('${r.id}','${next}')">→ ${capitalize(next==='licensed-agent'?'Licensed Agent':next)}</button>` : ''}
       <button class="stage-btn" style="background:var(--blue-soft);color:var(--blue);border:none;" onclick="event.stopPropagation();quickSchedule('${r.id}','rec')">📅</button>
+      ${r.phone ? `<a href="tel:${r.phone.replace(/\D/g,'')}" onclick="event.stopPropagation()" class="stage-btn" style="background:var(--navy);color:#fff;text-decoration:none;">📞</a>` : ''}
+      ${r.phone ? `<a href="sms:${r.phone.replace(/\D/g,'')}" onclick="event.stopPropagation()" class="stage-btn" style="background:var(--green);color:#fff;text-decoration:none;">💬</a>` : ''}
     </div>
   </div>`;
 }
@@ -1883,6 +1885,44 @@ async function moveRec(id, stage) {
   await sbFetch(`/rest/v1/rec_records?id=eq.${id}`, {method:'PATCH', body: JSON.stringify({pipeline_stage: stage})});
   const r = allRec.find(x=>x.id===id); if(r) r.pipeline_stage = stage;
   renderRec(); toast('Moved to ' + capitalize(stage));
+}
+
+function openRecContactModal() {
+  const name = prompt('Prospect name:');
+  if (!name || !name.trim()) return;
+  const phone = prompt('Phone number (optional):');
+  const email = prompt('Email (optional):');
+  const data = {
+    name: name.trim(),
+    phone: phone ? phone.trim() : '',
+    email: email ? email.trim() : '',
+    pipeline_stage: 'new-lead',
+    lic: 'unlicensed',
+    source: 'direct',
+    owner_id: myUid(),
+    created_by: myUid(),
+    created_by_name: currentProfile?.name || ''
+  };
+  sbFetch('/rest/v1/rec_records', {method:'POST', body: JSON.stringify(data)})
+    .then(() => { toast('Contact added to prospects!'); loadRec(); })
+    .catch(() => toast('Error adding contact'));
+}
+
+function openCliContactModal() {
+  const name = prompt('Client name:');
+  if (!name || !name.trim()) return;
+  const phone = prompt('Phone number (optional):');
+  const email = prompt('Email (optional):');
+  const data = {
+    name: name.trim(),
+    phone: phone ? phone.trim() : '',
+    email: email ? email.trim() : '',
+    pipeline_stage: 'lead',
+    owner_id: myUid()
+  };
+  sbFetch('/rest/v1/client_records', {method:'POST', body: JSON.stringify(data)})
+    .then(() => { toast('Contact added to clients!'); loadCli(); })
+    .catch(() => toast('Error adding contact'));
 }
 
 function filterRec(v) { recFilter = v; renderRec(); }
@@ -2033,6 +2073,8 @@ function cliCard(r) {
       ${prev ? `<button class="stage-btn back" onclick="event.stopPropagation();moveCli('${r.id}','${prev}')">← ${capitalize(prev)}</button>` : ''}
       ${next ? `<button class="stage-btn fwd" onclick="event.stopPropagation();moveCli('${r.id}','${next}')">→ ${capitalize(next)}</button>` : ''}
       <button class="stage-btn" style="background:var(--blue-soft);color:var(--blue);border:none;" onclick="event.stopPropagation();quickSchedule('${r.id}','cli')">📅</button>
+      ${r.phone ? `<a href="tel:${r.phone.replace(/\D/g,'')}" onclick="event.stopPropagation()" class="stage-btn" style="background:var(--navy);color:#fff;text-decoration:none;">📞</a>` : ''}
+      ${r.phone ? `<a href="sms:${r.phone.replace(/\D/g,'')}" onclick="event.stopPropagation()" class="stage-btn" style="background:var(--green);color:#fff;text-decoration:none;">💬</a>` : ''}
     </div>
   </div>`;
 }
@@ -2482,6 +2524,8 @@ function renderAgents() {
           <option ${a.tier==='Field Associate'?'selected':''}  value="Field Associate">Field Assoc</option>
           <option ${a.tier==='Director'?'selected':''}>Director</option>
         </select>
+        ${a.phone ? `<a href="tel:${a.phone.replace(/\D/g,'')}" onclick="event.stopPropagation()" class="btn btn-navy btn-xs" style="text-decoration:none;">📞 Call</a>` : ''}
+        ${a.phone ? `<a href="sms:${a.phone.replace(/\D/g,'')}" onclick="event.stopPropagation()" class="btn btn-green btn-xs" style="text-decoration:none;">💬 Text</a>` : ''}
         <button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();emailAgent('${a.email}','${a.name}')">✉ Email</button>
         <button class="btn btn-navy btn-xs" onclick="event.stopPropagation();openAgentDetail('${a.id}')">📊 View</button>
       </div>
@@ -4129,6 +4173,28 @@ function removeAgentPdf() {
   document.getElementById('adm-pdf-name').textContent = 'goal-sheet.pdf';
   document.getElementById('adm-pdf-preview').classList.add('hidden');
   document.getElementById('adm-pdf-upload-btn').classList.remove('hidden');
+}
+
+function openAddAgentContactModal() {
+  // Quick-add a contact (non-portal agent) — opens a lightweight prompt
+  const name = prompt('Contact name:');
+  if (!name || !name.trim()) return;
+  const phone = prompt('Phone number (optional):');
+  const email = prompt('Email (optional):');
+  // Store as a minimal agent record (pending, unlicensed)
+  const data = {
+    name: name.trim(),
+    phone: phone ? phone.trim() : '',
+    email: email ? email.trim() : '',
+    tier: 'Trainee',
+    approved: false,
+    is_director: false,
+    lic: '',
+    states: ''
+  };
+  sbFetch('/rest/v1/profiles', {method:'POST', body: JSON.stringify(data)})
+    .then(() => { toast('Contact added!'); loadAgents(); })
+    .catch(() => toast('Error adding contact'));
 }
 
 function openAddAgentModal() {
