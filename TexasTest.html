@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BTG Life Only — Practice Exam</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --teal: #1a7a7a;
+    --white: #f5f0e8;
+    --gray: #8a8a8a;
+    --correct: #2e7d52;
+    --wrong: #8b2020;
+    --card-bg: #111e35;
+    --border: rgba(201,168,76,0.2);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    min-height: 100vh;
+  }
+
+  /* ---- HEADER ---- */
+  .header {
+    background: linear-gradient(135deg, #0a1628 0%, #0e2040 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 16px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-brand { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--gold); letter-spacing: 2px; }
+  .header-title { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .progress-pill {
+    background: rgba(201,168,76,0.15);
+    border: 1px solid var(--gold);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+
+  /* ---- PROGRESS BAR ---- */
+  .progress-bar-wrap { height: 4px; background: rgba(255,255,255,0.1); }
+  .progress-bar-fill { height: 4px; background: linear-gradient(90deg, var(--teal), var(--gold)); transition: width 0.4s ease; }
+
+  /* ---- SCREENS ---- */
+  .screen { display: none; padding: 24px 20px; }
+  .screen.active { display: block; }
+
+  /* ---- INTRO ---- */
+  .intro-hero { text-align: center; padding: 32px 0 24px; }
+  .intro-badge {
+    display: inline-block;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .intro-title { font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 3px; line-height: 1; color: var(--white); }
+  .intro-sub { font-size: 14px; color: var(--gray); margin-top: 10px; line-height: 1.6; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 28px 0; }
+  .info-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .info-card .val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--gold); letter-spacing: 1px; }
+  .info-card .lbl { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .btn-start {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    border: none;
+    border-radius: 12px;
+    padding: 18px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-start:active { transform: scale(0.98); }
+
+  /* ---- QUIZ ---- */
+  .q-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .q-number { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--gold); letter-spacing: 2px; }
+  .q-chapter { font-size: 11px; color: var(--teal); text-transform: uppercase; letter-spacing: 1px; }
+  .q-text {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: var(--white);
+  }
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .opt {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--white);
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.15s, background 0.15s;
+    text-align: left;
+  }
+  .opt:active { transform: scale(0.99); }
+  .opt-letter {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--gold);
+    min-width: 22px;
+    padding-top: 1px;
+  }
+  .opt.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+  .opt.correct { border-color: #4caf7d; background: rgba(76,175,125,0.15); }
+  .opt.correct .opt-letter { color: #4caf7d; }
+  .opt.wrong { border-color: #e05555; background: rgba(224,85,85,0.12); }
+  .opt.wrong .opt-letter { color: #e05555; }
+  .opt.disabled { pointer-events: none; }
+
+  .feedback-box {
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .feedback-box.correct { background: rgba(76,175,125,0.12); border: 1px solid #4caf7d; color: #a8e6c7; }
+  .feedback-box.wrong { background: rgba(224,85,85,0.1); border: 1px solid #e05555; color: #f5a5a5; }
+  .feedback-box.show { display: block; }
+  .feedback-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; margin-bottom: 6px; }
+
+  .nav-row { display: flex; gap: 10px; }
+  .btn-check {
+    flex: 1;
+    background: linear-gradient(135deg, var(--teal), #1d9090);
+    color: var(--white);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+  }
+  .btn-next {
+    flex: 1;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    display: none;
+  }
+  .btn-next.show { display: block; }
+  .btn-check:disabled { opacity: 0.35; }
+
+  /* ---- RESULTS ---- */
+  .result-hero { text-align: center; padding: 32px 0 20px; }
+  .grade-ring {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 6px solid var(--gold);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    background: var(--card-bg);
+  }
+  .grade-score { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: var(--gold); line-height: 1; }
+  .grade-label { font-size: 11px; color: var(--gray); letter-spacing: 1px; text-transform: uppercase; }
+  .grade-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; }
+  .grade-sub { font-size: 14px; color: var(--gray); margin-top: 8px; }
+  .stat-row { display: flex; gap: 10px; margin: 24px 0; }
+  .stat-box { flex: 1; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+  .stat-box .sval { font-family: 'Bebas Neue', sans-serif; font-size: 32px; }
+  .stat-box .slbl { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .stat-box.green .sval { color: #4caf7d; }
+  .stat-box.red .sval { color: #e05555; }
+
+  .missed-section { margin-top: 12px; }
+  .missed-header { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; color: var(--gold); margin-bottom: 14px; }
+  .missed-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .missed-q-num { font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: var(--gold); letter-spacing: 1px; margin-bottom: 8px; }
+  .missed-q-text { font-size: 14px; line-height: 1.5; margin-bottom: 10px; color: var(--white); }
+  .missed-row { font-size: 13px; line-height: 1.5; }
+  .missed-yours { color: #f5a5a5; }
+  .missed-correct { color: #a8e6c7; }
+  .missed-explain { font-size: 12px; color: var(--gray); margin-top: 8px; line-height: 1.5; border-top: 1px solid var(--border); padding-top: 8px; }
+  .btn-retake {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    border: none;
+    border-radius: 12px;
+    padding: 18px;
+    cursor: pointer;
+    margin: 24px 0 40px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-brand">BTG FINANCIAL</div>
+    <div class="header-title">Life Only — Practice Exam</div>
+  </div>
+  <div class="progress-pill" id="progressPill">0/100</div>
+</div>
+<div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+
+<!-- INTRO SCREEN -->
+<div class="screen active" id="screenIntro">
+  <div class="intro-hero">
+    <div class="intro-badge">Texas DOI Aligned</div>
+    <div class="intro-title">LIFE ONLY<br>MOCK EXAM</div>
+    <div class="intro-sub">100 questions · Full exam simulation<br>Score 75+ before scheduling Pearson VUE</div>
+  </div>
+  <div class="info-grid">
+    <div class="info-card"><div class="val">100</div><div class="lbl">Questions</div></div>
+    <div class="info-card"><div class="val">70%</div><div class="lbl">Passing Score</div></div>
+    <div class="info-card"><div class="val">150</div><div class="lbl">Min on Real Exam</div></div>
+    <div class="info-card"><div class="val">A-D</div><div class="lbl">Multiple Choice</div></div>
+  </div>
+  <button class="btn-start" onclick="startQuiz()">START EXAM</button>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div class="screen" id="screenQuiz">
+  <div class="q-meta">
+    <div class="q-number" id="qNumber">Q1</div>
+    <div class="q-chapter" id="qChapter">Chapter 1</div>
+  </div>
+  <div class="q-text" id="qText"></div>
+  <div class="options" id="optionsWrap"></div>
+  <div class="feedback-box" id="feedbackBox">
+    <div class="feedback-label" id="feedbackLabel"></div>
+    <div id="feedbackText"></div>
+  </div>
+  <div class="nav-row">
+    <button class="btn-check" id="btnCheck" onclick="checkAnswer()" disabled>CHECK</button>
+    <button class="btn-next" id="btnNext" onclick="nextQuestion()">NEXT →</button>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div class="screen" id="screenResults">
+  <div class="result-hero">
+    <div class="grade-ring">
+      <div class="grade-score" id="gradeScore">0%</div>
+      <div class="grade-label">Score</div>
+    </div>
+    <div class="grade-title" id="gradeTitle">RESULTS</div>
+    <div class="grade-sub" id="gradeSub"></div>
+  </div>
+  <div class="stat-row">
+    <div class="stat-box green"><div class="sval" id="statCorrect">0</div><div class="slbl">Correct</div></div>
+    <div class="stat-box red"><div class="sval" id="statMissed">0</div><div class="slbl">Missed</div></div>
+    <div class="stat-box"><div class="sval" id="statPct">0%</div><div class="slbl">Final Score</div></div>
+  </div>
+  <div class="missed-section">
+    <div class="missed-header" id="missedHeader"></div>
+    <div id="missedList"></div>
+  </div>
+  <button class="btn-retake" onclick="retake()">RETAKE EXAM</button>
+</div>
+
+<script>
+const QUESTIONS = [
+  // Chapter 1 — TX Regulations (Q1-10)
+  { ch:"Chapter 1", q:"The Texas Department of Insurance is administered by the:", opts:["Governor","Attorney General","Commissioner of Insurance","State Comptroller"], ans:2, rat:"The Commissioner of Insurance heads TDI; appointed by the Governor." },
+  { ch:"Chapter 1", q:"A Texas Life Only license allows an agent to sell:", opts:["Life insurance, health, and disability products","Life insurance and annuities only","All lines of insurance","Property and casualty only"], ans:1, rat:"Life Only license covers life insurance and annuities only — no health products." },
+  { ch:"Chapter 1", q:"Texas requires pre-licensing education ONLY in which of the following situations?", opts:["All standard license applicants must complete 40 hours","When applying for a 90-day temporary license","When applying for a non-resident license only","Texas never requires pre-licensing education under any circumstances"], ans:1, rat:"Texas does NOT require pre-licensing education for a standard license. The 40-hour requirement applies only to temporary (90-day) license applicants, who must complete it within 14 days of application." },
+  { ch:"Chapter 1", q:"How many continuing education hours are required to renew a Texas insurance license?", opts:["12","18","24","30"], ans:2, rat:"24 CE hours required per 2-year renewal cycle." },
+  { ch:"Chapter 1", q:"Of the required CE hours, how many must be dedicated to ethics?", opts:["1","2","3","5"], ans:2, rat:"3 of the 24 CE hours must be in ethics." },
+  { ch:"Chapter 1", q:"An agent replaces an existing policy using false comparisons to benefit themselves. This is:", opts:["Churning","Rebating","Twisting","Sliding"], ans:2, rat:"Twisting = replacing using false or misleading comparisons." },
+  { ch:"Chapter 1", q:"An agent repeatedly replaces policies within the same insurance company to generate new commissions. This is:", opts:["Twisting","Sliding","Defamation","Churning"], ans:3, rat:"Churning = replacing within the same company to generate new commissions." },
+  { ch:"Chapter 1", q:"Offering a client a cash gift as an inducement to purchase a policy is called:", opts:["Misrepresentation","Rebating","Twisting","Coercion"], ans:1, rat:"Rebating = offering something of value not in the policy as inducement." },
+  { ch:"Chapter 1", q:"An agent adds a rider to a policy without the client's knowledge or consent. This is:", opts:["Twisting","Rebating","Sliding","Defamation"], ans:2, rat:"Sliding = adding coverage without informed client consent." },
+  { ch:"Chapter 1", q:"The standard free-look period for a life insurance policy in Texas is:", opts:["5 days","10 days","15 days","30 days"], ans:1, rat:"Standard Texas free-look period = 10 days." },
+  // Chapter 2 — Policy Types (Q11-25)
+  { ch:"Chapter 2", q:"Which type of life insurance provides coverage for a specific period with no cash value?", opts:["Whole life","Universal life","Term life","Variable life"], ans:2, rat:"Term = temporary coverage, no cash value." },
+  { ch:"Chapter 2", q:"Decreasing term life insurance is most commonly used to cover a:", opts:["Business keyperson","Mortgage or installment loan","Retirement fund shortfall","College education fund"], ans:1, rat:"Decreasing term mirrors a declining mortgage or loan balance." },
+  { ch:"Chapter 2", q:"Annual Renewable Term (ART) is best characterized by:", opts:["Level premiums and level death benefit for 20 years","Premiums that increase each year as the insured ages","A cash value that grows over time","A death benefit that decreases annually"], ans:1, rat:"ART = premium increases each year reflecting the insured's increasing age/risk." },
+  { ch:"Chapter 2", q:"Which type of term policy returns the premiums paid if the insured outlives the term?", opts:["Annual renewable term","Level term","Decreasing term","Return of premium term"], ans:3, rat:"Return of Premium term returns all premiums if insured outlives the term." },
+  { ch:"Chapter 2", q:"Whole life insurance is best described as:", opts:["Temporary coverage with no savings component","Permanent protection with guaranteed cash value growth","Flexible premium coverage linked to market indexes","A securities product requiring a FINRA license"], ans:1, rat:"Whole life = permanent + guaranteed cash value + level premiums." },
+  { ch:"Chapter 2", q:"A 20-pay life policy means:", opts:["The policy expires after 20 years","The death benefit decreases over 20 years","Premiums are paid for 20 years and the policy remains in force for life","Premiums increase every 20 years"], ans:2, rat:"20-Pay Life = paid up after 20 years of premiums; coverage lasts for life." },
+  { ch:"Chapter 2", q:"A joint life (first-to-die) policy pays the death benefit:", opts:["When both insureds have died","When the last surviving insured dies","When the first insured dies","At the policy maturity date"], ans:2, rat:"First-to-die pays at the first death among covered insureds." },
+  { ch:"Chapter 2", q:"Survivorship life (second-to-die) insurance is most commonly used for:", opts:["Replacing income for a surviving spouse","Funding estate taxes after both spouses have died","Covering a key employee at a business","Paying off a home mortgage"], ans:1, rat:"Second-to-die is designed to pay estate taxes after both spouses have died." },
+  { ch:"Chapter 2", q:"Universal life insurance differs from whole life primarily because UL offers:", opts:["Guaranteed cash value growth and fixed premiums","Coverage that terminates at age 65","Flexible premiums and an adjustable death benefit","Investment in separate account sub-accounts"], ans:2, rat:"UL's defining features: flexible premiums and adjustable death benefit." },
+  { ch:"Chapter 2", q:"In a Universal Life policy, Option B (Increasing Death Benefit) means:", opts:["The death benefit equals the face amount only","The death benefit equals the face amount plus accumulated cash value","The death benefit decreases as cash value increases","The death benefit doubles upon accidental death"], ans:1, rat:"Option B = face amount + cash value, so death benefit increases as CV grows." },
+  { ch:"Chapter 2", q:"Indexed Universal Life (IUL) differs from standard UL in that IUL:", opts:["Invests directly in the stock market","Has no cash value component","Credits interest based on a market index with a floor and cap","Requires a securities license to sell"], ans:2, rat:"IUL credits interest linked to a market index — with floor and cap protection." },
+  { ch:"Chapter 2", q:"In an IUL policy, the FLOOR of 0% means:", opts:["The policy lapses if the index returns 0%","The policyholder cannot lose cash value due to index declines","The cap rate is set at 0%","The participation rate is 0%"], ans:1, rat:"0% floor = cannot credit negative interest due to index declines." },
+  { ch:"Chapter 2", q:"Variable life insurance requires the selling agent to hold:", opts:["A Texas life license only","A property and casualty license","A state life license plus a FINRA securities license","No additional licensing beyond general insurance"], ans:2, rat:"Variable products are securities; require state insurance + FINRA license." },
+  { ch:"Chapter 2", q:"In a variable life policy, the cash value is held in:", opts:["The insurer's general account","A bank trust account","Separate account sub-accounts","A guaranteed investment contract"], ans:2, rat:"Variable cash value held in separate account sub-accounts, not general account." },
+  { ch:"Chapter 2", q:"The employer is the policyowner in which type of life insurance?", opts:["Individual whole life","Variable universal life","Group life insurance","Credit life insurance"], ans:2, rat:"Group life: employer is the policyowner; employees are the insureds." },
+  // Chapter 3 — Provisions, Riders (Q26-42)
+  { ch:"Chapter 3", q:"The grace period for a life insurance policy in Texas is:", opts:["10 days","20 days","31 days","60 days"], ans:2, rat:"Life insurance grace period in Texas = 31 days." },
+  { ch:"Chapter 3", q:"The incontestability clause prevents the insurer from disputing a policy after:", opts:["1 year","2 years","3 years","5 years"], ans:1, rat:"Incontestability = 2 years from policy issue date." },
+  { ch:"Chapter 3", q:"The suicide clause in most life insurance policies excludes suicide coverage for the first:", opts:["1 year","2 years","3 years","6 months"], ans:1, rat:"Suicide clause exclusion = 2 years; premiums returned if suicide occurs in this window." },
+  { ch:"Chapter 3", q:"Under the misstatement of age provision, if the insured understated their age:", opts:["The policy is cancelled","The insurer sues for fraud","The death benefit is adjusted to what the premium would have purchased at the correct age","All premiums are refunded"], ans:2, rat:"Misstatement of age: benefit adjusted — policy not cancelled." },
+  { ch:"Chapter 3", q:"The Entire Contract provision states that the insurance contract consists of:", opts:["The policy alone","The policy plus all verbal agreements","The policy plus the signed application","The application alone"], ans:2, rat:"Entire contract = policy + signed application." },
+  { ch:"Chapter 3", q:"A policyowner wants to use their lapsed whole life policy's cash value to purchase the same face amount of protection for a limited time without paying premiums. They should select:", opts:["Reduced paid-up","Cash surrender value","Paid-up additions","Extended term"], ans:3, rat:"Extended term = same face amount, coverage for limited time, no premiums." },
+  { ch:"Chapter 3", q:"A policyowner wants a smaller permanent policy they will never have to pay premiums on again. They should select:", opts:["Extended term","Cash surrender value","Reduced paid-up","Fixed period settlement"], ans:2, rat:"Reduced paid-up = smaller permanent policy, no more premiums." },
+  { ch:"Chapter 3", q:"Dividends from a participating whole life policy are generally:", opts:["Taxable as capital gains","Not taxable — treated as a return of premium","Fully taxable as ordinary income","Tax-deferred until withdrawal"], ans:1, rat:"Life insurance dividends = return of premium; not taxable unless they exceed basis." },
+  { ch:"Chapter 3", q:"Which dividend option purchases small amounts of additional paid-up permanent insurance?", opts:["Cash","Reduce premium","Accumulate at interest","Paid-up additions (PUA)"], ans:3, rat:"PUA = most efficient dividend use; increases both cash value and death benefit." },
+  { ch:"Chapter 3", q:"Under a life income settlement option, what happens to remaining funds if the beneficiary dies shortly after payments begin?", opts:["Paid to a contingent beneficiary","Returned to the original insurer — no further payments","Transferred to a trust","Paid to the insured's estate"], ans:1, rat:"Straight life annuity stops completely at annuitant death — no residual payments." },
+  { ch:"Chapter 3", q:"The Waiver of Premium rider waives future premiums if the insured:", opts:["Dies","Reaches age 65","Becomes totally disabled","Retires from employment"], ans:2, rat:"Waiver of premium activates upon total disability (typically 6-month elimination period)." },
+  { ch:"Chapter 3", q:"The Guaranteed Insurability Option (GIO) allows the insured to purchase additional coverage:", opts:["At any time without restriction","Only at specified option dates or qualifying life events — without evidence of insurability","Only with a new medical exam","Only up to age 40"], ans:1, rat:"GIO = purchase more coverage at specified dates/events only; no medical exam required." },
+  { ch:"Chapter 3", q:"The Accidental Death Benefit (ADB) rider — sometimes called 'double indemnity' — pays an additional benefit only if:", opts:["The insured dies from any cause","The insured is hospitalized before death","Death results from an accident","The insured is under age 65 at death"], ans:2, rat:"ADB rider only pays for accidental death — not illness, not suicide." },
+  { ch:"Chapter 3", q:"A payor benefit rider on a juvenile life insurance policy waives premiums if:", opts:["The insured child becomes disabled","The parent or payor dies or becomes disabled","The policy is surrendered","The child reaches age 21"], ans:1, rat:"Payor benefit = protects the child's policy if the parent/payor dies or is disabled." },
+  { ch:"Chapter 3", q:"The Accelerated Death Benefit (ADB) rider allows:", opts:["The beneficiary to collect early if the insured is over 75","A terminally ill insured to access a portion of the death benefit while still alive","Premium payments to be accelerated for early paid-up status","The insurer to cancel the policy early"], ans:1, rat:"Accelerated Death Benefit = living benefit for terminal illness; reduces death benefit." },
+  { ch:"Chapter 3", q:"An irrevocable beneficiary designation requires whose consent to make changes?", opts:["The insurer only","The policyowner only","The beneficiary must consent to any change","A court order"], ans:2, rat:"Irrevocable beneficiary must consent to any change — policyowner cannot change unilaterally." },
+  { ch:"Chapter 3", q:"A collateral assignment of a life insurance policy:", opts:["Permanently transfers all ownership rights to a third party","Temporarily transfers specific rights to a lender as security for a loan","Changes the beneficiary to a creditor permanently","Converts the policy to a term policy"], ans:1, rat:"Collateral assignment = temporary transfer of specific rights for a loan; not permanent." },
+  // Chapter 4 — Annuities (Q43-50)
+  { ch:"Chapter 4", q:"An annuity is designed primarily to protect against:", opts:["Premature death","Disability","Property loss","Outliving your income — longevity risk"], ans:3, rat:"Annuities address longevity risk — running out of money while still alive." },
+  { ch:"Chapter 4", q:"The accumulation phase of an annuity is when:", opts:["The annuity pays out income to the annuitant","The insurer calculates the exclusion ratio","The owner deposits money and it grows tax-deferred","The death benefit is distributed to beneficiaries"], ans:2, rat:"Accumulation phase = deposits + tax-deferred growth." },
+  { ch:"Chapter 4", q:"Once the annuitization phase begins, which of the following is TRUE?", opts:["The owner can stop payments at any time","The decision is generally irrevocable — cannot be undone","The policy converts to a life insurance policy","The insurer refunds all premiums"], ans:1, rat:"Annuitization is generally irrevocable — insurer assumes mortality risk." },
+  { ch:"Chapter 4", q:"A Single Premium Immediate Annuity (SPIA) begins income payments:", opts:["At age 65 regardless of when purchased","Within 12 months of purchasing the annuity","After a 5-year accumulation period","Only after the annuitant retires"], ans:1, rat:"SPIA = immediate; payments start within 12 months of single premium." },
+  { ch:"Chapter 4", q:"A Fixed Indexed Annuity (FIA) with a participation rate of 80% means:", opts:["The annuitant gets 80% of any index loss","The annuitant is credited with 80% of the index gain","The insurer keeps 80% of premiums","The policy lapses if returns fall below 80%"], ans:1, rat:"80% participation rate = credited 80% of whatever the index gains." },
+  { ch:"Chapter 4", q:"Which annuity settlement option provides the highest monthly payment with no guarantee period?", opts:["Life with 10-year certain","Joint and full survivor","Straight life (life only)","Fixed period"], ans:2, rat:"Straight life (life only) = highest payment; stops completely at death." },
+  { ch:"Chapter 4", q:"A life with period certain annuity guarantees payments for:", opts:["Only the life of the annuitant","Life of annuitant; if early death, beneficiary receives payments for the remaining guaranteed period","A set number of years regardless of life","Two lives simultaneously"], ans:1, rat:"Life with period certain: pays for life; if early death, beneficiary gets remaining period." },
+  { ch:"Chapter 4", q:"Annuity withdrawals before age 59-and-a-half are subject to a federal penalty of:", opts:["5%","10%","15%","20%"], ans:1, rat:"10% federal penalty on annuity gain withdrawn before age 59½." },
+  // Chapter 5 — Tax (Q51-60)
+  { ch:"Chapter 5", q:"The death benefit paid to a named beneficiary of a life insurance policy is generally:", opts:["Taxed as capital gains","Subject to ordinary income tax","Included in the insured's estate only if the estate is the beneficiary","Income-tax free under IRC Section 101(a)"], ans:3, rat:"Death benefit income-tax free under IRC 101(a) — one of the most important tax rules in life insurance." },
+  { ch:"Chapter 5", q:"A policy loan against a whole life policy's cash value is:", opts:["Always taxable as ordinary income","Tax-free as long as the policy remains in force","Subject to a 10% penalty","Deductible as a business expense"], ans:1, rat:"Policy loans are not taxable events as long as the policy stays in force." },
+  { ch:"Chapter 5", q:"A Modified Endowment Contract (MEC) is created when:", opts:["Cash value equals the death benefit","The policy is surrendered for more than cost basis","The policy fails the 7-pay test — too much premium paid in first 7 years","The policy is converted from term to permanent"], ans:2, rat:"MEC = fails 7-pay test; too much premium paid in first 7 policy years." },
+  { ch:"Chapter 5", q:"With a MEC, distributions before age 59-and-a-half are:", opts:["Always tax-free","Taxable as capital gains only","Subject to ordinary income tax on the gain plus a 10% IRS penalty","Deducted from the death benefit only"], ans:2, rat:"MEC distributions before 59½: taxable as ordinary income + 10% penalty." },
+  { ch:"Chapter 5", q:"Dividends received from a participating life insurance policy that do NOT exceed the premiums paid are:", opts:["Taxable as ordinary income","Tax-free — treated as a return of premium (cost basis)","Subject to capital gains tax","Deferred until the policy matures"], ans:1, rat:"Dividends up to cumulative premiums paid = return of basis = not taxable." },
+  { ch:"Chapter 5", q:"Which of the following is a valid 1035 exchange?", opts:["Annuity to a life insurance policy","Life insurance to a whole new annuity","Savings account to an annuity","Annuity to a bank CD"], ans:1, rat:"Life insurance to annuity is a valid 1035 exchange." },
+  { ch:"Chapter 5", q:"Which is NOT a valid 1035 exchange?", opts:["Life insurance policy to another life insurance policy","Life insurance policy to an annuity","Annuity to another annuity","Annuity to a life insurance policy"], ans:3, rat:"Annuity to life insurance = NOT a valid 1035 exchange. Cannot go backwards." },
+  { ch:"Chapter 5", q:"With a Traditional IRA, required minimum distributions (RMDs) must begin at age:", opts:["59 and a half","65","70 and a half","73"], ans:3, rat:"Traditional IRA RMDs begin at age 73 per SECURE 2.0 Act." },
+  { ch:"Chapter 5", q:"Roth IRA qualified withdrawals in retirement are:", opts:["Taxed as ordinary income","Subject to a 10% penalty","Completely tax-free","Taxed as capital gains"], ans:2, rat:"Roth IRA qualified withdrawals = completely tax-free." },
+  { ch:"Chapter 5", q:"Employer-paid group life insurance premiums are income-tax free to the employee up to a face amount of:", opts:["$25,000","$50,000","$100,000","$250,000"], ans:1, rat:"Group life employer premium = tax-free to employee up to $50,000 face amount." },
+  // Chapter 6 — Ethics & Underwriting (Q61-70)
+  { ch:"Chapter 6", q:"Insurable interest in a life insurance policy must exist:", opts:["At the time of the insured's death","At the time of every premium payment","At the time of application","At the time of the claim filing"], ans:2, rat:"Insurable interest required at time of APPLICATION for life insurance." },
+  { ch:"Chapter 6", q:"A person always has insurable interest in:", opts:["Their business partner only","Any person they know","Their own life","Their employer"], ans:2, rat:"Everyone has insurable interest in their own life — unlimited amount." },
+  { ch:"Chapter 6", q:"If no insurable interest exists in a life insurance policy, the contract is considered:", opts:["Voidable at the insured's option","A wagering contract and is void","Valid but unenforceable until 2 years","Automatically converted to a term policy"], ans:1, rat:"No insurable interest = wagering contract = void — unenforceable." },
+  { ch:"Chapter 6", q:"The MIB (Medical Information Bureau) is used by insurers primarily to:", opts:["Set premium rates for all applicants","Identify misrepresentation on prior insurance applications","Provide actuarial tables to agents","Verify agent license status"], ans:1, rat:"MIB flags prior misrepresentation on previous insurance applications." },
+  { ch:"Chapter 6", q:"An agent signs their name as witness on an application they did not personally witness. This is:", opts:["Standard agent practice","Required if the applicant requests it","Fraud","Permitted if no adverse information is on the application"], ans:2, rat:"Signing as witness without witnessing = fraud. Never acceptable." },
+  { ch:"Chapter 6", q:"Premium diversion by an agent is:", opts:["A minor compliance issue requiring a written warning","Permissible if the agent plans to forward premiums within 60 days","A felony offense that can result in license revocation and criminal prosecution","Only illegal if over $1,000"], ans:2, rat:"Premium diversion = felony; license revocation + criminal charges." },
+  { ch:"Chapter 6", q:"Under the principle of utmost good faith, both parties to an insurance contract must:", opts:["Negotiate equal terms","Fully and honestly disclose all material facts","Have equal bargaining power","Agree to binding arbitration"], ans:1, rat:"Utmost good faith = full honest disclosure of all material facts by both parties." },
+  { ch:"Chapter 6", q:"An insurance contract is considered 'aleatory' because:", opts:["It is written entirely by one party","Only the insurer is legally bound","The values exchanged are unequal and depend on an uncertain event","It cannot be cancelled once issued"], ans:2, rat:"Aleatory = unequal exchange of values depending on chance (the loss event)." },
+  { ch:"Chapter 6", q:"A contract of adhesion means:", opts:["The insured negotiates every term","Both parties contributed equally to the wording","The insurer drafted the contract and any ambiguities are resolved in the insured's favor","The contract cannot be modified"], ans:2, rat:"Contract of adhesion = insurer writes it; ambiguities favor the insured." },
+  { ch:"Chapter 6", q:"Under field underwriting, if an agent becomes aware of material information not disclosed on the application, the agent should:", opts:["Ignore it if the applicant did not bring it up","Report it to the insurer even if the applicant did not volunteer it","Advise the applicant to deny it","Submit the application and wait for the underwriter to discover it"], ans:1, rat:"Agent must disclose all known material info — even if applicant omits it." },
+  // Chapter 7 — Business Insurance (Q71-100)
+  { ch:"Chapter 7", q:"A keyperson life insurance policy names which party as the beneficiary?", opts:["The key employee's family","The key employee themselves","The business","The insurer"], ans:2, rat:"Business is the policyowner AND beneficiary on a keyperson policy." },
+  { ch:"Chapter 7", q:"Keyperson insurance premiums paid by a business are:", opts:["Tax-deductible as a business expense","Not tax-deductible","Deductible only if the policy is term insurance","Deductible up to $50,000 per year"], ans:1, rat:"Keyperson insurance premiums are NOT deductible to the business." },
+  { ch:"Chapter 7", q:"In a cross-purchase buy-sell agreement:", opts:["The business buys policies on all owners","Each partner purchases a policy on the other partners","A trustee holds all the policies","Only the majority owner purchases policies"], ans:1, rat:"Cross-purchase: each partner owns policies on the other partners." },
+  { ch:"Chapter 7", q:"In an entity purchase (stock redemption) buy-sell agreement:", opts:["Partners own policies on each other","Each partner holds their own policy","The business entity owns policies on all the owner-insureds","Policies are held in trust"], ans:2, rat:"Entity/stock redemption: the business owns and pays for all the policies." },
+  { ch:"Chapter 7", q:"Under a Section 162 executive bonus plan, the life insurance premium bonus paid to an executive is:", opts:["Tax-free to the executive","Taxable income to the executive but tax-deductible to the employer","Deductible to both employer and executive","Paid directly to the insurer without tax consequences"], ans:1, rat:"Section 162 bonus: taxable income to executive, deductible to employer as compensation." },
+  { ch:"Chapter 7", q:"In a split-dollar endorsement method arrangement, who owns the life insurance policy?", opts:["The employee","A trust","The employer","The insurer"], ans:2, rat:"Endorsement method: employer owns the policy and endorses a portion to the employee." },
+  { ch:"Chapter 7", q:"What is the primary advantage of the 'paid-up additions' dividend option?", opts:["Dividends pay the next annual premium in full","Dividends accumulate interest tax-free forever","Dividends purchase additional paid-up permanent coverage — increasing both cash value and death benefit","Dividends are refunded in cash with interest"], ans:2, rat:"PUA increases both death benefit and cash value — most efficient dividend use." },
+  { ch:"Chapter 7", q:"A participating whole life policy pays dividends because:", opts:["The insurer's actual experience (mortality, expenses, interest) was better than projected","The stock market performed well during the year","The policyholder made an additional contribution","The insured reached age 65"], ans:0, rat:"Par policy dividends come from better-than-expected mortality/expense/interest results." },
+  { ch:"Chapter 7", q:"The policy reinstatement provision allows a lapsed policy to be restored within how many years?", opts:["1 year","2 years","3 years","5 years"], ans:2, rat:"Reinstatement window is typically 3 years from the date of lapse." },
+  { ch:"Chapter 7", q:"To reinstate a lapsed life insurance policy, the policyowner must generally:", opts:["Simply request reinstatement in writing","Pay back premiums plus interest and provide evidence of insurability","Pay only the current premium","Pass a new medical exam only — no back premiums required"], ans:1, rat:"Reinstatement requires back premiums + interest + evidence of insurability." },
+  { ch:"Chapter 7", q:"Which life insurance policy type is described as 'flexible premium permanent insurance with adjustable death benefit'?", opts:["Whole life","Term life","Universal life","Variable life"], ans:2, rat:"Universal life = flexible premium + adjustable death benefit." },
+  { ch:"Chapter 7", q:"A UL policyowner notices their cash value is falling despite making premium payments. This is most likely because:", opts:["The floor rate has been exceeded","The cost of insurance (COI) charges are consuming available cash value","The policy has been converted to a MEC","The insurer lowered the cap rate"], ans:1, rat:"UL cash value depletes when cost of insurance (COI) charges exceed credited interest." },
+  { ch:"Chapter 7", q:"A single premium whole life policy is likely to be classified as a MEC because:", opts:["It is a term policy that expired","The entire premium is paid in one lump sum — failing the 7-pay test immediately","It was issued without a medical exam","It does not build cash value"], ans:1, rat:"Single premium = entire premium paid at once — fails 7-pay test immediately." },
+  { ch:"Chapter 7", q:"IRC Section 7702 is important for life insurance because it:", opts:["Sets the estate tax rate on life insurance proceeds","Defines what qualifies as life insurance for favorable tax treatment","Sets the maximum death benefit per policy","Establishes agent licensing requirements"], ans:1, rat:"IRC 7702 defines what qualifies as life insurance for favorable federal tax treatment." },
+  { ch:"Chapter 7", q:"When an agent replaces a life insurance policy, they must provide the client with a:", opts:["Policy Summary Form","Notice Regarding Replacement","Statement of Financial Need","TDI Replacement Disclosure Certificate"], ans:1, rat:"Notice Regarding Replacement required on all life insurance replacements in Texas." },
+  { ch:"Chapter 7", q:"The replacing insurer must notify the existing insurer within how many business days?", opts:["1 business day","3 business days","5 business days","10 business days"], ans:1, rat:"Replacing insurer must notify existing insurer within 3 business days." },
+  { ch:"Chapter 7", q:"The Cash Value Accumulation Test (CVAT) and Guideline Premium Test (GPT) are associated with:", opts:["The 7-pay MEC test","IRC Section 7702 — defining a policy as life insurance for tax purposes","Group life underwriting standards","FINRA licensing for variable products"], ans:1, rat:"CVAT and GPT are the two tests under IRC 7702 that define life insurance." },
+  { ch:"Chapter 7", q:"Which of the following correctly describes the exclusion ratio for annuity payments?", opts:["The percentage of investment gain excluded from the death benefit","The portion of each annuity payment excluded from taxable income — representing return of after-tax cost basis","The amount excluded from surrender charges","The cap rate on fixed indexed annuities"], ans:1, rat:"Exclusion ratio = non-taxable portion of annuity payment (return of cost basis)." },
+  { ch:"Chapter 7", q:"Under the conversion privilege in a group life policy, a departing employee may convert to an individual policy within:", opts:["10 days","21 days","31 days","60 days"], ans:2, rat:"Group life conversion right = 31 days from separation from the group." },
+  { ch:"Chapter 7", q:"An agent who misrepresents the financial condition of an insurance company to induce a client to buy a policy is guilty of:", opts:["Rebating","Twisting","Defamation","Misrepresentation"], ans:3, rat:"Misrepresenting financial condition of an insurer = misrepresentation." },
+  { ch:"Chapter 7", q:"The Cost of Living Adjustment (COLA) rider increases the death benefit based on:", opts:["The insured's salary increases","The Consumer Price Index (CPI)","The insurer's portfolio performance","The policyholder's request each year"], ans:1, rat:"COLA rider adjusts death benefit based on the Consumer Price Index." },
+  { ch:"Chapter 7", q:"Survivorship life insurance would typically NOT be appropriate for:", opts:["A married couple with a large taxable estate","A business needing to fund a buy-sell agreement at first death","Two business partners funding an estate equalization strategy","Wealthy couples seeking to maximize the estate tax exemption"], ans:1, rat:"Survivorship pays at second death — not useful for buy-sell needing funds at first death." },
+  { ch:"Chapter 7", q:"Under the assignment provision, an 'absolute assignment' means:", opts:["Specific rights are temporarily transferred to a lender","The change is conditional on the assignee's approval","All ownership rights are permanently and irrevocably transferred to the assignee","The death benefit is split between the assignee and original beneficiary"], ans:2, rat:"Absolute assignment = all rights permanently and irrevocably transferred." },
+  { ch:"Chapter 7", q:"When the insured dies and the death benefit is paid to the estate (not a named beneficiary), the proceeds:", opts:["Are always income-tax free","Are subject to estate taxes if the estate exceeds the applicable exclusion","Are split between state and federal government","Must be placed in probate only if over $500,000"], ans:1, rat:"Death benefit included in taxable estate if estate is beneficiary and estate exceeds exemption." },
+  { ch:"Chapter 7", q:"A policy that builds cash value in direct proportion to an external stock market index but does NOT allow the policyholder to lose principal due to market downturns is a:", opts:["Variable Universal Life (VUL)","Traditional Universal Life","Fixed Indexed Universal Life (IUL)","Participating Whole Life"], ans:2, rat:"IUL = index-linked growth + 0% floor (no principal loss from market declines)." },
+  { ch:"Chapter 7", q:"Which of the following is true about group life insurance certificates of insurance?", opts:["Each employee receives a master policy","Each employee receives a certificate evidencing coverage under the master policy","The certificate is the legally binding contract","Certificates are only issued for employees over age 40"], ans:1, rat:"Group life: master policy to employer; certificate of insurance to each employee." },
+  { ch:"Chapter 7", q:"A life insurance policy loan that remains unpaid at the insured's death will:", opts:["Be forgiven by the insurer automatically","Reduce the death benefit paid to the beneficiary","Trigger a taxable event for the beneficiary","Convert the policy to a term policy"], ans:1, rat:"Unpaid policy loans + interest reduce the net death benefit paid to beneficiary." },
+  { ch:"Chapter 7", q:"Which provision prevents the insurer from using misrepresentation in the original application to void a policy that has been in force for more than 2 years?", opts:["Grace period","Reinstatement clause","Incontestability clause","Free-look provision"], ans:2, rat:"Incontestability clause: after 2 years, insurer cannot contest for misrepresentation." },
+  { ch:"Chapter 7", q:"The primary reason survivorship life insurance premiums are lower than individual policies on each insured is:", opts:["Survivorship policies have smaller death benefits","The insurer only pays at the second death — statistical probability reduces the present cost","Survivorship policies have no cash value","Survivorship policies are always term insurance"], ans:1, rat:"Second-to-die: insurer pays only at second death — lower actuarial cost than two individual policies." },
+  { ch:"Chapter 7", q:"Which of the following BEST describes the agent's role as a fiduciary?", opts:["The agent must maximize commission revenue for the agency","The agent must act in the insurance company's best interest at all times","The agent must act in the client's best interest, handling premiums and information with trust and care","The agent is only responsible for delivering the policy after issuance"], ans:2, rat:"Fiduciary = agent acts in client's best interest; handles their money and info with care." }
+];
+
+let current = 0;
+let selected = null;
+let checked = false;
+let userAnswers = [];
+
+function startQuiz() {
+  showScreen('screenQuiz');
+  renderQuestion();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  const total = QUESTIONS.length;
+  document.getElementById('progressPill').textContent = `${current+1}/${total}`;
+  document.getElementById('progressBar').style.width = `${((current)/total)*100}%`;
+  document.getElementById('qNumber').textContent = `Q${current+1}`;
+  document.getElementById('qChapter').textContent = q.ch;
+  document.getElementById('qText').textContent = q.q;
+
+  const letters = ['A','B','C','D'];
+  const wrap = document.getElementById('optionsWrap');
+  wrap.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectOption(i);
+    wrap.appendChild(btn);
+  });
+
+  document.getElementById('feedbackBox').className = 'feedback-box';
+  document.getElementById('btnCheck').disabled = true;
+  document.getElementById('btnCheck').style.display = '';
+  document.getElementById('btnNext').className = 'btn-next';
+  selected = null;
+  checked = false;
+}
+
+function selectOption(i) {
+  if (checked) return;
+  selected = i;
+  document.querySelectorAll('.opt').forEach((o,idx) => {
+    o.classList.toggle('selected', idx === i);
+  });
+  document.getElementById('btnCheck').disabled = false;
+}
+
+function checkAnswer() {
+  if (selected === null || checked) return;
+  checked = true;
+  const q = QUESTIONS[current];
+  const correct = q.ans;
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach((o,i) => {
+    o.classList.add('disabled');
+    if (i === correct) o.classList.add('correct');
+    else if (i === selected && selected !== correct) o.classList.add('wrong');
+  });
+
+  userAnswers[current] = selected;
+
+  const fb = document.getElementById('feedbackBox');
+  const lbl = document.getElementById('feedbackLabel');
+  const txt = document.getElementById('feedbackText');
+  if (selected === correct) {
+    fb.className = 'feedback-box correct show';
+    lbl.textContent = '✓ CORRECT';
+  } else {
+    fb.className = 'feedback-box wrong show';
+    lbl.textContent = '✗ INCORRECT';
+  }
+  txt.textContent = q.rat;
+
+  document.getElementById('btnCheck').style.display = 'none';
+  document.getElementById('btnNext').className = 'btn-next show';
+}
+
+function nextQuestion() {
+  if (current < QUESTIONS.length - 1) {
+    current++;
+    renderQuestion();
+    window.scrollTo(0,0);
+  } else {
+    showResults();
+  }
+}
+
+function showResults() {
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('progressPill').textContent = '100/100';
+  showScreen('screenResults');
+
+  let correct = 0;
+  const missed = [];
+  QUESTIONS.forEach((q, i) => {
+    if (userAnswers[i] === q.ans) correct++;
+    else missed.push(i);
+  });
+
+  const pct = Math.round((correct / QUESTIONS.length) * 100);
+  document.getElementById('gradeScore').textContent = pct + '%';
+  document.getElementById('statCorrect').textContent = correct;
+  document.getElementById('statMissed').textContent = missed.length;
+  document.getElementById('statPct').textContent = pct + '%';
+
+  let title, sub;
+  if (pct >= 90) { title = 'OUTSTANDING'; sub = 'You\'re ready. Schedule Pearson VUE now.'; }
+  else if (pct >= 80) { title = 'SOLID PASS'; sub = 'Good work — review your misses and go.'; }
+  else if (pct >= 70) { title = 'BORDERLINE'; sub = 'Deep review needed before you schedule.'; }
+  else { title = 'NOT YET'; sub = 'Re-read weak chapters and retake this exam.'; }
+
+  document.getElementById('gradeTitle').textContent = title;
+  document.getElementById('gradeSub').textContent = sub;
+
+  const letters = ['A','B','C','D'];
+  const missedHeader = document.getElementById('missedHeader');
+  const missedList = document.getElementById('missedList');
+
+  if (missed.length === 0) {
+    missedHeader.textContent = 'PERFECT SCORE — NO MISSES';
+    missedList.innerHTML = '';
+  } else {
+    missedHeader.textContent = `MISSED QUESTIONS (${missed.length})`;
+    missedList.innerHTML = missed.map(i => {
+      const q = QUESTIONS[i];
+      const yourAns = userAnswers[i] !== undefined ? letters[userAnswers[i]] + ' — ' + q.opts[userAnswers[i]] : 'No answer';
+      const correctAns = letters[q.ans] + ' — ' + q.opts[q.ans];
+      return `<div class="missed-card">
+        <div class="missed-q-num">Q${i+1} · ${q.ch}</div>
+        <div class="missed-q-text">${q.q}</div>
+        <div class="missed-row missed-yours">✗ Your answer: ${yourAns}</div>
+        <div class="missed-row missed-correct">✓ Correct: ${correctAns}</div>
+        <div class="missed-explain">${q.rat}</div>
+      </div>`;
+    }).join('');
+  }
+
+  window.scrollTo(0,0);
+}
+
+function retake() {
+  current = 0;
+  selected = null;
+  checked = false;
+  userAnswers = [];
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('progressPill').textContent = '0/100';
+  showScreen('screenIntro');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
