@@ -466,6 +466,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
   <div class="nav-tab" data-tab="expenses" onclick="switchTab('expenses')"><span class="tab-icon">🧾</span> Agent Expenses</div>
   <div class="nav-tab" data-tab="appointments" onclick="switchTab('appointments')"><span class="tab-icon">📅</span> Appointments</div>
   <div class="nav-tab" data-tab="perfectweek" onclick="switchTab('perfectweek')"><span class="tab-icon">🏆</span> Perfect Week</div>
+  <a class="nav-tab" href="btg-texter.html" target="_blank" style="text-decoration:none;"><span class="tab-icon">📱</span> Recruit Texter</a>
 </div>
 
 <!-- CONTENT -->
@@ -683,6 +684,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
           <div class="chip" onclick="filterAgents('Trainee',this)">Trainees</div>
           <div class="chip" onclick="filterAgents('Associate',this)">Associates</div>
           <div class="chip" onclick="filterAgents('Field Associate',this)">Field Associates</div>
+          <div class="chip" onclick="filterAgents('resigned',this)" style="border-color:#e74c3c;color:#e74c3c;">Resigned</div>
         </div>
       </div>
     </div>
@@ -1003,6 +1005,7 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
   <div class="mob-tab" onclick="switchTab('expenses')"><div class="mi">🧾</div>Expenses</div>
   <div class="mob-tab" onclick="switchTab('appointments')"><div class="mi">📅</div>Appts</div>
   <div class="mob-tab" onclick="switchTab('perfectweek')"><div class="mi">🏆</div>Wk</div>
+  <a class="mob-tab" href="btg-texter.html" target="_blank" style="text-decoration:none;color:inherit;"><div class="mi">📱</div>Texter</a>
 </div>
 
 <!-- TOAST -->
@@ -1121,6 +1124,8 @@ body.dark input,body.dark select,body.dark textarea{background:#0f172a;color:#f1
     <input type="hidden" id="adm-pdf-data">
     <div class="modal-footer">
       <button class="btn btn-navy flex-1" onclick="saveAgentGoals()">Save Goals</button>
+      <button class="btn btn-ghost" id="adm-resign-btn" onclick="markAgentResigned()" style="border-color:#e67e22;color:#e67e22;">Mark Resigned</button>
+      <button class="btn btn-red" onclick="deleteAgentPermanent()" title="Permanently remove this agent and all their data">🗑 Delete</button>
       <button class="btn btn-ghost" onclick="closeModal('agent-detail-modal')">Close</button>
     </div>
   </div>
@@ -2487,9 +2492,10 @@ async function loadAgents() {
 function renderAgents() {
   const grid = document.getElementById('agents-grid');
   const filtered = allAgents.filter(a => {
-    if (agentFilter === 'all') return true;
-    if (agentFilter === 'pending') return !a.approved;
-    return a.tier === agentFilter;
+    if (agentFilter === 'resigned') return a.status === 'resigned';
+    if (agentFilter === 'all') return a.status !== 'resigned';
+    if (agentFilter === 'pending') return !a.approved && a.status !== 'resigned';
+    return a.tier === agentFilter && a.status !== 'resigned';
   });
   if (!filtered.length) { grid.innerHTML = '<div class="loading-wrap"><p>No agents found.</p></div>'; return; }
   const tierColors = {Trainee:'#f5a623',Associate:'#2563eb','Field Associate':'#00a878',Director:'#7c3aed'};
@@ -2503,10 +2509,10 @@ function renderAgents() {
     const avHtml = a.avatar_url
       ? `<img src="${a.avatar_url}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="${initials}">`
       : `<div class="av" style="background:${color}20;color:${color}">${initials}</div>`;
-    return `<div class="agent-card" style="cursor:pointer;" onclick="openAgentDetail('${a.id}')">
+    return `<div class="agent-card" style="cursor:pointer;${a.status==='resigned'?'opacity:0.55;border-color:#e74c3c;':''}" onclick="openAgentDetail('${a.id}')">
       ${avHtml}
       <div class="ac-info">
-        <div class="ac-name">${a.name} ${a.is_director?'<span class="director-tag">DIRECTOR</span>':''}</div>
+        <div class="ac-name">${a.name} ${a.is_director?'<span class="director-tag">DIRECTOR</span>':''} ${a.status==='resigned'?'<span style="font-size:10px;font-weight:700;color:#e74c3c;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.25);border-radius:4px;padding:1px 6px;vertical-align:middle;">RESIGNED</span>':''}</div>
         <div class="ac-sub">${a.email} · ${a.tier||'Trainee'}${a.home_state ? ' · 📍 '+a.home_state : ''}</div>
         <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
           ${!a.approved && !a.is_director ? `<button class="btn btn-green btn-xs" onclick="event.stopPropagation();approveAgent('${a.id}')">Approve</button>` : ''}
@@ -4064,9 +4070,61 @@ async function openAgentDetail(agentId) {
     : '<div style="font-size:12px;color:var(--text3);padding:8px;">No prospects yet.</div>';
 
   openModal('agent-detail-modal');
+  const resignBtn = document.getElementById('adm-resign-btn');
+  if (resignBtn) {
+    const isResigned = a.status === 'resigned';
+    resignBtn.textContent = isResigned ? 'Reactivate' : 'Mark Resigned';
+    resignBtn.style.borderColor = isResigned ? 'var(--green)' : '#e67e22';
+    resignBtn.style.color = isResigned ? 'var(--green)' : '#e67e22';
+  }
   } catch(err) {
     console.error('openAgentDetail error:', err);
     toast('Error opening agent: ' + (err.message||'check console'));
+  }
+}
+
+async function markAgentResigned() {
+  const agentId = document.getElementById('adm-agent-id').value;
+  const a = allAgents.find(x => x.id === agentId);
+  if (!a) return;
+  const isResigned = a.status === 'resigned';
+  const msg = isResigned
+    ? `Reactivate ${a.name} and restore them to the active roster?`
+    : `Mark ${a.name} as resigned? They will be hidden from the active roster but their data is kept.`;
+  if (!confirm(msg)) return;
+  const newStatus = isResigned ? 'active' : 'resigned';
+  const logEntry = { date: new Date().toISOString().slice(0,10), action: newStatus === 'resigned' ? 'resigned' : 'reactivated' };
+  const existingLog = Array.isArray(a.inactive_log) ? a.inactive_log : [];
+  try {
+    await sbFetch('/rest/v1/profiles?id=eq.' + agentId, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: newStatus, inactive_log: [...existingLog, logEntry] })
+    });
+    a.status = newStatus;
+    a.inactive_log = [...existingLog, logEntry];
+    const btn = document.getElementById('adm-resign-btn');
+    if (btn) { btn.textContent = newStatus === 'resigned' ? 'Reactivate' : 'Mark Resigned'; btn.style.borderColor = newStatus === 'resigned' ? 'var(--green)' : '#e67e22'; btn.style.color = newStatus === 'resigned' ? 'var(--green)' : '#e67e22'; }
+    renderAgents();
+    toast(newStatus === 'resigned' ? `${a.name} marked as resigned.` : `${a.name} reactivated.`);
+  } catch(err) {
+    toast('Failed to update status: ' + (err.message||'check console'));
+  }
+}
+
+async function deleteAgentPermanent() {
+  const agentId = document.getElementById('adm-agent-id').value;
+  const a = allAgents.find(x => x.id === agentId);
+  if (!a) return;
+  if (!confirm(`Permanently delete ${a.name}? This cannot be undone. Their prospects and client records will remain but will be unassigned.`)) return;
+  if (!confirm(`Are you sure? This will permanently remove ${a.name} from the system.`)) return;
+  try {
+    await sbFetch('/rest/v1/profiles?id=eq.' + agentId, { method: 'DELETE' });
+    allAgents = allAgents.filter(x => x.id !== agentId);
+    closeModal('agent-detail-modal');
+    renderAgents();
+    toast(`${a.name} has been permanently removed.`);
+  } catch(err) {
+    toast('Delete failed: ' + (err.message||'check console'));
   }
 }
 
