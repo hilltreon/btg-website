@@ -140,12 +140,12 @@
   --text:#94b4d4;
   --amber:#f59e0b;
 }
-html{scroll-behavior:smooth}
-body{background:var(--black);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.6;overflow-x:hidden}
+html{scroll-behavior:smooth;overflow-x:hidden;width:100%}
+body{background:var(--black);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.6;overflow-x:hidden;width:100%;position:relative;-webkit-overflow-scrolling:touch}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--black)}::-webkit-scrollbar-thumb{background:var(--blue);border-radius:2px}
 
 /* ─── PAGE SWITCHER ─── */
-.page{display:none;animation:pageIn .22s ease both}
+.page{display:none;animation:pageIn .22s ease both;max-width:100%;overflow-x:hidden}
 .page.active{display:block}
 @keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
@@ -211,27 +211,33 @@ body{background:var(--black);color:var(--text);font-family:'DM Sans',sans-serif;
 .biz-sc-result strong{color:var(--green);font-weight:600}
 .biz-sc-number{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--amber);line-height:1;margin-bottom:.2rem}
 
-nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:.75rem 4%;background:rgba(13,17,23,0.96);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
-.logo{text-decoration:none;line-height:1;-webkit-tap-highlight-color:transparent}
+nav{position:fixed;top:0;left:0;right:0;width:100%;max-width:100vw;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:.75rem 4%;background:rgba(13,17,23,0.96);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--border);box-sizing:border-box}
+.logo{text-decoration:none;line-height:1;-webkit-tap-highlight-color:transparent;flex-shrink:0}
 .logo-main{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.1em;color:var(--white)}
 .logo-main span{color:var(--blue)}
 .logo-sub{font-family:'Barlow Condensed',sans-serif;font-size:.52rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
 .nav-center{display:flex;gap:.3rem;background:var(--dark);border:1px solid var(--border);padding:.25rem;border-radius:2px}
 .nav-tab{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .75rem;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .nav-tab.active{background:var(--blue);color:var(--black)}
-.nav-right{display:flex;gap:.6rem}
+.nav-right{display:flex;gap:.6rem;flex-shrink:0}
 .nbtn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;padding:.45rem 1rem;border:none;cursor:pointer;text-decoration:none;transition:all .2s;display:inline-block;white-space:nowrap;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .nbtn-g{background:var(--green);color:var(--black)}
 .nbtn-g:hover{background:var(--green2);box-shadow:0 4px 16px rgba(34,197,94,.35)}
 .nbtn-o{background:transparent;color:var(--green);border:1px solid var(--green)}
 .nbtn-o:hover{background:var(--gdim)}
+/* Hide nav center tabs on mobile — handled by bottom tab bar */
 @media(max-width:680px){.nav-center{display:none}.logo-sub{display:none}}
-@media(max-width:400px){.nbtn-o{display:none}}
-@media(max-width:480px){
-  nav{padding:.55rem 3.5%}
-  .logo-main{font-size:1.15rem}
-  .nav-right{gap:.3rem}
-  .nbtn{font-size:.64rem;padding:.42rem .75rem;letter-spacing:.07em}
+/* On mobile: hide Free Consult + Agent Portal from nav, keep only Apply Now */
+@media(max-width:680px){
+  .nbtn-o{display:none!important}
+  a.nbtn[href="/tracker.html"]{display:none!important}
+  nav{padding:.6rem 4%}
+  .logo-main{font-size:1.2rem}
+  .nav-right{gap:.4rem}
+  .nbtn{font-size:.68rem;padding:.5rem .9rem;letter-spacing:.08em}
+}
+@media(max-width:360px){
+  .nbtn{font-size:.62rem;padding:.45rem .7rem}
 }
 
 /* ─── MOBILE BOTTOM TAB BAR ─── */
@@ -317,8 +323,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 @keyframes popIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
 
 /* ─── SHARED ─── */
-.sec{padding:4rem 4%}
-.sec-sm{padding:3rem 4%}
+.sec{padding:4rem 4%;max-width:100%;overflow-x:hidden}
+.sec-sm{padding:3rem 4%;max-width:100%;overflow-x:hidden}
 .sec-alt{background:var(--dark)}
 .sec-alt2{background:var(--dark2)}
 .ey{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:var(--green);margin-bottom:.5rem}
@@ -332,15 +338,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 .chip-a{color:var(--amber);border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
 
 /* ─── SCROLL STRIP ─── */
-.strip{background:linear-gradient(90deg,#14532d,#16a34a,#22c55e,#4ade80,#22c55e,#16a34a,#14532d);padding:.6rem 0;overflow:hidden;white-space:nowrap}
-.strip-track{display:inline-flex;animation:scroll 32s linear infinite}
-.strip-item{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.9);padding:0 2rem}
+.strip{background:linear-gradient(90deg,#14532d,#16a34a,#22c55e,#4ade80,#22c55e,#16a34a,#14532d);padding:.6rem 0;overflow:hidden;white-space:nowrap;width:100%;max-width:100vw}
+.strip-track{display:inline-flex;animation:scroll 32s linear infinite;will-change:transform}
+.strip-item{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.9);padding:0 2rem;flex-shrink:0}
 @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 /* ═══════════════ HOME PAGE ═══════════════ */
 
 /* HERO */
-.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:5.5rem 4% 3.5rem;position:relative;overflow:hidden}
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:5.5rem 4% 3.5rem;position:relative;overflow:hidden;max-width:100%;width:100%}
 .hero-bg{position:absolute;inset:0;background:linear-gradient(160deg,#0d1117 0%,#0f1e30 55%,#0d1929 100%)}
 .hero-orb1{position:absolute;top:-10%;right:-5%;width:70vw;height:70vw;max-width:800px;max-height:800px;background:radial-gradient(ellipse,rgba(74,144,226,.08) 0%,transparent 65%);pointer-events:none}
 .hero-orb2{position:absolute;bottom:-20%;left:-8%;width:50vw;height:50vw;max-width:600px;max-height:600px;background:radial-gradient(ellipse,rgba(34,197,94,.05) 0%,transparent 65%);pointer-events:none}
@@ -366,6 +372,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:cen
 .hs-n{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;color:var(--blue);line-height:1}
 .hs-l{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:.1rem}
 @media(max-width:480px){.hs{padding:.9rem 1.2rem .9rem 0;margin-right:1.2rem}.hs-n{font-size:1.9rem}}.hero h1{font-size:clamp(3rem,13vw,8rem)}
+@media(max-width:480px){
+  .hero{padding:5rem 4% 7rem}
+  .hero-inner{width:100%;max-width:100%}
+  .hero h1{font-size:clamp(2.8rem,12vw,5rem)!important;word-break:break-word}
+  .hero-desc{font-size:.88rem;max-width:100%}
+  .hero-btns{flex-direction:column;gap:.6rem;width:100%}
+  .hero-btns .hbtn{width:100%;text-align:center;box-sizing:border-box}
+  .path-select{flex-direction:column;gap:.5rem}
+  .psBtn{width:100%;box-sizing:border-box;justify-content:flex-start}
+  .hero-promise{font-size:.8rem}
+}
 
 /* MISSION */
 .mission-quote{border-left:3px solid var(--blue);padding:1rem 1.2rem;background:var(--bdim);font-style:italic;font-size:.92rem;color:var(--white);line-height:1.75;margin:1.5rem 0}
@@ -584,6 +601,29 @@ textarea{resize:vertical;min-height:85px}
 .rlabel input[type=radio]{width:16px;height:16px;accent-color:var(--green);flex-shrink:0;cursor:pointer;margin:0}
 .rlabel:has(input:checked){border-color:var(--green);background:rgba(34,197,94,.08);box-shadow:inset 0 0 0 1px var(--green);color:var(--white)}
 
+/* ─── GOOGLE REVIEWS ─── */
+.gr-banner{display:flex;gap:1.5rem;align-items:stretch;background:var(--card);border:1px solid var(--border);padding:1.8rem;flex-wrap:wrap;margin-top:2rem;position:relative;overflow:hidden}
+.gr-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4285F4,#34A853,#FBBC05,#EA4335)}
+.gr-badge{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;min-width:120px;padding:1rem 1.5rem;border-right:1px solid var(--border)}
+@media(max-width:560px){.gr-badge{border-right:none;border-bottom:1px solid var(--border);flex-direction:row;flex-wrap:wrap;gap:.7rem;width:100%;justify-content:center;padding-bottom:1.2rem}}
+.gr-logo{display:flex;align-items:center;gap:.4rem}
+.gr-logo-text{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.95rem;letter-spacing:.05em;color:var(--white)}
+.gr-stars-row{display:flex;gap:.1rem}
+.gr-star{color:#FBBC05;font-size:1.3rem;line-height:1}
+.gr-rating-num{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;color:var(--white);line-height:1}
+.gr-rating-label{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.gr-cta-block{flex:1;display:flex;flex-direction:column;justify-content:center;gap:.8rem;min-width:220px}
+.gr-cta-text{font-size:.82rem;color:var(--text);line-height:1.7;margin:0}
+.gr-review-btn{display:inline-flex;align-items:center;gap:.5rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;padding:.75rem 1.4rem;background:linear-gradient(135deg,#4285F4,#1a5fc4);color:#fff;text-decoration:none;transition:all .22s;border:none;cursor:pointer;width:fit-content}
+.gr-review-btn:hover{background:linear-gradient(135deg,#5a9cf6,#2a6fd4);box-shadow:0 4px 18px rgba(66,133,244,.4);transform:translateY(-1px)}
+.gr-view-link{font-size:.74rem;color:var(--muted);text-decoration:none;transition:color .2s}
+.gr-view-link:hover{color:var(--blue)}
+.gr-testi{position:relative}
+.gr-testi-header{display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem}
+.gr-testi-header .tname{margin:0}
+.gr-testi-stars{color:#FBBC05;font-size:.78rem;letter-spacing:.05em}
+.gr-testi-logo{margin-left:auto;opacity:.6}
+
 /* FOOTER */
 footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5rem}
 .footer-grid{display:grid;grid-template-columns:1fr;gap:2rem;margin-bottom:2rem}
@@ -596,10 +636,14 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
 .footer-copy{font-size:.68rem;color:var(--border)}
 .footer-disc{font-size:.64rem;color:var(--muted);line-height:1.55}
 /* ─── TRUST STRIP ─── */
-.trust-strip{background:var(--dark2);border-bottom:1px solid var(--border);padding:.7rem 4%;display:flex;align-items:center;justify-content:center;gap:2rem;flex-wrap:wrap}
-.trust-item{display:flex;align-items:center;gap:.5rem;font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.trust-strip{background:var(--dark2);border-bottom:1px solid var(--border);padding:.7rem 4%;display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;width:100%;overflow:hidden}
+.trust-item{display:flex;align-items:center;gap:.5rem;font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;flex-shrink:0}
 .trust-item span{font-size:1rem}
 .trust-item strong{color:var(--blue)}
+@media(max-width:560px){
+  .trust-strip{gap:.6rem;padding:.6rem 3%}
+  .trust-item{font-size:.6rem;letter-spacing:.08em}
+}
 
 /* ─── TEAM SECTION ─── */
 .team-layout{display:grid;grid-template-columns:280px 1fr;gap:3rem;align-items:center}
@@ -662,6 +706,28 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
   input[type=text],input[type=email],input[type=tel],input[type=number],select,textarea{font-size:16px!important}
   .opt-label{padding:1rem 1rem;font-size:.95rem}
   .cb-label{padding:.55rem .6rem;font-size:.85rem}
+}
+
+/* ─── GLOBAL MOBILE OVERFLOW LOCK ─── */
+@media(max-width:768px){
+  *{max-width:100%;box-sizing:border-box}
+  img,svg,video,iframe{max-width:100%;height:auto}
+  .hero-pill{white-space:normal;word-break:break-word;font-size:.58rem;letter-spacing:.12em}
+  .hero-stats{gap:0}
+  .hs{padding:.8rem 1rem .8rem 0;margin-right:1rem}
+  .hs-n{font-size:1.7rem}
+  .sband-grid{gap:1rem}
+  .form-row{grid-template-columns:1fr!important}
+  .rn-grid,.biz-scenarios,.biz-sc{max-width:100%}
+  .gr-banner{flex-direction:column}
+  .gr-badge{border-right:none;border-bottom:1px solid var(--border);flex-direction:row;gap:1rem;width:100%;justify-content:flex-start;padding:.9rem 0 1rem}
+  .testi-grid{grid-template-columns:1fr!important}
+  .promise{padding:2.5rem 4%}
+  .promise-h{font-size:clamp(1.4rem,6vw,2.2rem)}
+  footer{padding:2.5rem 4% 5rem}
+  .footer-grid{grid-template-columns:1fr!important}
+  .cstat{flex-direction:column;gap:.5rem;align-items:flex-start}
+  .cstat-pct{font-size:2rem;min-width:unset}
 }
 
 /* ─── EXIT INTENT POPUP ─── */
@@ -1381,6 +1447,126 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
     </div>
   </section>
 
+  <!-- GOOGLE REVIEWS -->
+  <section class="sec sec-alt obs" id="reviews">
+    <div class="ey">What Clients Are Saying</div>
+    <div class="sh">Real People.<br/>Real Results.</div>
+    <p class="sp">We let our clients speak for themselves. Read what families and business owners across Texas have to say about working with Built To Grow Financial Group.</p>
+
+    <!-- Google Rating Banner -->
+    <div class="gr-banner">
+      <div class="gr-badge">
+        <div class="gr-logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          <span class="gr-logo-text">Google</span>
+        </div>
+        <div class="gr-stars-row">
+          <span class="gr-star">★</span><span class="gr-star">★</span><span class="gr-star">★</span><span class="gr-star">★</span><span class="gr-star">★</span>
+        </div>
+        <div class="gr-rating-num">5.0</div>
+        <div class="gr-rating-label">Google Rating</div>
+      </div>
+      <div class="gr-cta-block">
+        <p class="gr-cta-text">Had a great experience with BTG? Your review helps other families in Houston, The Woodlands, and Conroe find trusted coverage.</p>
+        <a href="https://share.google/y9rlTM5eot1rY7Xis" target="_blank" rel="noopener noreferrer" class="gr-review-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#fff"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#fff"/>
+          </svg>
+          Leave Us a Google Review
+        </a>
+        <a href="https://share.google/y9rlTM5eot1rY7Xis" target="_blank" rel="noopener noreferrer" class="gr-view-link">View all reviews on Google →</a>
+      </div>
+    </div>
+
+    <!-- Featured Testimonials (styled as Google-style cards) -->
+    <div class="testi-grid" style="margin-top:2rem">
+
+      <!-- Chris Perez — full written review -->
+      <div class="testi gr-testi">
+        <div class="gr-testi-header">
+          <div class="tav" style="background:rgba(74,144,226,.12);border-color:var(--blue);color:var(--blue)">CP</div>
+          <div>
+            <div class="tname">Chris Perez</div>
+            <div class="gr-testi-stars">★★★★★</div>
+          </div>
+          <div class="gr-testi-logo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          </div>
+        </div>
+        <div class="q-mark">"</div>
+        <p class="testi-text">I want to thank Mr. Treon Hill for the help he has given me to set my family and I for success. Treon showed great support in the process setting up accounts for me and my family, he was very helpful and knowledgeable about the service I wanted and answered any questions I had. I really recommend working with Mr. Treon Hill!</p>
+        <div class="trole" style="font-size:.68rem;margin-top:.5rem">Google Review · 1 week ago</div>
+      </div>
+
+      <!-- Regina Glass — 5-star rating -->
+      <div class="testi gr-testi">
+        <div class="gr-testi-header">
+          <div class="tav" style="background:rgba(34,197,94,.12);border-color:var(--green);color:var(--green)">RG</div>
+          <div>
+            <div class="tname">Regina Glass</div>
+            <div class="gr-testi-stars">★★★★★</div>
+          </div>
+          <div class="gr-testi-logo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem;margin:1rem 0 .8rem;padding:.9rem 1rem;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15)">
+          <span style="font-size:1.4rem">⭐</span>
+          <div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;color:var(--white);text-transform:uppercase;letter-spacing:.05em">5-Star Rating</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Regina gave BTG a perfect 5-star review on Google</div>
+          </div>
+        </div>
+        <div class="trole" style="font-size:.68rem;margin-top:.5rem">Google Review · 1 week ago</div>
+      </div>
+
+      <!-- Charles Walker — 5-star rating, Local Guide -->
+      <div class="testi gr-testi">
+        <div class="gr-testi-header">
+          <div class="tav" style="background:rgba(245,158,11,.12);border-color:var(--amber);color:var(--amber)">CW</div>
+          <div>
+            <div class="tname">Charles Walker</div>
+            <div class="gr-testi-stars">★★★★★</div>
+          </div>
+          <div class="gr-testi-logo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          </div>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:.35rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);padding:.25rem .65rem;margin:.8rem 0;font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)">
+          🏅 Google Local Guide · 30 Reviews
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem;margin:.5rem 0 .8rem;padding:.9rem 1rem;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15)">
+          <span style="font-size:1.4rem">⭐</span>
+          <div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;color:var(--white);text-transform:uppercase;letter-spacing:.05em">5-Star Rating</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Charles, a trusted Local Guide, gave BTG a perfect 5-star review</div>
+          </div>
+        </div>
+        <div class="trole" style="font-size:.68rem;margin-top:.5rem">Google Review · 1 week ago</div>
+      </div>
+
+    </div>
+
+    <!-- Bottom CTA to leave review -->
+    <div style="margin-top:2rem;text-align:center;padding:1.6rem;background:var(--card);border:1px solid var(--border);position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#4285F4,#34A853,#FBBC05,#EA4335)"></div>
+      <p style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem">Share Your Experience</p>
+      <p style="font-size:.85rem;color:var(--text);margin-bottom:1.2rem;line-height:1.7">If we helped you or someone you love, a quick Google review makes a real difference. It takes 60 seconds and helps other Texas families find trustworthy guidance.</p>
+      <a href="https://share.google/y9rlTM5eot1rY7Xis" target="_blank" rel="noopener noreferrer" class="gr-review-btn" style="display:inline-flex">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#fff"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#fff"/></svg>
+        Write a Review on Google ★★★★★
+      </a>
+    </div>
+  </section>
+
   <!-- FOOTER HOME -->
   <footer>
     <div class="footer-grid">
@@ -1408,6 +1594,8 @@ footer{background:#060d09;border-top:1px solid var(--border);padding:3rem 4% 1.5
         <a href="#" onclick="showPage('about')">About Us</a>
         <a href="#" onclick="showPage('products',null,'carriers')">Our Carriers</a>
         <a href="#" onclick="showPage('home',null,'consult')">Book a Consultation</a>
+        <a href="#" onclick="showPage('home',null,'reviews')">Client Reviews</a>
+        <a href="https://share.google/y9rlTM5eot1rY7Xis" target="_blank" rel="noopener noreferrer" style="color:var(--muted)">Leave a Google Review ★</a>
         <a href="#" onclick="showPage('careers')">Careers</a>
         <a href="#" onclick="showPage('careers',null,'apply')">Apply Now</a>
       </div>
