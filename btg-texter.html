@@ -281,6 +281,187 @@
   .toast.show{transform:translateY(0);opacity:1;}
 
   @media(max-width:860px){.app{grid-template-columns:240px 1fr;}.detail-panel{display:none;}}
+
+  /* ── MOBILE ── */
+  @media(max-width:600px){
+    /* Header */
+    header{padding:10px 14px;gap:8px;}
+    .logo-mark{width:30px;height:30px;font-size:13px;}
+    .logo-text{font-size:15px;}
+    .logo-sub{display:none;}
+    .header-right{gap:5px;}
+    .stat-pill{font-size:10px;padding:3px 7px;}
+    .stat-pill:nth-child(3){display:none;}
+    .back-link{font-size:10px;padding:4px 9px;}
+
+    /* App layout: single column, full height */
+    .app{
+      grid-template-columns:1fr;
+      grid-template-rows:1fr;
+      height:calc(100vh - 55px);
+      position:relative;
+    }
+
+    /* Left panel: full screen, slides in/out */
+    .left-panel{
+      position:fixed;
+      top:55px;
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:30;
+      transform:translateX(-100%);
+      transition:transform 0.25s ease;
+      background:var(--bg);
+      border-right:none;
+    }
+    .left-panel.mob-open{transform:translateX(0);}
+
+    /* Right panel: full width */
+    .right-panel{
+      grid-column:1;
+      width:100%;
+    }
+
+    /* Mobile nav bar at bottom */
+    .mob-nav{
+      display:flex;
+      position:fixed;
+      bottom:0;left:0;right:0;
+      z-index:25;
+      background:var(--surface);
+      border-top:1px solid var(--border);
+      height:54px;
+    }
+    .mob-nav-btn{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:3px;
+      font-size:9px;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      color:var(--muted);
+      cursor:pointer;
+      border:none;
+      background:transparent;
+      font-family:'DM Mono',monospace;
+      transition:color 0.2s;
+      padding:0;
+      position:relative;
+    }
+    .mob-nav-btn.active{color:var(--green-light);}
+    .mob-nav-btn .mob-icon{font-size:18px;line-height:1;}
+    .mob-nav-badge{
+      position:absolute;
+      top:6px;right:calc(50% - 18px);
+      background:var(--red);color:#fff;
+      border-radius:8px;font-size:8px;
+      padding:1px 4px;min-width:14px;text-align:center;
+      display:none;
+    }
+    .mob-nav-badge.show{display:block;}
+
+    /* Overlay when contacts panel open */
+    .mob-overlay{
+      display:none;
+      position:fixed;inset:0;
+      z-index:29;
+      background:rgba(0,0,0,0.5);
+    }
+    .mob-overlay.show{display:block;}
+
+    /* Right tabs: hide on mobile (use bottom nav) */
+    .right-tabs{display:none;}
+
+    /* Adjust right panel bottom padding for nav bar */
+    .compose-view,.queue-view,.tm-view,#right-history{
+      padding-bottom:54px;
+    }
+
+    /* Contact list items: bigger tap targets */
+    .c-item{padding:12px 14px;}
+    .c-name{font-size:13px;}
+    .c-sub{font-size:10px;}
+    .c-avatar{width:36px;height:36px;font-size:13px;}
+    .c-check{width:18px;height:18px;}
+    .c-badge{font-size:9px;padding:3px 7px;}
+
+    /* Panel header */
+    .panel-header{padding:12px 14px;}
+    .panel-title{font-size:10px;}
+
+    /* Left tabs */
+    .l-tab{padding:12px 8px;font-size:10px;}
+
+    /* Stage filters: scrollable row */
+    .stage-filters{flex-wrap:nowrap;overflow-x:auto;padding:8px 12px;-webkit-overflow-scrolling:touch;}
+    .stage-filters::-webkit-scrollbar{display:none;}
+    .sf{white-space:nowrap;font-size:10px;padding:5px 11px;}
+
+    /* Search */
+    .search-wrap input{font-size:13px;padding:8px 12px;}
+
+    /* Compose */
+    .compose-main{padding:14px 16px;gap:16px;}
+    .sec-label{font-size:10px;}
+    .t-chip{font-size:10px;padding:7px 14px;}
+    .v-chip{font-size:11px;padding:6px 12px;}
+    textarea#msg-input{font-size:14px;min-height:100px;}
+    .char-count{font-size:11px;}
+    .preview-bubble{font-size:13px;line-height:1.6;}
+    .preview-name{font-size:12px;}
+    .send-btn{font-size:13px;padding:13px;width:100%;}
+    .target-display{font-size:11px;}
+    .action-row{flex-direction:column;gap:8px;}
+
+    /* Queue */
+    .queue-header{padding:14px 16px;}
+    .queue-header h2{font-size:18px;}
+    .queue-body{padding-bottom:70px;}
+    .q-card{padding:12px 14px;gap:10px;flex-wrap:wrap;}
+    .q-name{font-size:14px;}
+    .q-meta{font-size:10px;}
+    .q-due{font-size:11px;}
+    .q-btn{font-size:10px;padding:8px 14px;}
+    .q-section-label{font-size:10px;padding:8px 16px 4px;}
+
+    /* Templates */
+    .tm-toolbar{padding:14px 16px;}
+    .tm-toolbar-left h2{font-size:18px;}
+    .tm-toolbar-left p{font-size:10px;}
+    .tm-add-btn{font-size:11px;padding:9px 14px;}
+    .tm-body{padding:12px 16px;padding-bottom:70px;}
+    .tm-card-label{font-size:13px;}
+    .tm-card-preview{font-size:10px;}
+    .tm-name-input{font-size:14px;}
+    .tm-text-area{font-size:13px;}
+    .tm-icon-btn{font-size:10px;padding:6px 12px;}
+
+    /* Auth card */
+    .auth-card{width:calc(100vw - 32px);padding:24px 20px;}
+    .auth-title{font-size:20px;}
+    .auth-input{font-size:14px;padding:11px 12px;}
+    .auth-btn{font-size:14px;padding:13px;}
+
+    /* Detail panel: hide on mobile (info is in queue card) */
+    .detail-panel{display:none!important;}
+
+    /* Bulk bar */
+    .bulk-bar{padding:10px 14px;}
+    .bulk-btn{font-size:11px;padding:8px 16px;}
+
+    /* Toast */
+    .toast{bottom:64px;right:12px;left:12px;text-align:center;font-size:11px;}
+
+    /* History */
+    .history-panel{padding:14px 16px;padding-bottom:70px;}
+    .h-text{font-size:12px;}
+    .h-to{font-size:11px;}
+    .h-meta{font-size:10px;}
+  }
 </style>
 </head>
 <body>
@@ -487,6 +668,27 @@
   </div>
 </div>
 
+<!-- MOBILE NAV -->
+<div class="mob-overlay" id="mob-overlay" onclick="closeMobContacts()"></div>
+<nav class="mob-nav" id="mob-nav" style="display:none;">
+  <button class="mob-nav-btn active" id="mn-contacts" onclick="mobNav('contacts')">
+    <span class="mob-icon">👥</span>Contacts
+    <span class="mob-nav-badge" id="mob-overdue-badge">0</span>
+  </button>
+  <button class="mob-nav-btn" id="mn-compose" onclick="mobNav('compose')">
+    <span class="mob-icon">✏️</span>Compose
+  </button>
+  <button class="mob-nav-btn" id="mn-queue" onclick="mobNav('queue')">
+    <span class="mob-icon">📋</span>Queue
+  </button>
+  <button class="mob-nav-btn" id="mn-templates" onclick="mobNav('templates')">
+    <span class="mob-icon">📝</span>Templates
+  </button>
+  <button class="mob-nav-btn" id="mn-history" onclick="mobNav('history')">
+    <span class="mob-icon">🕑</span>History
+  </button>
+</nav>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -581,6 +783,37 @@ async function launchApp(){
   document.getElementById('loading-screen').style.display='none';
   document.getElementById('main-app').style.display='grid';
   renderComposeChips();renderTmList();renderHistory();updateHdr();
+  if(window.innerWidth<=600){
+    document.getElementById('mob-nav').style.display='flex';
+    mobNav('contacts');
+  }
+}
+
+// -- MOBILE NAV --
+const MOB_TABS=['contacts','compose','queue','templates','history'];
+function mobNav(tab){
+  if(window.innerWidth>600)return;
+  MOB_TABS.forEach(t=>{
+    const el=document.getElementById('mn-'+t);
+    if(el)el.classList.toggle('active',t===tab);
+  });
+  if(tab==='contacts'){
+    document.querySelector('.left-panel').classList.add('mob-open');
+    document.getElementById('mob-overlay').classList.add('show');
+  } else {
+    closeMobContacts();
+    const map={compose:'compose',queue:'queue',templates:'templates',history:'history'};
+    if(map[tab]) setRightTab(map[tab]);
+  }
+}
+function closeMobContacts(){
+  document.querySelector('.left-panel').classList.remove('mob-open');
+  document.getElementById('mob-overlay').classList.remove('show');
+}
+function updateMobOverdueBadge(){
+  const count=contacts.filter(c=>c.followup_date&&c.followup_date<todayStr()).length;
+  const badge=document.getElementById('mob-overdue-badge');
+  if(badge){badge.textContent=count;badge.classList.toggle('show',count>0);}
 }
 
 async function loadContacts(){
@@ -651,6 +884,7 @@ function selectAndCompose(id){selectContact(id);setRightTab('compose');const c=c
 function selectContact(id){
   activeContact=contacts.find(c=>c.id===id)||null;if(!activeContact)return;selectedIds.clear();
   document.getElementById('compose-empty').style.display='none';document.getElementById('compose-form').style.display='flex';document.getElementById('detail-panel').style.display='flex';
+  if(window.innerWidth<=600){closeMobContacts();setRightTab('compose');document.getElementById('mn-compose').classList.add('active');document.getElementById('mn-contacts').classList.remove('active');}
   const init=(activeContact.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('dp-avatar').textContent=init;document.getElementById('dp-name').textContent=activeContact.name||'—';document.getElementById('dp-phone').textContent=activeContact.phone||'No phone';
   document.getElementById('dp-stage').value=activeContact.pipeline_stage||'prospect';document.getElementById('dp-notes').value=activeContact.notes||'';document.getElementById('dp-followup').value=activeContact.followup_date||'';
@@ -803,6 +1037,7 @@ function setRightTab(tab){
 function renderHistory(){const p=document.getElementById('history-panel');if(!textHistory.length){p.innerHTML=`<div class="no-history">No texts composed yet.</div>`;return;}p.innerHTML=textHistory.map(h=>`<div class="h-entry"><div class="h-meta"><span class="h-to">${h.contactName} — ${h.contactPhone}</span><span>${h.timestamp}</span></div><div class="h-text">${h.message}</div></div>`).join('');}
 
 function updateHdr(){document.getElementById('hdr-total').textContent=contacts.length;document.getElementById('hdr-sent').textContent=sentCount;}
+function _mobBadge(){if(typeof updateMobOverdueBadge==='function')updateMobOverdueBadge();}
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),3000);}
 
