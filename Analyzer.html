@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTG Illustration Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628; --navy-mid: #122040; --navy-light: #1a3060;
+    --gold: #c9a84c; --gold-light: #e8c97a; --gold-pale: #f5e8c0;
+    --cream: #faf8f4; --white: #ffffff;
+    --text-primary: #0a1628; --text-muted: #5a6a8a; --border: #dde3ef;
+    --success: #1a7a4a; --success-bg: #e8f5ee;
+    --warning: #b8620a; --warning-bg: #fef3e2;
+    --danger: #9b1c1c; --danger-bg: #fde8e8;
+    --info: #1a4a8a; --info-bg: #e8eef8;
+    --radius: 10px; --shadow: 0 4px 24px rgba(10,22,40,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-primary); min-height: 100vh; }
+
+  .header { background: var(--navy); padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 16px rgba(0,0,0,0.3); }
+  .header-brand { display: flex; align-items: center; gap: 14px; }
+  .header-logo { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 18px; color: var(--navy); }
+  .header-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; color: var(--white); }
+  .header-sub { font-size: 11px; color: var(--gold-light); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 1px; }
+  .header-badge { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--navy); font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; }
+
+  .tab-nav { background: var(--navy-mid); display: flex; padding: 0 32px; border-bottom: 1px solid rgba(201,168,76,0.2); overflow-x: auto; }
+  .tab-btn { padding: 14px 22px; background: none; border: none; border-bottom: 3px solid transparent; color: rgba(255,255,255,0.5); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap; letter-spacing: 0.02em; }
+  .tab-btn:hover { color: var(--gold-light); }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); background: rgba(201,168,76,0.06); }
+
+  .main { max-width: 1100px; margin: 0 auto; padding: 28px 24px 80px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .section-label { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .section-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
+
+  .card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); padding: 24px; margin-bottom: 20px; }
+  .card-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .card-title .dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; display: inline-block; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } .header { padding: 14px 16px; } .main { padding: 16px 12px 60px; } .tab-nav { padding: 0 12px; } }
+
+  .field-group { margin-bottom: 16px; }
+  .field-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; display: block; }
+  .field-input, .field-select, .field-textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--cream); transition: border 0.2s, box-shadow 0.2s; appearance: none; }
+  .field-input:focus, .field-select:focus, .field-textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.12); background: var(--white); }
+  .field-textarea { resize: vertical; min-height: 75px; }
+
+  /* UPLOAD ZONE */
+  .upload-zone { border: 2.5px dashed var(--border); border-radius: 14px; padding: 52px 24px; text-align: center; cursor: pointer; transition: all 0.25s; background: var(--white); position: relative; }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--gold); background: linear-gradient(135deg, #fffdf5, var(--white)); box-shadow: 0 4px 20px rgba(201,168,76,0.12); }
+  .upload-zone.has-file { border-color: var(--success); border-style: solid; background: var(--success-bg); }
+  .upload-zone input[type=file] { display: none; }
+  .upload-icon { font-size: 48px; margin-bottom: 14px; }
+  .upload-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+  .upload-sub { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 420px; margin: 0 auto; }
+  .upload-types { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .upload-type-chip { padding: 4px 12px; border: 1px solid var(--border); border-radius: 12px; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .file-preview { display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .file-icon { font-size: 40px; }
+  .file-name { font-size: 16px; font-weight: 600; color: var(--success); }
+  .file-size { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .file-change { font-size: 11px; color: var(--text-muted); text-decoration: underline; cursor: pointer; margin-top: 5px; display: inline-block; }
+
+  .goal-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .goal-card { border: 2px solid var(--border); border-radius: var(--radius); padding: 18px 14px; cursor: pointer; transition: all 0.2s; text-align: center; background: var(--white); position: relative; }
+  .goal-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(201,168,76,0.12); }
+  .goal-card.selected { border-color: var(--gold); background: linear-gradient(135deg, #fffbf0, var(--white)); }
+  .goal-card.selected::before { content: '✓'; position: absolute; top: 10px; right: 12px; width: 20px; height: 20px; background: var(--gold); color: var(--navy); border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; line-height: 20px; }
+  .goal-icon { font-size: 28px; margin-bottom: 8px; }
+  .goal-name { font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+  .goal-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+  @media (max-width: 600px) { .goal-options { grid-template-columns: 1fr; } }
+
+  .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--navy); border: none; padding: 13px 28px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 0.03em; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-gold:hover { box-shadow: 0 6px 20px rgba(201,168,76,0.35); transform: translateY(-1px); }
+  .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-outline { background: transparent; color: var(--navy); border: 1.5px solid var(--border); padding: 10px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .btn-outline:hover { border-color: var(--navy); background: var(--cream); }
+
+  .loading-box { display: none; text-align: center; padding: 52px 20px; }
+  .loading-box.visible { display: block; }
+  .spinner { width: 48px; height: 48px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-step { font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+  .loading-sub { font-size: 12px; color: var(--text-muted); }
+
+  .result-container { display: none; animation: fadeIn 0.4s ease; }
+  .result-container.visible { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  .score-header { background: linear-gradient(135deg, var(--navy), var(--navy-light)); border-radius: var(--radius); padding: 28px; color: white; margin-bottom: 20px; position: relative; overflow: hidden; }
+  .score-header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px; border-radius: 50%; border: 2px solid rgba(201,168,76,0.1); }
+  .score-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .score-info h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+  .score-info p { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6; max-width: 540px; }
+  .score-badge { text-align: center; background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.25); border-radius: 12px; padding: 18px 26px; min-width: 120px; flex-shrink: 0; }
+  .score-number { font-family: 'Cormorant Garamond', serif; font-size: 54px; font-weight: 700; color: var(--gold); line-height: 1; }
+  .score-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-top: 4px; }
+  .score-bars { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 22px; }
+  .score-bar-label { font-size: 11px; color: rgba(255,255,255,0.65); margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .score-bar-track { height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; }
+  .score-bar-fill { height: 100%; border-radius: 3px; }
+
+  .alert { border-radius: 8px; padding: 13px 16px; margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start; font-size: 13px; line-height: 1.5; }
+  .alert-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .alert-title { font-weight: 600; margin-bottom: 2px; }
+  .alert.danger { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(155,28,28,0.15); }
+  .alert.warning { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(184,98,10,0.15); }
+  .alert.success { background: var(--success-bg); color: var(--success); border: 1px solid rgba(26,122,74,0.15); }
+  .alert.info { background: var(--info-bg); color: var(--info); border: 1px solid rgba(26,74,138,0.15); }
+
+  .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 700px) { .rec-grid { grid-template-columns: 1fr; } }
+  .rec-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; background: var(--white); border-left: 4px solid var(--gold); }
+  .rec-card h4 { font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+  .rec-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .rec-priority { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 10px; margin-bottom: 6px; }
+  .rec-priority.high { background: var(--danger-bg); color: var(--danger); }
+  .rec-priority.medium { background: var(--warning-bg); color: var(--warning); }
+  .rec-priority.low { background: var(--success-bg); color: var(--success); }
+
+  .extracted-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+  .extracted-item { background: var(--cream); border: 1px solid var(--border); border-radius: 7px; padding: 10px 14px; }
+  .extracted-key { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); font-weight: 600; margin-bottom: 3px; }
+  .extracted-val { font-size: 14px; font-weight: 600; color: var(--navy); }
+
+  .layer-item { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; }
+  .layer-header { padding: 14px 18px; background: linear-gradient(to right, var(--navy), var(--navy-mid)); color: white; display: flex; align-items: center; justify-content: space-between; }
+  .layer-number { width: 28px; height: 28px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--navy); margin-right: 12px; flex-shrink: 0; }
+  .layer-remove { background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.7); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 16px; transition: all 0.2s; }
+  .layer-remove:hover { background: rgba(255,255,255,0.2); color: white; }
+  .layer-body { padding: 18px; }
+  .add-layer-btn { width: 100%; padding: 14px; border: 2px dashed var(--border); background: transparent; border-radius: var(--radius); color: var(--text-muted); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'DM Sans', sans-serif; }
+  .add-layer-btn:hover { border-color: var(--gold); color: var(--navy); background: rgba(201,168,76,0.04); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="header-logo">BTG</div>
+    <div>
+      <div class="header-title">Illustration Analyzer</div>
+      <div class="header-sub">Built To Grow Financial Group</div>
+    </div>
+  </div>
+  <div class="header-badge">AI-Powered</div>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('upload')">① Upload Illustration</button>
+  <button class="tab-btn" onclick="switchTab('manual')">② Manual Entry</button>
+  <button class="tab-btn" onclick="switchTab('layers')">③ Coverage Layers</button>
+</nav>
+
+<div class="main">
+
+  <!-- TAB 1: UPLOAD -->
+  <div id="tab-upload" class="tab-content active">
+    <div class="section-label">Upload Illustration</div>
+    <div class="section-sub">Drop in any carrier illustration PDF or screenshot. The AI reads the file, extracts all key data automatically, stress tests the structure, and delivers a full report — no manual entry needed.</div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Illustration File</div>
+      <div class="upload-zone" id="upload-zone"
+        onclick="document.getElementById('file-input').click()"
+        ondragover="handleDragOver(event)"
+        ondragleave="handleDragLeave(event)"
+        ondrop="handleDrop(event)">
+        <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.webp" onchange="handleFileSelect(event)">
+        <div id="upload-prompt">
+          <div class="upload-icon">📋</div>
+          <div class="upload-title">Drop your illustration here</div>
+          <div class="upload-sub">Upload the carrier-generated illustration as a PDF or screenshot. The AI will read it page by page and extract everything automatically.</div>
+          <div class="upload-types">
+            <span class="upload-type-chip">PDF</span>
+            <span class="upload-type-chip">PNG</span>
+            <span class="upload-type-chip">JPG</span>
+            <span class="upload-type-chip">WebP</span>
+          </div>
+        </div>
+        <div id="file-preview-box" style="display:none;">
+          <div class="file-preview">
+            <div class="file-icon" id="file-type-icon">📋</div>
+            <div>
+              <div class="file-name" id="file-name-display"></div>
+              <div class="file-size" id="file-size-display"></div>
+              <div class="file-change" onclick="clearFile(event)">Change file</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Quick Context <span style="font-weight:400;color:var(--text-muted);font-size:11px;margin-left:4px;">(optional — helps the AI calibrate the analysis)</span></div>
+      <div class="grid-3">
+        <div class="field-group">
+          <label class="field-label">Client Age</label>
+          <input class="field-input" id="q-age" type="number" placeholder="e.g. 45">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Client Type</label>
+          <select class="field-select" id="q-type">
+            <option value="">Select (optional)</option>
+            <option>Individual / Family</option>
+            <option>Business Owner</option>
+            <option>High Income Earner</option>
+            <option>Corporate Executive</option>
+            <option>Key Person / Business Partner</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Primary Goal</label>
+          <select class="field-select" id="q-goal">
+            <option value="">Select (optional)</option>
+            <option value="Accumulation — maximize cash value and retirement income">Accumulation</option>
+            <option value="Death Benefit Protection — maximize coverage per premium dollar">Death Benefit Protection</option>
+            <option value="Both accumulation and death benefit — balanced approach">Both</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Specific Focus Areas (optional)</label>
+        <textarea class="field-textarea" id="q-focus" placeholder="e.g. I'm concerned the crediting assumption looks too aggressive... / Check if this is at MEC risk... / Client is a business owner, flag anything relevant to that..."></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:12px; align-items:center;">
+      <div id="upload-error" style="font-size:13px;color:var(--danger);display:none;"></div>
+      <button class="btn-gold" id="analyze-btn" onclick="runUploadAnalysis()">
+        <span>⚡</span> Analyze Illustration
+      </button>
+    </div>
+
+    <div class="loading-box" id="loading-box">
+      <div class="spinner"></div>
+      <div class="loading-step" id="loading-step">Reading your illustration...</div>
+      <div class="loading-sub" id="loading-sub">Extracting carrier data, premium structure, crediting rates, and projections</div>
+    </div>
+
+    <div class="result-container" id="result-container">
+      <div id="result-output"></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: MANUAL ENTRY -->
+  <div id="tab-manual" class="tab-content">
+    <div class="section-label">Manual Analysis</div>
+    <div class="section-sub">Use this tab when you don't have a file to upload. Describe or paste the illustration data and client context — the AI will analyze what you provide.</div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Client Goal</div>
+      <div class="goal-options">
+        <div class="goal-card" id="goal-accum" onclick="selectGoal('Accumulation — maximize cash value growth and tax-free retirement income')">
+          <div class="goal-icon">📈</div>
+          <div class="goal-name">Accumulation</div>
+          <div class="goal-desc">Max cash value, retirement income, tax-free distributions.</div>
+        </div>
+        <div class="goal-card" id="goal-db" onclick="selectGoal('Death Benefit Protection — maximize face amount per premium dollar for legacy or income replacement')">
+          <div class="goal-icon">🛡️</div>
+          <div class="goal-name">Death Benefit</div>
+          <div class="goal-desc">Maximize face amount per dollar spent.</div>
+        </div>
+        <div class="goal-card" id="goal-both" onclick="selectGoal('Both accumulation and death benefit — balanced approach for business owners and high earners')">
+          <div class="goal-icon">⚖️</div>
+          <div class="goal-name">Both</div>
+          <div class="goal-desc">Balanced: strong cash value and meaningful death benefit.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Client Profile</div>
+      <div class="grid-2">
+        <div class="field-group">
+          <label class="field-label">Client Name</label>
+          <input class="field-input" id="m-name" type="text" placeholder="John Smith">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Age</label>
+          <input class="field-input" id="m-age" type="number" placeholder="42">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Health Class</label>
+          <select class="field-select" id="m-health">
+            <option value="">Select</option>
+            <option>Preferred Plus</option><option>Preferred</option>
+            <option>Standard Plus</option><option>Standard</option><option>Table Rated</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Annual Income</label>
+          <input class="field-input" id="m-income" type="text" placeholder="$180,000">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Client Type</label>
+          <select class="field-select" id="m-ctype">
+            <option value="">Select</option>
+            <option>Individual / Family</option><option>Business Owner</option>
+            <option>High Income Earner</option><option>Corporate Executive</option><option>Key Person</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Total Coverage Need</label>
+          <input class="field-input" id="m-coverage" type="text" placeholder="$2,500,000">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Policy Details</div>
+      <div class="field-group">
+        <label class="field-label">Paste or describe the illustration data</label>
+        <textarea class="field-textarea" id="m-policy" style="min-height:140px;" placeholder="Include: carrier, product name, policy type, annual premium, face amount, illustrated crediting rate, cap rate, floor rate, index strategy, loan type, cash values at key ages, projected retirement income, MEC status, riders, fees, surrender period... Include whatever you have."></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end;">
+      <button class="btn-gold" id="manual-analyze-btn" onclick="runManualAnalysis()">
+        <span>⚡</span> Run Analysis
+      </button>
+    </div>
+
+    <div class="loading-box" id="manual-loading-box">
+      <div class="spinner"></div>
+      <div class="loading-step">Analyzing...</div>
+      <div class="loading-sub">Building your full stress test report</div>
+    </div>
+
+    <div class="result-container" id="manual-result-container">
+      <div id="manual-result-output"></div>
+    </div>
+  </div>
+
+  <!-- TAB 3: COVERAGE LAYERS -->
+  <div id="tab-layers" class="tab-content">
+    <div class="section-label">Coverage Layer Builder</div>
+    <div class="section-sub">For clients with $5M+ in coverage needs, build a multi-policy stack and let the AI grade the overall structure, identify gaps, and evaluate sequencing logic.</div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Stack Parameters</div>
+      <div class="grid-3">
+        <div class="field-group">
+          <label class="field-label">Total Coverage Goal</label>
+          <input class="field-input" id="l-total" type="text" placeholder="e.g. $15,000,000">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Total Monthly Budget</label>
+          <input class="field-input" id="l-budget" type="text" placeholder="e.g. $12,000/month">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Scenario</label>
+          <select class="field-select" id="l-scenario">
+            <option value="">Select</option>
+            <option>High Income Earner (Personal)</option>
+            <option>Business Owner (Mixed)</option>
+            <option>Estate Planning / Legacy</option>
+            <option>Business Protection Only</option>
+            <option>Executive Benefits / NQDC</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="layers-container"></div>
+
+    <button class="add-layer-btn" onclick="addLayer()">
+      <span style="font-size:20px;">+</span> Add Policy Layer
+    </button>
+
+    <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:20px; align-items:center;">
+      <span id="layers-total" style="font-size:13px; color:var(--text-muted);"></span>
+      <button class="btn-gold" id="layer-btn" onclick="runLayerAnalysis()">
+        <span>⚡</span> Analyze Coverage Stack
+      </button>
+    </div>
+
+    <div class="loading-box" id="layer-loading-box">
+      <div class="spinner"></div>
+      <div class="loading-step">Analyzing your coverage stack...</div>
+      <div class="loading-sub">Evaluating layering strategy, gaps, and optimization</div>
+    </div>
+
+    <div class="result-container" id="layer-result-container">
+      <div id="layer-result-output"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let uploadedFile = null;
+let selectedGoal = '';
+let layerCount = 0;
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  const idx = ['upload','manual','layers'].indexOf(tab);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+}
+
+// FILE HANDLING
+function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
+function handleDragLeave() { document.getElementById('upload-zone').classList.remove('drag-over'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+function handleFileSelect(e) { const f = e.target.files[0]; if (f) processFile(f); }
+function clearFile(e) {
+  e.stopPropagation();
+  uploadedFile = null;
+  document.getElementById('upload-prompt').style.display = 'block';
+  document.getElementById('file-preview-box').style.display = 'none';
+  document.getElementById('upload-zone').classList.remove('has-file');
+  document.getElementById('file-input').value = '';
+}
+function processFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const ok = ['pdf','png','jpg','jpeg','webp'];
+  if (!ok.includes(ext)) { showError('Please upload a PDF or image file (PNG, JPG, WebP).'); return; }
+  if (file.size > 20 * 1024 * 1024) { showError('File must be under 20MB.'); return; }
+  uploadedFile = file;
+  hideError();
+  const isPDF = ext === 'pdf';
+  document.getElementById('file-type-icon').textContent = isPDF ? '📋' : '🖼️';
+  document.getElementById('file-name-display').textContent = file.name;
+  document.getElementById('file-size-display').textContent = formatBytes(file.size);
+  document.getElementById('upload-prompt').style.display = 'none';
+  document.getElementById('file-preview-box').style.display = 'block';
+  document.getElementById('upload-zone').classList.add('has-file');
+}
+function formatBytes(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b/1024).toFixed(1) + ' KB'; return (b/1048576).toFixed(1) + ' MB'; }
+function showError(msg) { const el = document.getElementById('upload-error'); el.textContent = msg; el.style.display = 'block'; }
+function hideError() { document.getElementById('upload-error').style.display = 'none'; }
+
+function selectGoal(goal) {
+  selectedGoal = goal;
+  document.querySelectorAll('.goal-card').forEach(c => c.classList.remove('selected'));
+  if (goal.includes('Accumulation') && !goal.includes('Both')) document.getElementById('goal-accum').classList.add('selected');
+  else if (goal.includes('Death')) document.getElementById('goal-db').classList.add('selected');
+  else document.getElementById('goal-both').classList.add('selected');
+}
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function runUploadAnalysis() {
+  if (!uploadedFile) { showError('Please upload an illustration file first.'); return; }
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  document.getElementById('loading-box').classList.add('visible');
+  document.getElementById('result-container').classList.remove('visible');
+
+  const age = document.getElementById('q-age').value;
+  const type = document.getElementById('q-type').value;
+  const goal = document.getElementById('q-goal').value;
+  const focus = document.getElementById('q-focus').value;
+  const context = [age&&`Client age: ${age}`, type&&`Client type: ${type}`, goal&&`Primary goal: ${goal}`, focus&&`Agent focus: ${focus}`].filter(Boolean).join('\n');
+
+  try {
+    const base64 = await fileToBase64(uploadedFile);
+    const ext = uploadedFile.name.split('.').pop().toLowerCase();
+    const isPDF = ext === 'pdf';
+    const mt = isPDF ? 'application/pdf' : (uploadedFile.type.startsWith('image/') ? uploadedFile.type : 'image/jpeg');
+
+    document.getElementById('loading-step').textContent = 'Analyzing illustration structure...';
+    document.getElementById('loading-sub').textContent = 'Comparing against market benchmarks and carrier standards';
+
+    const docBlock = isPDF
+      ? { type: 'document', source: { type: 'base64', media_type: mt, data: base64 } }
+      : { type: 'image', source: { type: 'base64', media_type: mt, data: base64 } };
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a senior life insurance illustration analyst at BTG Financial Group. You can read illustration PDFs and screenshots and extract all relevant data. You are deeply familiar with IUL, Whole Life, Keyperson, and annuity products from NLG, North American, Pacific Life, F&G, Mutual of Omaha, Nationwide, Global Atlantic, Penn Mutual, Mass Mutual, Protective, Transamerica. You understand IRC 7702, MEC rules, COI drag, crediting strategy mechanics, and cash value efficiency benchmarks.
+
+CRITICAL: Respond ONLY with a valid JSON object. No markdown, no preamble, no explanation. Just the raw JSON.`,
+        messages: [{
+          role: 'user',
+          content: [
+            docBlock,
+            { type: 'text', text: `Analyze this life insurance illustration for a BTG Financial Group client.${context ? '\n\nAGENT CONTEXT:\n' + context : ''}
+
+Extract ALL key data from the illustration and then stress test it. Respond ONLY with this JSON structure:
+{
+  "extracted": {
+    "carrier": "", "product": "", "policy_type": "", "insured_age": "",
+    "face_amount": "", "annual_premium": "", "illustrated_rate": "",
+    "cap_rate": "", "floor_rate": "", "participation_rate": "",
+    "index_strategy": "", "loan_type": "", "mec_status": "",
+    "cv_year5": "", "cv_year10": "", "cv_year20": "", "cv_age65": "",
+    "retirement_income_illustrated": "", "db_age65": "",
+    "riders": [], "surrender_period": "", "premium_load": ""
+  },
+  "overall_score": 0,
+  "grade": "B",
+  "verdict": "",
+  "summary": "",
+  "category_scores": {
+    "structure_efficiency": 0, "crediting_assumption": 0,
+    "cash_value_quality": 0, "risk_management": 0, "goal_alignment": 0
+  },
+  "red_flags": [{ "severity": "high", "title": "", "detail": "" }],
+  "strengths": [{ "title": "", "detail": "" }],
+  "recommendations": [{ "priority": "high", "title": "", "action": "" }],
+  "market_context": ""
+}` }
+          ]
+        }]
+      })
+    });
+
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message || 'API error');
+    const raw = data.content?.filter(c => c.type === 'text').map(c => c.text).join('') || '';
+    let parsed;
+    try { parsed = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+    catch(e) { const m = raw.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); else throw new Error('Could not parse AI response. Try again or use Manual Entry tab.'); }
+
+    renderResults('result-output', parsed, true);
+    document.getElementById('result-container').classList.add('visible');
+    document.getElementById('result-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(err) {
+    document.getElementById('result-output').innerHTML = `<div class="alert danger" style="margin-top:24px;"><div class="alert-icon">⚠️</div><div><div class="alert-title">Analysis Error</div>${err.message}</div></div>`;
+    document.getElementById('result-container').classList.add('visible');
+  }
+  btn.disabled = false;
+  document.getElementById('loading-box').classList.remove('visible');
+}
+
+async function runManualAnalysis() {
+  const policy = document.getElementById('m-policy').value;
+  if (!policy.trim()) { alert('Please enter policy details to analyze.'); return; }
+  const btn = document.getElementById('manual-analyze-btn');
+  btn.disabled = true;
+  document.getElementById('manual-loading-box').classList.add('visible');
+  document.getElementById('manual-result-container').classList.remove('visible');
+
+  const prompt = `Analyze this life insurance case for BTG Financial Group:
+
+GOAL: ${selectedGoal || 'Not specified'}
+Name: ${document.getElementById('m-name').value || 'N/A'}
+Age: ${document.getElementById('m-age').value || 'N/A'}
+Health: ${document.getElementById('m-health').value || 'N/A'}
+Income: ${document.getElementById('m-income').value || 'N/A'}
+Type: ${document.getElementById('m-ctype').value || 'N/A'}
+Coverage Need: ${document.getElementById('m-coverage').value || 'N/A'}
+
+POLICY DATA:
+${policy}
+
+Respond ONLY with valid JSON:
+{
+  "overall_score": 0, "grade": "B", "verdict": "", "summary": "",
+  "category_scores": { "structure_efficiency": 0, "crediting_assumption": 0, "cash_value_quality": 0, "risk_management": 0, "goal_alignment": 0 },
+  "red_flags": [{ "severity": "high", "title": "", "detail": "" }],
+  "strengths": [{ "title": "", "detail": "" }],
+  "recommendations": [{ "priority": "high", "title": "", "action": "" }],
+  "market_context": ""
+}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+        system: 'You are a senior life insurance illustration analyst at BTG Financial Group. Respond ONLY with valid JSON — no markdown, no preamble.',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    const raw = data.content?.filter(c => c.type === 'text').map(c => c.text).join('') || '';
+    let parsed;
+    try { parsed = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+    catch(e) { const m = raw.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); else throw new Error('Parse error'); }
+    renderResults('manual-result-output', parsed, false);
+    document.getElementById('manual-result-container').classList.add('visible');
+    document.getElementById('manual-result-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(err) {
+    document.getElementById('manual-result-output').innerHTML = `<div class="alert danger" style="margin-top:24px;"><div class="alert-icon">⚠️</div><div><div class="alert-title">Error</div>${err.message}</div></div>`;
+    document.getElementById('manual-result-container').classList.add('visible');
+  }
+  btn.disabled = false;
+  document.getElementById('manual-loading-box').classList.remove('visible');
+}
+
+function renderResults(outputId, data, showExtracted) {
+  const scoreColor = data.overall_score >= 80 ? '#1a7a4a' : data.overall_score >= 60 ? '#b8620a' : '#9b1c1c';
+  const catLabels = { structure_efficiency:'Structure Efficiency', crediting_assumption:'Crediting Assumptions', cash_value_quality:'Cash Value Quality', risk_management:'Risk Management', goal_alignment:'Goal Alignment' };
+  const catColors = { structure_efficiency:'#0a5cad', crediting_assumption:'#9b1c1c', cash_value_quality:'#1a7a4a', risk_management:'#7a2d8c', goal_alignment:'#b8620a' };
+
+  let extractedHTML = '';
+  if (showExtracted && data.extracted) {
+    const ext = data.extracted;
+    const fields = [
+      ['Carrier', ext.carrier], ['Product', ext.product], ['Policy Type', ext.policy_type],
+      ['Insured Age', ext.insured_age], ['Face Amount', ext.face_amount], ['Annual Premium', ext.annual_premium],
+      ['Illustrated Rate', ext.illustrated_rate ? ext.illustrated_rate + '%' : ''], ['Cap Rate', ext.cap_rate ? ext.cap_rate + '%' : ''],
+      ['Floor Rate', ext.floor_rate !== undefined && ext.floor_rate !== '' ? ext.floor_rate + '%' : ''], ['Participation Rate', ext.participation_rate ? ext.participation_rate + '%' : ''],
+      ['Index Strategy', ext.index_strategy], ['Loan Type', ext.loan_type],
+      ['MEC Status', ext.mec_status], ['Cash Value Yr 5', ext.cv_year5],
+      ['Cash Value Yr 10', ext.cv_year10], ['Cash Value Age 65', ext.cv_age65],
+      ['Retirement Income', ext.retirement_income_illustrated], ['DB at 65', ext.db_age65],
+      ['Surrender Period', ext.surrender_period ? ext.surrender_period + ' yrs' : ''],
+      ['Riders', Array.isArray(ext.riders) && ext.riders.length ? ext.riders.join(', ') : '']
+    ].filter(([,v]) => v);
+
+    let items = '';
+    fields.forEach(([k, v]) => { items += `<div class="extracted-item"><div class="extracted-key">${k}</div><div class="extracted-val">${v}</div></div>`; });
+    extractedHTML = `<div class="card" style="margin-top:28px;margin-bottom:20px;"><div class="card-title"><span class="dot"></span>Data Extracted from Illustration</div><div class="extracted-grid">${items}</div></div>`;
+  }
+
+  let scoreBars = '';
+  for (const [key, label] of Object.entries(catLabels)) {
+    const s = data.category_scores?.[key] ?? 0;
+    scoreBars += `<div><div class="score-bar-label"><span>${label}</span><span>${s}/100</span></div><div class="score-bar-track"><div class="score-bar-fill" style="width:${s}%;background:${catColors[key]};"></div></div></div>`;
+  }
+
+  let flags = '';
+  (data.red_flags || []).forEach(f => {
+    const cls = f.severity==='high'?'danger':f.severity==='medium'?'warning':'info';
+    const icon = f.severity==='high'?'🚨':f.severity==='medium'?'⚠️':'ℹ️';
+    flags += `<div class="alert ${cls}"><div class="alert-icon">${icon}</div><div><div class="alert-title">${f.title}</div>${f.detail}</div></div>`;
+  });
+  if (!flags) flags = `<div class="alert success"><div class="alert-icon">✅</div><div>No major red flags identified.</div></div>`;
+
+  let strengths = '';
+  (data.strengths || []).forEach(s => { strengths += `<div class="alert success"><div class="alert-icon">✅</div><div><div class="alert-title">${s.title}</div>${s.detail}</div></div>`; });
+
+  let recs = '';
+  (data.recommendations || []).forEach(r => { recs += `<div class="rec-card"><div class="rec-priority ${r.priority}">${r.priority} priority</div><h4>${r.title}</h4><p>${r.action}</p></div>`; });
+
+  const ext = data.extracted || {};
+  document.getElementById(outputId).innerHTML = `
+    ${extractedHTML}
+    <div style="${showExtracted ? '' : 'margin-top:28px;'}">
+      <div class="score-header">
+        <div class="score-top">
+          <div class="score-info">
+            <h2>${showExtracted ? 'Stress Test Complete' : 'Analysis Complete'}</h2>
+            <p>${data.summary || ''}</p>
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+              ${ext.carrier ? `<span style="background:rgba(255,255,255,0.1);border-radius:6px;padding:4px 11px;font-size:11px;">🏢 ${ext.carrier}</span>` : ''}
+              ${ext.policy_type ? `<span style="background:rgba(255,255,255,0.1);border-radius:6px;padding:4px 11px;font-size:11px;">📋 ${ext.policy_type}</span>` : ''}
+              ${ext.mec_status ? `<span style="background:rgba(255,255,255,0.1);border-radius:6px;padding:4px 11px;font-size:11px;">⚖️ ${ext.mec_status}</span>` : ''}
+            </div>
+          </div>
+          <div class="score-badge">
+            <div class="score-number" style="color:${scoreColor};">${data.overall_score}</div>
+            <div style="font-size:22px;font-weight:700;color:${scoreColor};margin-top:2px;">${data.grade}</div>
+            <div class="score-label">Overall Score</div>
+          </div>
+        </div>
+        <div class="score-bars">${scoreBars}</div>
+      </div>
+      <div style="padding:14px 18px;background:var(--white);border:1px solid var(--border);border-radius:8px;margin-bottom:20px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Verdict</div>
+        <div style="font-size:15px;font-weight:600;color:var(--navy);">${data.verdict || ''}</div>
+      </div>
+      <div class="grid-2" style="margin-bottom:20px;">
+        <div class="card" style="margin-bottom:0;"><div class="card-title"><span class="dot"></span>Red Flags & Risks</div>${flags}</div>
+        <div class="card" style="margin-bottom:0;"><div class="card-title"><span class="dot"></span>Strengths</div>${strengths || '<div class="alert info"><div class="alert-icon">ℹ️</div><div>No notable strengths identified from the data provided.</div></div>'}</div>
+      </div>
+      <div class="card"><div class="card-title"><span class="dot"></span>Recommendations</div><div class="rec-grid">${recs}</div></div>
+      <div class="card"><div class="card-title"><span class="dot"></span>Market Context</div><p style="font-size:14px;line-height:1.7;">${data.market_context || ''}</p></div>
+    </div>`;
+}
+
+// LAYER BUILDER
+function addLayer() {
+  layerCount++;
+  const id = 'lyr' + layerCount;
+  const div = document.createElement('div');
+  div.className = 'layer-item';
+  div.id = id;
+  div.innerHTML = `
+    <div class="layer-header">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="layer-number">${layerCount}</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;">Policy Layer ${layerCount}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.55);" id="${id}-meta">Configure below</div>
+        </div>
+      </div>
+      <button class="layer-remove" onclick="removeLayer('${id}')">×</button>
+    </div>
+    <div class="layer-body">
+      <div class="grid-3">
+        <div class="field-group">
+          <label class="field-label">Policy Type</label>
+          <select class="field-select" id="${id}-type" onchange="document.getElementById('${id}-meta').textContent=this.value||'Configure below'">
+            <option value="">Select</option>
+            <option>IUL (Indexed Universal Life)</option>
+            <option>Whole Life</option>
+            <option>Whole Life with PUA</option>
+            <option>Convertible Term</option>
+            <option>Keyperson IUL</option>
+            <option>Keyperson Whole Life</option>
+            <option>Fixed Annuity</option>
+            <option>Fixed Index Annuity (FIA)</option>
+            <option>COLI / Corporate-Owned</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Carrier</label>
+          <input class="field-input" id="${id}-carrier" type="text" placeholder="e.g. NLG, Pacific Life">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Face Amount</label>
+          <input class="field-input" id="${id}-face" type="text" placeholder="e.g. $5,000,000" oninput="updateTotal()">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Annual Premium</label>
+          <input class="field-input" id="${id}-premium" type="text" placeholder="e.g. $48,000">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Primary Purpose</label>
+          <select class="field-select" id="${id}-purpose">
+            <option value="">Select</option>
+            <option>Accumulation (Primary Engine)</option>
+            <option>Death Benefit (Primary)</option>
+            <option>Guaranteed Floor / Stability</option>
+            <option>Business / Keyperson Protection</option>
+            <option>Income Supplement / Annuity</option>
+            <option>Estate Equalization</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Ownership</label>
+          <select class="field-select" id="${id}-ownership">
+            <option value="">Select</option>
+            <option>Individual (Personal)</option>
+            <option>Business-Owned</option>
+            <option>Irrevocable Trust (ILIT)</option>
+            <option>Cross-Purchase Agreement</option>
+            <option>Entity-Purchase / Stock Redemption</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Notes</label>
+        <input class="field-input" id="${id}-notes" type="text" placeholder="e.g. Overfunded IUL, max accumulation, living benefits included...">
+      </div>
+    </div>`;
+  document.getElementById('layers-container').appendChild(div);
+}
+
+function removeLayer(id) { const el = document.getElementById(id); if (el) el.remove(); updateTotal(); }
+
+function updateTotal() {
+  let total = 0, count = 0;
+  document.querySelectorAll('[id$="-face"]').forEach(f => { const v = parseFloat(f.value.replace(/[$,]/g,'')); if (!isNaN(v)) { total += v; count++; } });
+  const el = document.getElementById('layers-total');
+  if (count > 0) { el.textContent = 'Stack total: ' + fmtCur(total); el.style.fontWeight = '600'; el.style.color = 'var(--navy)'; }
+  else el.textContent = '';
+}
+
+function fmtCur(n) {
+  if (n >= 1e9) return '$' + (n/1e9).toFixed(2).replace(/\.?0+$/,'') + 'B';
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(2).replace(/\.?0+$/,'') + 'M';
+  if (n >= 1e3) return '$' + (n/1e3).toFixed(0) + 'K';
+  return '$' + n.toLocaleString();
+}
+
+async function runLayerAnalysis() {
+  const ids = Array.from(document.querySelectorAll('[id^="lyr"]')).filter(el => el.id.match(/^lyr\d+$/)).map(el => el.id);
+  if (ids.length === 0) { alert('Add at least one policy layer first.'); return; }
+  const btn = document.getElementById('layer-btn');
+  btn.disabled = true;
+  document.getElementById('layer-loading-box').classList.add('visible');
+  document.getElementById('layer-result-container').classList.remove('visible');
+
+  const layerData = ids.map((id, i) => {
+    const g = s => { const el = document.getElementById(id+s); return el ? el.value : ''; };
+    return `Layer ${i+1}: Type=${g('-type')||'Unknown'} | Carrier=${g('-carrier')||'N/A'} | Face=${g('-face')||'N/A'} | Premium=${g('-premium')||'N/A'} | Purpose=${g('-purpose')||'N/A'} | Ownership=${g('-ownership')||'N/A'} | Notes=${g('-notes')||'None'}`;
+  }).join('\n');
+
+  const prompt = `Analyze this multi-policy life insurance coverage stack for a BTG Financial Group client:
+
+Total Coverage Goal: ${document.getElementById('l-total').value || 'Not specified'}
+Monthly Budget: ${document.getElementById('l-budget').value || 'Not specified'}
+Scenario: ${document.getElementById('l-scenario').value || 'Not specified'}
+
+LAYERS (${ids.length} total):
+${layerData}
+
+Respond ONLY with valid JSON:
+{
+  "stack_score": 0, "stack_grade": "B", "verdict": "", "summary": "",
+  "coverage_gap": "None",
+  "budget_assessment": "Unknown",
+  "layer_assessments": [{ "layer": 1, "role": "", "strength": "B", "notes": "" }],
+  "structural_issues": [{ "severity": "medium", "title": "", "detail": "" }],
+  "optimization_moves": [{ "priority": "high", "title": "", "action": "" }],
+  "tax_considerations": "",
+  "sequencing_verdict": ""
+}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+        system: 'You are a senior life insurance case design strategist specializing in multi-policy coverage stacks for high-net-worth and business owner clients at BTG Financial Group. Respond ONLY with valid JSON.',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    const raw = data.content?.filter(c => c.type === 'text').map(c => c.text).join('') || '';
+    let parsed;
+    try { parsed = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+    catch(e) { const m = raw.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); else throw new Error('Parse error'); }
+    renderLayerResults(parsed);
+    document.getElementById('layer-result-container').classList.add('visible');
+    document.getElementById('layer-result-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(err) {
+    document.getElementById('layer-result-output').innerHTML = `<div class="alert danger" style="margin-top:24px;"><div class="alert-icon">⚠️</div><div><div class="alert-title">Error</div>${err.message}</div></div>`;
+    document.getElementById('layer-result-container').classList.add('visible');
+  }
+  btn.disabled = false;
+  document.getElementById('layer-loading-box').classList.remove('visible');
+}
+
+function renderLayerResults(data) {
+  const sc = data.stack_score >= 80 ? '#1a7a4a' : data.stack_score >= 60 ? '#b8620a' : '#9b1c1c';
+  const gc = {'A+':'#1a7a4a','A':'#1a7a4a','A-':'#1a7a4a','B+':'#2a6aad','B':'#2a6aad','B-':'#2a6aad','C+':'#b8620a','C':'#b8620a','D':'#9b1c1c','F':'#9b1c1c'};
+
+  let layerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+  (data.layer_assessments || []).forEach(l => {
+    const c = gc[l.strength] || '#0a1628';
+    layerHTML += `<div style="border:1px solid var(--border);border-radius:8px;padding:14px 16px;background:var(--white);border-left:4px solid ${c};">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-weight:700;font-size:13px;">Layer ${l.layer}</span>
+        <span style="background:${c};color:white;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:700;">${l.strength}</span>
+      </div>
+      <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">${l.role}</div>
+      <div style="font-size:13px;line-height:1.5;">${l.notes}</div>
+    </div>`;
+  });
+  layerHTML += '</div>';
+
+  let issues = '';
+  (data.structural_issues || []).forEach(s => {
+    const cls = s.severity==='high'?'danger':s.severity==='medium'?'warning':'info';
+    const icon = s.severity==='high'?'🚨':s.severity==='medium'?'⚠️':'ℹ️';
+    issues += `<div class="alert ${cls}"><div class="alert-icon">${icon}</div><div><div class="alert-title">${s.title}</div>${s.detail}</div></div>`;
+  });
+
+  let opts = '';
+  (data.optimization_moves || []).forEach(r => { opts += `<div class="rec-card"><div class="rec-priority ${r.priority}">${r.priority} priority</div><h4>${r.title}</h4><p>${r.action}</p></div>`; });
+
+  document.getElementById('layer-result-output').innerHTML = `
+    <div style="margin-top:28px;">
+      <div class="score-header">
+        <div class="score-top">
+          <div class="score-info">
+            <h2>Coverage Stack Analysis</h2>
+            <p>${data.summary || ''}</p>
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+              <span style="background:rgba(255,255,255,0.1);border-radius:6px;padding:4px 11px;font-size:11px;">💰 Budget: ${data.budget_assessment || 'Unknown'}</span>
+              ${data.coverage_gap && data.coverage_gap !== 'None' ? `<span style="background:rgba(155,28,28,0.3);border-radius:6px;padding:4px 11px;font-size:11px;">🚨 Gap: ${data.coverage_gap}</span>` : `<span style="background:rgba(26,122,74,0.3);border-radius:6px;padding:4px 11px;font-size:11px;">✅ No Gap Identified</span>`}
+            </div>
+          </div>
+          <div class="score-badge">
+            <div class="score-number" style="color:${sc};">${data.stack_score}</div>
+            <div style="font-size:22px;font-weight:700;color:${sc};margin-top:2px;">${data.stack_grade}</div>
+            <div class="score-label">Stack Score</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:14px 18px;background:var(--white);border:1px solid var(--border);border-radius:8px;margin-bottom:20px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Verdict</div>
+        <div style="font-size:15px;font-weight:600;color:var(--navy);">${data.verdict || ''}</div>
+      </div>
+      <div class="card"><div class="card-title"><span class="dot"></span>Layer-by-Layer Assessment</div>${layerHTML}</div>
+      <div class="grid-2" style="margin-bottom:20px;">
+        <div class="card" style="margin-bottom:0;"><div class="card-title"><span class="dot"></span>Structural Issues</div>${issues || '<div class="alert success"><div class="alert-icon">✅</div><div>No major structural issues found.</div></div>'}</div>
+        <div class="card" style="margin-bottom:0;"><div class="card-title"><span class="dot"></span>Sequencing Analysis</div><p style="font-size:14px;line-height:1.7;">${data.sequencing_verdict || ''}</p></div>
+      </div>
+      <div class="card"><div class="card-title"><span class="dot"></span>Optimization Moves</div><div class="rec-grid">${opts}</div></div>
+      <div class="card"><div class="card-title"><span class="dot"></span>Tax Considerations</div><p style="font-size:14px;line-height:1.7;">${data.tax_considerations || ''}</p></div>
+    </div>`;
+}
+
+// Start with one layer
+addLayer();
+</script>
+</body>
+</html>
