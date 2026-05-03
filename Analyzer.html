@@ -490,7 +490,7 @@ async function runUploadAnalysis() {
       ? { type: 'document', source: { type: 'base64', media_type: mt, data: base64 } }
       : { type: 'image', source: { type: 'base64', media_type: mt, data: base64 } };
 
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('https://dtksttiukhskxbcsbplt.supabase.co/functions/v1/anthropic-proxy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -584,7 +584,7 @@ Respond ONLY with valid JSON:
 }`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('https://dtksttiukhskxbcsbplt.supabase.co/functions/v1/anthropic-proxy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -823,7 +823,7 @@ Respond ONLY with valid JSON:
 }`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('https://dtksttiukhskxbcsbplt.supabase.co/functions/v1/anthropic-proxy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
