@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BTG | Life Insurance Practice Exam</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1931;
+  --navy2:#0d2040;
+  --gold:#C9A84C;
+  --gold2:#e8c46a;
+  --cream:#F9F5EE;
+  --white:#ffffff;
+  --gray:#8a8f9a;
+  --lgray:#f0f2f5;
+  --red:#c0392b;
+  --green:#1a6b3c;
+  --radius:14px;
+  --shadow:0 4px 24px rgba(10,25,49,0.13);
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--cream);
+  color:var(--navy);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── TOP NAV ── */
+.topbar{
+  background:var(--navy);
+  padding:12px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  z-index:100;
+  box-shadow:0 2px 12px rgba(0,0,0,0.25);
+}
+.topbar-logo{
+  font-family:'Playfair Display',serif;
+  font-size:1.15rem;
+  color:var(--gold);
+  font-weight:700;
+  letter-spacing:0.02em;
+}
+.topbar-sub{
+  font-size:0.7rem;
+  color:rgba(255,255,255,0.55);
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  margin-top:1px;
+}
+.topbar-right{
+  font-size:0.75rem;
+  color:rgba(255,255,255,0.5);
+  text-align:right;
+}
+
+/* ── LANDING ── */
+#landing{
+  min-height:calc(100vh - 52px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:32px 20px 48px;
+  text-align:center;
+}
+.landing-eyebrow{
+  font-size:0.7rem;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--gold);
+  font-weight:600;
+  margin-bottom:12px;
+}
+.landing-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2rem,6vw,3.2rem);
+  font-weight:900;
+  color:var(--navy);
+  line-height:1.1;
+  margin-bottom:14px;
+}
+.landing-title span{color:var(--gold)}
+.landing-desc{
+  font-size:0.95rem;
+  color:var(--gray);
+  max-width:460px;
+  line-height:1.65;
+  margin-bottom:36px;
+}
+.state-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+  width:100%;
+  max-width:500px;
+  margin-bottom:28px;
+}
+.state-card{
+  background:var(--white);
+  border:2px solid transparent;
+  border-radius:var(--radius);
+  padding:20px 16px;
+  cursor:pointer;
+  transition:all 0.22s ease;
+  box-shadow:var(--shadow);
+  text-align:left;
+  position:relative;
+  overflow:hidden;
+}
+.state-card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:3px;
+  background:var(--gold);
+  transform:scaleX(0);
+  transition:transform 0.22s ease;
+  transform-origin:left;
+}
+.state-card:hover::before,
+.state-card.selected::before{transform:scaleX(1)}
+.state-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 28px rgba(10,25,49,0.15)}
+.state-card.selected{border-color:var(--gold);background:var(--navy);box-shadow:0 8px 28px rgba(10,25,49,0.25)}
+.state-card.selected .sc-name{color:var(--gold)}
+.state-card.selected .sc-detail{color:rgba(255,255,255,0.65)}
+.state-card.selected .sc-check{opacity:1}
+.sc-flag{font-size:1.6rem;margin-bottom:8px;display:block}
+.sc-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--navy);margin-bottom:3px}
+.sc-detail{font-size:0.72rem;color:var(--gray);line-height:1.5}
+.sc-check{
+  position:absolute;top:10px;right:10px;
+  width:20px;height:20px;
+  background:var(--gold);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;color:var(--navy);font-weight:700;
+  opacity:0;transition:opacity 0.2s;
+}
+.start-btn{
+  background:var(--gold);
+  color:var(--navy);
+  border:none;
+  padding:16px 44px;
+  border-radius:50px;
+  font-family:'DM Sans',sans-serif;
+  font-size:1rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s;
+  box-shadow:0 4px 16px rgba(201,168,76,0.4);
+  letter-spacing:0.02em;
+  opacity:0.45;
+  pointer-events:none;
+}
+.start-btn.active{opacity:1;pointer-events:all}
+.start-btn.active:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,0.5)}
+
+.landing-stats{
+  display:flex;gap:24px;justify-content:center;flex-wrap:wrap;
+  margin-top:28px;
+}
+.lstat{text-align:center}
+.lstat-num{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--gold)}
+.lstat-lab{font-size:0.68rem;color:var(--gray);text-transform:uppercase;letter-spacing:0.1em}
+
+/* ── EXAM SCREEN ── */
+#exam-screen{display:none;min-height:calc(100vh - 52px)}
+
+.exam-header{
+  background:var(--navy);
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.exam-state-badge{
+  background:var(--gold);
+  color:var(--navy);
+  font-weight:700;
+  font-size:0.78rem;
+  padding:4px 12px;
+  border-radius:20px;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+}
+.exam-progress-wrap{flex:1;max-width:280px}
+.exam-progress-label{
+  display:flex;justify-content:space-between;
+  font-size:0.7rem;color:rgba(255,255,255,0.55);
+  margin-bottom:4px;
+}
+.exam-progress-bar{
+  height:4px;background:rgba(255,255,255,0.15);border-radius:4px;overflow:hidden;
+}
+.exam-progress-fill{
+  height:100%;background:var(--gold);border-radius:4px;
+  transition:width 0.4s ease;width:0%;
+}
+.exam-timer{
+  font-size:0.85rem;color:var(--gold);font-weight:600;
+  font-variant-numeric:tabular-nums;
+  min-width:52px;text-align:right;
+}
+.exam-timer.warning{color:#ff6b6b;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+.question-area{
+  padding:20px 20px 100px;
+  max-width:680px;
+  margin:0 auto;
+}
+.q-counter{
+  font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--gold);font-weight:600;margin-bottom:10px;
+}
+.q-text{
+  font-size:1.05rem;font-weight:500;line-height:1.6;
+  color:var(--navy);margin-bottom:20px;
+}
+.choices{display:flex;flex-direction:column;gap:10px}
+.choice{
+  background:var(--white);
+  border:2px solid #e2e5eb;
+  border-radius:12px;
+  padding:14px 16px;
+  cursor:pointer;
+  display:flex;align-items:flex-start;gap:12px;
+  transition:all 0.18s ease;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+  -webkit-tap-highlight-color:transparent;
+}
+.choice:active{transform:scale(0.99)}
+.choice-letter{
+  width:28px;height:28px;min-width:28px;
+  border-radius:50%;border:2px solid #d0d4dc;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.78rem;font-weight:700;color:var(--gray);
+  transition:all 0.18s;
+  flex-shrink:0;
+  margin-top:1px;
+}
+.choice-text{font-size:0.95rem;line-height:1.5;color:var(--navy);padding-top:3px}
+.choice:hover:not(.answered){border-color:var(--gold);background:#fffdf5}
+.choice:hover:not(.answered) .choice-letter{border-color:var(--gold);color:var(--gold)}
+.choice.selected{border-color:var(--navy);background:#f0f3f8}
+.choice.selected .choice-letter{background:var(--navy);border-color:var(--navy);color:var(--white)}
+.choice.correct{border-color:var(--green);background:#f0faf4}
+.choice.correct .choice-letter{background:var(--green);border-color:var(--green);color:var(--white)}
+.choice.wrong{border-color:var(--red);background:#fdf3f2}
+.choice.wrong .choice-letter{background:var(--red);border-color:var(--red);color:var(--white)}
+.choice.show-correct{border-color:var(--green);background:#f0faf4}
+.choice.show-correct .choice-letter{background:var(--green);border-color:var(--green);color:var(--white)}
+
+.rationale-box{
+  margin-top:14px;
+  background:var(--navy);
+  border-radius:12px;
+  padding:14px 16px;
+  font-size:0.88rem;
+  line-height:1.6;
+  color:rgba(255,255,255,0.85);
+  display:none;
+  animation:fadeIn 0.3s ease;
+}
+.rationale-box b{color:var(--gold)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── BOTTOM NAV BAR ── */
+.exam-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--white);
+  border-top:1px solid #e2e5eb;
+  padding:12px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;
+  z-index:50;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+}
+.nav-btn{
+  background:var(--navy);
+  color:var(--white);
+  border:none;
+  padding:13px 28px;
+  border-radius:50px;
+  font-family:'DM Sans',sans-serif;
+  font-size:0.9rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.nav-btn:hover{background:var(--navy2);transform:translateY(-1px)}
+.nav-btn:disabled{opacity:0.3;cursor:default;transform:none}
+.nav-btn.gold{background:var(--gold);color:var(--navy)}
+.nav-btn.gold:hover{background:var(--gold2)}
+.nav-skip{
+  background:transparent;border:2px solid #e2e5eb;color:var(--gray);
+  padding:11px 20px;
+  border-radius:50px;
+  font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;
+  cursor:pointer;transition:all 0.2s;
+}
+.nav-skip:hover{border-color:var(--navy);color:var(--navy)}
+.q-score-pill{
+  font-size:0.78rem;font-weight:600;color:var(--gray);
+  background:var(--lgray);
+  padding:6px 14px;border-radius:20px;
+  white-space:nowrap;
+}
+
+/* ── RESULTS SCREEN ── */
+#results-screen{display:none;min-height:calc(100vh - 52px);padding:24px 20px 60px;max-width:680px;margin:0 auto}
+.results-hero{
+  text-align:center;padding:32px 20px;
+  background:var(--navy);
+  border-radius:var(--radius);
+  margin-bottom:24px;
+  position:relative;overflow:hidden;
+}
+.results-hero::after{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:180px;height:180px;
+  border-radius:50%;
+  background:rgba(201,168,76,0.08);
+}
+.results-grade{
+  font-family:'Playfair Display',serif;
+  font-size:4.5rem;font-weight:900;
+  color:var(--gold);
+  line-height:1;margin-bottom:4px;
+}
+.results-pct{font-size:1.1rem;color:rgba(255,255,255,0.7);margin-bottom:16px}
+.results-verdict{
+  display:inline-block;
+  padding:8px 22px;
+  border-radius:30px;
+  font-size:0.85rem;font-weight:600;
+  letter-spacing:0.04em;
+}
+.results-verdict.pass{background:rgba(26,107,60,0.3);color:#5dba85;border:1px solid rgba(93,186,133,0.3)}
+.results-verdict.fail{background:rgba(192,57,43,0.3);color:#e97f72;border:1px solid rgba(233,127,114,0.3)}
+.results-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;
+}
+.rstat{
+  background:var(--white);border-radius:12px;padding:16px;text-align:center;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+.rstat-num{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--navy)}
+.rstat-num.green{color:var(--green)}
+.rstat-num.red{color:var(--red)}
+.rstat-lab{font-size:0.68rem;color:var(--gray);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px}
+
+.results-breakdown{margin-bottom:24px}
+.results-breakdown h3{
+  font-family:'Playfair Display',serif;font-size:1.1rem;
+  color:var(--navy);margin-bottom:14px;font-weight:700;
+}
+.breakdown-item{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;
+  background:var(--white);
+  border-radius:10px;margin-bottom:8px;
+  font-size:0.88rem;
+  box-shadow:0 1px 6px rgba(0,0,0,0.05);
+}
+.breakdown-dot{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+}
+.breakdown-dot.correct{background:var(--green)}
+.breakdown-dot.wrong{background:var(--red)}
+.breakdown-text{flex:1;line-height:1.4;color:var(--navy)}
+.breakdown-correct-ans{font-size:0.8rem;color:var(--green);font-weight:600;margin-top:2px}
+
+.results-actions{display:flex;gap:12px;flex-wrap:wrap}
+.res-btn{
+  flex:1;min-width:140px;
+  padding:14px 20px;
+  border-radius:50px;
+  font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;
+  cursor:pointer;border:none;transition:all 0.2s;
+  text-align:center;
+}
+.res-btn.primary{background:var(--gold);color:var(--navy);box-shadow:0 4px 14px rgba(201,168,76,0.35)}
+.res-btn.primary:hover{background:var(--gold2);transform:translateY(-1px)}
+.res-btn.secondary{background:var(--white);color:var(--navy);border:2px solid #e2e5eb}
+.res-btn.secondary:hover{border-color:var(--navy)}
+
+/* Score feedback bar */
+.score-bar-wrap{margin:16px 0 0}
+.score-bar-bg{height:8px;background:rgba(255,255,255,0.12);border-radius:8px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:8px;transition:width 1.2s ease;background:var(--gold)}
+.score-bar-label{
+  display:flex;justify-content:space-between;
+  font-size:0.7rem;color:rgba(255,255,255,0.45);margin-top:6px;
+}
+
+/* Flagged */
+.flag-btn{
+  background:none;border:none;cursor:pointer;
+  font-size:1.1rem;padding:4px;
+  opacity:0.45;transition:opacity 0.2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.flag-btn.flagged{opacity:1}
+.q-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+
+/* Mobile tweaks */
+@media(max-width:480px){
+  .state-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .sc-name{font-size:0.95rem}
+  .results-stats{grid-template-columns:repeat(3,1fr);gap:8px}
+  .rstat{padding:12px 8px}
+  .rstat-num{font-size:1.3rem}
+  .exam-progress-wrap{max-width:160px}
+  .q-text{font-size:0.98rem}
+  .choice-text{font-size:0.9rem}
+  .results-actions{flex-direction:column}
+  .res-btn{width:100%}
+}
+
+/* Animations */
+.question-area{animation:slideIn 0.28s ease}
+@keyframes slideIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+
+/* Chapter tag */
+.q-chapter{
+  display:inline-block;
+  font-size:0.65rem;font-weight:600;letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:rgba(201,168,76,0.9);
+  background:rgba(201,168,76,0.1);
+  padding:3px 10px;border-radius:20px;
+  margin-bottom:10px;
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div>
+    <div class="topbar-logo">Built To Grow</div>
+    <div class="topbar-sub">Life Insurance Exam Prep</div>
+  </div>
+  <div class="topbar-right" id="topbar-state-label"></div>
+</header>
+
+<!-- ══════════════ LANDING ══════════════ -->
+<div id="landing">
+  <div class="landing-eyebrow">BTG Agent Resource</div>
+  <h1 class="landing-title">The 90% Guide<br><span>Practice Exam</span></h1>
+  <p class="landing-desc">100 questions per state, aligned to the official exam blueprint. Select your state and prove you're ready before you walk into the testing center.</p>
+
+  <div class="state-grid">
+    <div class="state-card" onclick="selectState('TX')" id="card-TX">
+      <span class="sc-check">✓</span>
+      <span class="sc-flag">⭐</span>
+      <div class="sc-name">Texas</div>
+      <div class="sc-detail">TDI Blueprint<br>110 Q · Pearson VUE · 70% Pass</div>
+    </div>
+    <div class="state-card" onclick="selectState('VA')" id="card-VA">
+      <span class="sc-check">✓</span>
+      <span class="sc-flag">🏛️</span>
+      <div class="sc-name">Virginia</div>
+      <div class="sc-detail">SCC Bureau<br>90 Q · Prometric · 70% Pass</div>
+    </div>
+    <div class="state-card" onclick="selectState('GA')" id="card-GA">
+      <span class="sc-check">✓</span>
+      <span class="sc-flag">🍑</span>
+      <div class="sc-name">Georgia</div>
+      <div class="sc-detail">OCI Blueprint<br>125 Q · Pearson VUE · 70% Pass</div>
+    </div>
+    <div class="state-card" onclick="selectState('FL')" id="card-FL">
+      <span class="sc-check">✓</span>
+      <span class="sc-flag">🌴</span>
+      <div class="sc-name">Florida</div>
+      <div class="sc-detail">DFS 2-14 License<br>85 Q · Pearson VUE · 70% Pass</div>
+    </div>
+  </div>
+
+  <button class="start-btn" id="start-btn" onclick="startExam()">Start Exam →</button>
+
+  <div class="landing-stats">
+    <div class="lstat"><div class="lstat-num">400</div><div class="lstat-lab">Total Questions</div></div>
+    <div class="lstat"><div class="lstat-num">4</div><div class="lstat-lab">States Covered</div></div>
+    <div class="lstat"><div class="lstat-num">70%</div><div class="lstat-lab">Passing Score</div></div>
+    <div class="lstat"><div class="lstat-num">90%</div><div class="lstat-lab">Pass Rate</div></div>
+  </div>
+</div>
+
+<!-- ══════════════ EXAM SCREEN ══════════════ -->
+<div id="exam-screen">
+  <div class="exam-header">
+    <div class="exam-state-badge" id="exam-badge">TX</div>
+    <div class="exam-progress-wrap">
+      <div class="exam-progress-label">
+        <span id="prog-label">Question 1 of 100</span>
+        <span id="prog-pct">0%</span>
+      </div>
+      <div class="exam-progress-bar"><div class="exam-progress-fill" id="prog-fill"></div></div>
+    </div>
+    <div class="exam-timer" id="timer">2:00:00</div>
+  </div>
+
+  <div class="question-area" id="question-area">
+    <div class="q-meta">
+      <div class="q-chapter" id="q-chapter"></div>
+      <button class="flag-btn" id="flag-btn" onclick="toggleFlag()" title="Flag for review">🚩</button>
+    </div>
+    <div class="q-counter" id="q-counter">QUESTION 1</div>
+    <div class="q-text" id="q-text"></div>
+    <div class="choices" id="choices"></div>
+    <div class="rationale-box" id="rationale-box"></div>
+  </div>
+
+  <div class="exam-nav">
+    <button class="nav-btn" id="prev-btn" onclick="prevQ()" disabled>← Prev</button>
+    <div class="q-score-pill" id="live-score">0 / 0</div>
+    <button class="nav-skip" id="skip-btn" onclick="skipQ()">Skip</button>
+    <button class="nav-btn gold" id="next-btn" onclick="nextQ()">Next →</button>
+  </div>
+</div>
+
+<!-- ══════════════ RESULTS SCREEN ══════════════ -->
+<div id="results-screen">
+  <div class="results-hero">
+    <div class="results-grade" id="res-grade">--</div>
+    <div class="results-pct" id="res-pct">-- correct</div>
+    <div class="score-bar-wrap">
+      <div class="score-bar-bg"><div class="score-bar-fill" id="score-bar" style="width:0%"></div></div>
+      <div class="score-bar-label"><span>0%</span><span>70% Pass</span><span>100%</span></div>
+    </div>
+    <div style="margin-top:16px"><span class="results-verdict" id="res-verdict">--</span></div>
+  </div>
+
+  <div class="results-stats">
+    <div class="rstat">
+      <div class="rstat-num green" id="res-correct">--</div>
+      <div class="rstat-lab">Correct</div>
+    </div>
+    <div class="rstat">
+      <div class="rstat-num red" id="res-wrong">--</div>
+      <div class="rstat-lab">Wrong</div>
+    </div>
+    <div class="rstat">
+      <div class="rstat-num" id="res-skipped">--</div>
+      <div class="rstat-lab">Skipped</div>
+    </div>
+  </div>
+
+  <div class="results-breakdown" id="breakdown-list">
+    <h3>Review — Missed Questions</h3>
+  </div>
+
+  <div class="results-actions">
+    <button class="res-btn primary" onclick="retakeExam()">Retake This Exam</button>
+    <button class="res-btn secondary" onclick="goHome()">Choose New State</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+// QUESTION BANKS — 100 questions per state
+// ════════════════════════════════════════════════
+
+const BANKS = {};
+
+// ── TEXAS ──────────────────────────────────────
+BANKS.TX = [
+{c:"Ch.1 – TDI Regulations",q:"The Texas Department of Insurance is administered by the:",a:["Governor","Attorney General","Commissioner of Insurance","State Comptroller"],ans:2,r:"The Commissioner of Insurance heads TDI and is appointed by the Governor."},
+{c:"Ch.1 – TDI Regulations",q:"A Texas Life Only license allows an agent to sell:",a:["Life insurance, health, and disability products","Life insurance and annuities only","All lines of insurance","Property and casualty only"],ans:1,r:"The Life Only license covers life insurance and annuities only — no health products."},
+{c:"Ch.1 – TDI Regulations",q:"Texas requires pre-licensing education ONLY in which situation?",a:["All standard license applicants must complete 40 hours","When applying for a 90-day temporary license","When applying for a non-resident license only","Texas never requires pre-licensing education"],ans:1,r:"Texas does NOT require pre-licensing for a standard license. The 40-hour requirement only applies to temporary license applicants."},
+{c:"Ch.1 – TDI Regulations",q:"How many continuing education hours are required to renew a Texas insurance license?",a:["12","18","24","30"],ans:2,r:"24 CE hours are required per 2-year renewal cycle in Texas."},
+{c:"Ch.1 – TDI Regulations",q:"Of the required CE hours, how many must be dedicated to ethics?",a:["1","2","3","5"],ans:2,r:"3 of the 24 CE hours must be in ethics."},
+{c:"Ch.1 – TDI Regulations",q:"An agent replaces an existing policy using false comparisons to benefit themselves. This is:",a:["Churning","Rebating","Twisting","Sliding"],ans:2,r:"Twisting = replacing using false or misleading comparisons to benefit the agent."},
+{c:"Ch.1 – TDI Regulations",q:"An agent repeatedly replaces policies within the same insurance company to generate new commissions. This is:",a:["Twisting","Sliding","Defamation","Churning"],ans:3,r:"Churning = replacing within the same company primarily for new commissions."},
+{c:"Ch.1 – TDI Regulations",q:"Offering a client a cash gift as an inducement to purchase a policy is called:",a:["Misrepresentation","Rebating","Twisting","Coercion"],ans:1,r:"Rebating = offering something of value not in the policy as an inducement."},
+{c:"Ch.1 – TDI Regulations",q:"An agent adds a rider to a policy without the client's knowledge or consent. This is:",a:["Twisting","Rebating","Sliding","Defamation"],ans:2,r:"Sliding = adding coverage without the client's informed consent."},
+{c:"Ch.1 – TDI Regulations",q:"The standard free-look period for a life insurance policy in Texas is:",a:["5 days","10 days","15 days","30 days"],ans:1,r:"Texas standard free-look period = 10 days."},
+{c:"Ch.2 – Policy Types",q:"Which type of life insurance provides coverage for a specific period with no cash value?",a:["Whole life","Universal life","Term life","Variable life"],ans:2,r:"Term insurance = temporary coverage, no cash value accumulation."},
+{c:"Ch.2 – Policy Types",q:"Decreasing term life insurance is most commonly used to cover a:",a:["Business keyperson","Mortgage or installment loan","Retirement fund shortfall","College education fund"],ans:1,r:"Decreasing term mirrors a declining mortgage or loan balance — the go-to for mortgage protection."},
+{c:"Ch.2 – Policy Types",q:"Annual Renewable Term (ART) is best characterized by:",a:["Level premiums and level death benefit for 20 years","Premiums that increase each year as the insured ages","A cash value that grows over time","A death benefit that decreases annually"],ans:1,r:"ART premiums increase each year as the insured ages, but coverage is guaranteed renewable."},
+{c:"Ch.2 – Policy Types",q:"Which type of term policy returns the premiums paid if the insured outlives the term?",a:["Annual renewable term","Level term","Decreasing term","Return of premium term"],ans:3,r:"Return of Premium term refunds all premiums if the insured outlives the term."},
+{c:"Ch.2 – Policy Types",q:"Whole life insurance is best described as:",a:["Temporary coverage with no savings component","Permanent protection with guaranteed cash value growth","Flexible premium coverage linked to market indexes","A securities product requiring a FINRA license"],ans:1,r:"Whole life = permanent coverage + guaranteed cash value growth + level premiums."},
+{c:"Ch.2 – Policy Types",q:"A 20-pay life policy means:",a:["The policy expires after 20 years","The death benefit decreases over 20 years","Premiums are paid for 20 years; policy remains in force for life","Premiums increase every 20 years"],ans:2,r:"20-Pay Life = paid up after 20 years of premiums; coverage lasts for life."},
+{c:"Ch.2 – Policy Types",q:"A joint life (first-to-die) policy pays the death benefit:",a:["When both insureds have died","When the last surviving insured dies","When the first insured dies","At the policy maturity date"],ans:2,r:"First-to-die pays at the first death among covered insureds."},
+{c:"Ch.2 – Policy Types",q:"Survivorship life (second-to-die) insurance is most commonly used for:",a:["Replacing income for a surviving spouse","Funding estate taxes after both spouses have died","Covering a key employee","Paying off a home mortgage"],ans:1,r:"Second-to-die is designed to pay estate taxes after both spouses have died."},
+{c:"Ch.2 – Policy Types",q:"Universal life insurance differs from whole life primarily because UL offers:",a:["Guaranteed cash value growth and fixed premiums","Coverage that terminates at age 65","Flexible premiums and an adjustable death benefit","Investment in separate account sub-accounts"],ans:2,r:"UL's defining features: flexible premiums and an adjustable death benefit."},
+{c:"Ch.2 – Policy Types",q:"In a Universal Life policy, Option B (Increasing Death Benefit) means:",a:["The death benefit equals the face amount only","The death benefit equals the face amount plus accumulated cash value","The death benefit decreases as cash value increases","The death benefit doubles upon accidental death"],ans:1,r:"Option B = face amount + cash value, so the death benefit increases as CV grows."},
+{c:"Ch.2 – Policy Types",q:"Indexed Universal Life (IUL) differs from standard UL in that IUL:",a:["Invests directly in the stock market","Has no cash value component","Credits interest based on a market index with a floor and cap","Requires a securities license to sell"],ans:2,r:"IUL credits interest linked to a market index — with a floor (0%) and cap for protection."},
+{c:"Ch.2 – Policy Types",q:"In an IUL policy, the FLOOR of 0% means:",a:["The policy lapses if the index returns 0%","The policyholder cannot lose cash value due to index declines","The cap rate is set at 0%","The participation rate is 0%"],ans:1,r:"A 0% floor means the policyholder cannot be credited negative interest due to index declines."},
+{c:"Ch.2 – Policy Types",q:"Variable life insurance requires the selling agent to hold:",a:["A Texas life license only","A property and casualty license","A state life license plus a FINRA securities license","No additional licensing"],ans:2,r:"Variable products are securities — agents need a state insurance license PLUS a FINRA license (Series 6 or 7)."},
+{c:"Ch.2 – Policy Types",q:"In a variable life policy, the cash value is held in:",a:["The insurer's general account","A bank trust account","Separate account sub-accounts","A guaranteed investment contract"],ans:2,r:"Variable cash value is held in separate account sub-accounts, NOT the insurer's general account."},
+{c:"Ch.2 – Policy Types",q:"The employer is the policyowner in which type of life insurance?",a:["Individual whole life","Variable universal life","Group life insurance","Credit life insurance"],ans:2,r:"Group life: employer is the policyowner; employees are the insureds."},
+{c:"Ch.3 – Provisions & Riders",q:"The grace period for a life insurance policy in Texas is:",a:["10 days","20 days","31 days","60 days"],ans:2,r:"Texas life insurance grace period = 31 days."},
+{c:"Ch.3 – Provisions & Riders",q:"The incontestability clause prevents the insurer from disputing a policy after:",a:["1 year","2 years","3 years","5 years"],ans:1,r:"Incontestability = 2 years from policy issue date."},
+{c:"Ch.3 – Provisions & Riders",q:"The suicide clause in most life insurance policies excludes suicide coverage for the first:",a:["1 year","2 years","3 years","6 months"],ans:1,r:"Suicide exclusion = 2 years; premiums returned if suicide occurs within this window."},
+{c:"Ch.3 – Provisions & Riders",q:"Under the misstatement of age provision, if the insured understated their age:",a:["The policy is cancelled","The insurer sues for fraud","The death benefit is adjusted to what the premium would have purchased at the correct age","All premiums are refunded"],ans:2,r:"Misstatement of age: benefit adjusted — policy is NOT cancelled."},
+{c:"Ch.3 – Provisions & Riders",q:"The Entire Contract provision states that the insurance contract consists of:",a:["The policy alone","The policy plus all verbal agreements","The policy plus the signed application","The application alone"],ans:2,r:"Entire contract = policy + signed application."},
+{c:"Ch.3 – Provisions & Riders",q:"A policyowner wants to use their lapsed whole life policy's cash value to purchase the same face amount for a limited time without paying premiums. They should select:",a:["Reduced paid-up","Cash surrender value","Paid-up additions","Extended term"],ans:3,r:"Extended term = same face amount, coverage for limited time, no further premiums required."},
+{c:"Ch.3 – Provisions & Riders",q:"A policyowner wants a smaller permanent policy they will never have to pay premiums on again. They should select:",a:["Extended term","Cash surrender value","Reduced paid-up","Fixed period settlement"],ans:2,r:"Reduced paid-up = smaller permanent policy, no more premiums required."},
+{c:"Ch.3 – Provisions & Riders",q:"Dividends from a participating whole life policy are generally:",a:["Taxable as capital gains","Not taxable — treated as a return of premium","Fully taxable as ordinary income","Tax-deferred until withdrawal"],ans:1,r:"Life insurance dividends = return of premium; NOT taxable unless they exceed the total premiums paid."},
+{c:"Ch.3 – Provisions & Riders",q:"Which dividend option purchases small amounts of additional paid-up permanent insurance?",a:["Cash","Reduce premium","Accumulate at interest","Paid-up additions (PUA)"],ans:3,r:"PUA = most efficient dividend use; increases both cash value and death benefit."},
+{c:"Ch.3 – Provisions & Riders",q:"The Waiver of Premium rider waives future premiums if the insured:",a:["Dies","Reaches age 65","Becomes totally disabled","Retires from employment"],ans:2,r:"Waiver of premium activates upon total disability (typically 6-month elimination period)."},
+{c:"Ch.3 – Provisions & Riders",q:"The Guaranteed Insurability Option (GIO) allows the insured to purchase additional coverage:",a:["At any time without restriction","Only at specified option dates or qualifying life events — without evidence of insurability","Only with a new medical exam","Only up to age 40"],ans:1,r:"GIO = purchase more coverage at specified dates/life events only; no medical exam required."},
+{c:"Ch.3 – Provisions & Riders",q:"The Accidental Death Benefit rider pays an additional benefit only if:",a:["The insured dies from any cause","The insured is hospitalized before death","Death results from an accident","The insured is under age 65 at death"],ans:2,r:"ADB rider only pays for accidental death — not illness, not suicide."},
+{c:"Ch.3 – Provisions & Riders",q:"The Accelerated Death Benefit rider allows:",a:["The beneficiary to collect early if the insured is over 75","A terminally ill insured to access a portion of the death benefit while still alive","Premium payments to be accelerated for early paid-up status","The insurer to cancel the policy early"],ans:1,r:"Accelerated Death Benefit = living benefit for terminal illness; reduces the death benefit."},
+{c:"Ch.3 – Provisions & Riders",q:"An irrevocable beneficiary designation requires whose consent to make changes?",a:["The insurer only","The policyowner only","The beneficiary must consent to any change","A court order"],ans:2,r:"Irrevocable beneficiary must consent to any change — policyowner cannot change unilaterally."},
+{c:"Ch.4 – Annuities",q:"An annuity is designed primarily to protect against:",a:["Premature death","Disability","Property loss","Outliving your income — longevity risk"],ans:3,r:"Annuities address longevity risk — running out of money while still alive."},
+{c:"Ch.4 – Annuities",q:"Once the annuitization phase begins, which of the following is TRUE?",a:["The owner can stop payments at any time","The decision is generally irrevocable — cannot be undone","The policy converts to a life insurance policy","The insurer refunds all premiums"],ans:1,r:"Annuitization is generally irrevocable — the insurer assumes mortality risk."},
+{c:"Ch.4 – Annuities",q:"A Single Premium Immediate Annuity (SPIA) begins income payments:",a:["At age 65 regardless of when purchased","Within 12 months of purchasing the annuity","After a 5-year accumulation period","Only after the annuitant retires"],ans:1,r:"SPIA = immediate; payments start within 12 months of a single premium deposit."},
+{c:"Ch.4 – Annuities",q:"A Fixed Indexed Annuity (FIA) with a participation rate of 80% means:",a:["The annuitant gets 80% of any index loss","The annuitant is credited with 80% of the index gain","The insurer keeps 80% of premiums","The policy lapses if returns fall below 80%"],ans:1,r:"80% participation rate = the policyholder is credited 80% of whatever the index gains."},
+{c:"Ch.4 – Annuities",q:"Which annuity settlement option provides the highest monthly payment with no guarantee period?",a:["Life with 10-year certain","Joint and full survivor","Straight life (life only)","Fixed period"],ans:2,r:"Straight life (life only) = highest payment; stops completely at annuitant death."},
+{c:"Ch.4 – Annuities",q:"Annuity withdrawals before age 59½ are subject to a federal penalty of:",a:["5%","10%","15%","20%"],ans:1,r:"10% federal penalty applies to annuity gain withdrawn before age 59½."},
+{c:"Ch.5 – Federal Tax",q:"The death benefit paid to a named beneficiary of a life insurance policy is generally:",a:["Taxed as capital gains","Subject to ordinary income tax","Included in the insured's estate only if the estate is the beneficiary","Income-tax free under IRC Section 101(a)"],ans:3,r:"Death benefit income-tax free under IRC 101(a) — one of the most important tax rules in life insurance."},
+{c:"Ch.5 – Federal Tax",q:"A policy loan against a whole life policy's cash value is:",a:["Always taxable as ordinary income","Tax-free as long as the policy remains in force","Subject to a 10% penalty","Deductible as a business expense"],ans:1,r:"Policy loans are NOT taxable events as long as the policy stays in force."},
+{c:"Ch.5 – Federal Tax",q:"A Modified Endowment Contract (MEC) is created when:",a:["Cash value equals the death benefit","The policy is surrendered for more than cost basis","The policy fails the 7-pay test — too much premium paid in first 7 years","The policy is converted from term to permanent"],ans:2,r:"MEC = fails the 7-pay test; too much premium paid in the first 7 policy years."},
+{c:"Ch.5 – Federal Tax",q:"With a MEC, distributions before age 59½ are:",a:["Always tax-free","Taxable as capital gains only","Subject to ordinary income tax on the gain plus a 10% IRS penalty","Deducted from the death benefit only"],ans:2,r:"MEC distributions before 59½: taxable as ordinary income + 10% penalty."},
+{c:"Ch.5 – Federal Tax",q:"Which of the following is a valid 1035 exchange?",a:["Annuity to a life insurance policy","Life insurance to a whole new annuity","Savings account to an annuity","Annuity to a bank CD"],ans:1,r:"Life insurance to annuity is a valid 1035 exchange."},
+{c:"Ch.5 – Federal Tax",q:"Which is NOT a valid 1035 exchange?",a:["Life insurance policy to another life insurance policy","Life insurance policy to an annuity","Annuity to another annuity","Annuity to a life insurance policy"],ans:3,r:"Annuity to life insurance = NOT valid. You cannot go backwards."},
+{c:"Ch.5 – Federal Tax",q:"Roth IRA qualified withdrawals in retirement are:",a:["Taxed as ordinary income","Subject to a 10% penalty","Completely tax-free","Taxed as capital gains"],ans:2,r:"Roth IRA qualified withdrawals = completely tax-free."},
+{c:"Ch.5 – Federal Tax",q:"Employer-paid group life insurance premiums are income-tax free to the employee up to a face amount of:",a:["$25,000","$50,000","$100,000","$250,000"],ans:1,r:"Group life employer premium = tax-free to employee up to $50,000 face amount. Excess is imputed income."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Insurable interest in a life insurance policy must exist:",a:["At the time of the insured's death","At the time of every premium payment","At the time of application","At the time of the claim filing"],ans:2,r:"Insurable interest required at time of APPLICATION for life insurance."},
+{c:"Ch.6 – Ethics & Underwriting",q:"If no insurable interest exists in a life insurance policy, the contract is considered:",a:["Voidable at the insured's option","A wagering contract and is void","Valid but unenforceable until 2 years","Automatically converted to a term policy"],ans:1,r:"No insurable interest = wagering contract = void and unenforceable."},
+{c:"Ch.6 – Ethics & Underwriting",q:"The MIB (Medical Information Bureau) is used by insurers primarily to:",a:["Set premium rates for all applicants","Identify misrepresentation on prior insurance applications","Provide actuarial tables to agents","Verify agent license status"],ans:1,r:"MIB flags prior misrepresentation on previous insurance applications."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Premium diversion by an agent is:",a:["A minor compliance issue requiring a written warning","Permissible if the agent plans to forward premiums within 60 days","A felony offense that can result in license revocation and criminal prosecution","Only illegal if over $1,000"],ans:2,r:"Premium diversion = felony in Texas; license revocation + criminal charges."},
+{c:"Ch.6 – Ethics & Underwriting",q:"An insurance contract is considered 'aleatory' because:",a:["It is written entirely by one party","Only the insurer is legally bound","The values exchanged are unequal and depend on an uncertain event","It cannot be cancelled once issued"],ans:2,r:"Aleatory = unequal exchange of values depending on chance (the loss event)."},
+{c:"Ch.6 – Ethics & Underwriting",q:"A contract of adhesion means:",a:["The insured negotiates every term","Both parties contributed equally to the wording","The insurer drafted the contract and any ambiguities are resolved in the insured's favor","The contract cannot be modified"],ans:2,r:"Contract of adhesion = insurer writes it; ambiguities favor the insured."},
+{c:"Ch.7 – Business Life Insurance",q:"A keyperson life insurance policy names which party as the beneficiary?",a:["The key employee's family","The key employee themselves","The business","The insurer"],ans:2,r:"Business is the policyowner AND beneficiary on a keyperson policy."},
+{c:"Ch.7 – Business Life Insurance",q:"Keyperson insurance premiums paid by a business are:",a:["Tax-deductible as a business expense","Not tax-deductible","Deductible only if the policy is term insurance","Deductible up to $50,000 per year"],ans:1,r:"Keyperson insurance premiums are NOT deductible to the business."},
+{c:"Ch.7 – Business Life Insurance",q:"In a cross-purchase buy-sell agreement:",a:["The business buys policies on all owners","Each partner purchases a policy on the other partners","A trustee holds all the policies","Only the majority owner purchases policies"],ans:1,r:"Cross-purchase: each partner owns policies on the other partners."},
+{c:"Ch.7 – Business Life Insurance",q:"In an entity purchase (stock redemption) buy-sell agreement:",a:["Partners own policies on each other","Each partner holds their own policy","The business entity owns policies on all the owner-insureds","Policies are held in trust"],ans:2,r:"Entity/stock redemption: the business owns and pays for all the policies."},
+{c:"Ch.7 – Business Life Insurance",q:"Under a Section 162 executive bonus plan, the life insurance premium bonus paid to an executive is:",a:["Tax-free to the executive","Taxable income to the executive but tax-deductible to the employer","Deductible to both employer and executive","Paid directly to the insurer without tax consequences"],ans:1,r:"Section 162 bonus: taxable income to executive, deductible to employer as compensation."},
+{c:"Ch.7 – Business Life Insurance",q:"In a split-dollar endorsement method arrangement, who owns the life insurance policy?",a:["The employee","A trust","The employer","The insurer"],ans:2,r:"Endorsement method: employer owns the policy and endorses a portion to the employee."},
+{c:"Ch.3 – Provisions & Riders",q:"The policy reinstatement provision allows a lapsed policy to be restored within how many years?",a:["1 year","2 years","3 years","5 years"],ans:2,r:"Reinstatement window is typically 3 years from the date of lapse in Texas."},
+{c:"Ch.3 – Provisions & Riders",q:"To reinstate a lapsed life insurance policy, the policyowner must generally:",a:["Simply request reinstatement in writing","Pay back premiums plus interest and provide evidence of insurability","Pay only the current premium","Pass a new medical exam only — no back premiums required"],ans:1,r:"Reinstatement requires back premiums + interest + evidence of insurability."},
+{c:"Ch.2 – Policy Types",q:"Which life insurance policy type is described as 'flexible premium permanent insurance with adjustable death benefit'?",a:["Whole life","Term life","Universal life","Variable life"],ans:2,r:"Universal life = flexible premium + adjustable death benefit."},
+{c:"Ch.2 – Policy Types",q:"A UL policyowner notices their cash value is falling despite making premium payments. This is most likely because:",a:["The floor rate has been exceeded","The cost of insurance (COI) charges are consuming available cash value","The policy has been converted to a MEC","The insurer lowered the cap rate"],ans:1,r:"UL cash value depletes when cost of insurance (COI) charges exceed credited interest."},
+{c:"Ch.5 – Federal Tax",q:"IRC Section 7702 is important for life insurance because it:",a:["Sets the estate tax rate on life insurance proceeds","Defines what qualifies as life insurance for favorable tax treatment","Sets the maximum death benefit per policy","Establishes agent licensing requirements"],ans:1,r:"IRC 7702 defines what qualifies as life insurance for favorable federal tax treatment."},
+{c:"Ch.1 – TDI Regulations",q:"When a life insurance policy is replaced in Texas, the agent must provide a:",a:["Policy Summary Form","Notice Regarding Replacement","Statement of Financial Need","TDI Replacement Disclosure Certificate"],ans:1,r:"Notice Regarding Replacement required on all life insurance replacements in Texas."},
+{c:"Ch.1 – TDI Regulations",q:"The replacing insurer must notify the existing insurer within how many business days?",a:["1 business day","3 business days","5 business days","10 business days"],ans:1,r:"Replacing insurer must notify existing insurer within 3 business days."},
+{c:"Ch.4 – Annuities",q:"The 1035 Exchange allows tax-free transfers EXCEPT:",a:["Life insurance to life insurance","Life insurance to annuity","Annuity to annuity","Annuity to life insurance"],ans:3,r:"Annuity to life insurance is NOT a valid 1035 exchange. You cannot go backwards."},
+{c:"Ch.4 – Annuities",q:"Which correctly describes the exclusion ratio for annuity payments?",a:["The percentage of index gain excluded from taxation","The portion of each annuity payment excluded from taxable income — representing return of after-tax cost basis","The amount excluded from surrender charges","The cap rate on fixed indexed annuities"],ans:1,r:"Exclusion ratio = non-taxable portion of annuity payment (return of after-tax cost basis)."},
+{c:"Ch.7 – Business Life Insurance",q:"Under IRC 101(j), employer-owned life insurance (EOLI) death benefits are:",a:["Always income-tax free to the business","Always taxable to the business","Tax-free only if proper Notice and Consent procedures are followed","Only taxable if the face amount exceeds $1,000,000"],ans:2,r:"EOLI death benefits are tax-free only if the required Notice and Consent rules under IRC 101(j) are followed at time of policy issuance."},
+{c:"Ch.3 – Provisions & Riders",q:"Under the conversion privilege in a group life policy, a departing employee may convert to an individual policy within:",a:["10 days","21 days","31 days","60 days"],ans:2,r:"Group life conversion right = 31 days from separation from the group."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Which of the following BEST describes the agent's role as a fiduciary?",a:["The agent must maximize commission revenue for the agency","The agent must act in the insurance company's best interest at all times","The agent must act in the client's best interest, handling premiums and information with trust and care","The agent is only responsible for delivering the policy after issuance"],ans:2,r:"Fiduciary = agent acts in client's best interest; handles their money and info with care."},
+{c:"Ch.2 – Policy Types",q:"A participating whole life policy pays dividends because:",a:["The insurer's actual experience (mortality, expenses, interest) was better than projected","The stock market performed well during the year","The policyholder made an additional contribution","The insured reached age 65"],ans:0,r:"Par policy dividends come from better-than-expected mortality/expense/interest results."},
+{c:"Ch.3 – Provisions & Riders",q:"Under a life income settlement option, what happens to remaining funds if the beneficiary dies shortly after payments begin?",a:["Paid to a contingent beneficiary","Returned to the original insurer — no further payments made","Transferred to a trust","Paid to the insured's estate"],ans:1,r:"Straight life annuity stops completely at annuitant death — no residual payments."},
+{c:"Ch.2 – Policy Types",q:"Survivorship life insurance would typically NOT be appropriate for:",a:["A married couple with a large taxable estate","A business needing to fund a buy-sell agreement at first death","Two business partners funding an estate equalization strategy","Wealthy couples seeking to maximize estate tax planning"],ans:1,r:"Survivorship pays at second death — not useful for buy-sell needing funds at first death."},
+{c:"Ch.4 – Annuities",q:"A life with period certain annuity guarantees payments for:",a:["Only the life of the annuitant","Life of annuitant; if early death, beneficiary receives payments for the remaining guaranteed period","A set number of years regardless of life","Two lives simultaneously"],ans:1,r:"Life with period certain: pays for life; if early death, beneficiary gets remaining guaranteed period."},
+{c:"Ch.3 – Provisions & Riders",q:"Under the assignment provision, an 'absolute assignment' means:",a:["Specific rights are temporarily transferred to a lender","The change is conditional on the assignee's approval","All ownership rights are permanently and irrevocably transferred to the assignee","The death benefit is split between the assignee and original beneficiary"],ans:2,r:"Absolute assignment = all rights permanently and irrevocably transferred."},
+{c:"Ch.5 – Federal Tax",q:"Traditional IRA required minimum distributions (RMDs) must begin at age:",a:["59½","65","70½","73"],ans:3,r:"Traditional IRA RMDs begin at age 73 per the SECURE 2.0 Act."},
+{c:"Ch.1 – TDI Regulations",q:"Which provision prevents the insurer from using misrepresentation in the original application to void a policy that has been in force for more than 2 years?",a:["Grace period","Reinstatement clause","Incontestability clause","Free-look provision"],ans:2,r:"Incontestability clause: after 2 years, insurer cannot contest for misrepresentation."},
+{c:"Ch.2 – Policy Types",q:"A policy that builds cash value linked to an external stock market index but does NOT allow the policyholder to lose principal due to market downturns is a:",a:["Variable Universal Life (VUL)","Traditional Universal Life","Fixed Indexed Universal Life (IUL)","Participating Whole Life"],ans:2,r:"IUL = index-linked growth + 0% floor (no principal loss from market declines)."},
+{c:"Ch.7 – Business Life Insurance",q:"The primary reason survivorship life insurance premiums are lower than individual policies on each insured is:",a:["Survivorship policies have smaller death benefits","The insurer only pays at the second death — statistical probability reduces the present cost","Survivorship policies have no cash value","Survivorship policies are always term insurance"],ans:1,r:"Second-to-die: insurer pays only at second death — lower actuarial cost than two individual policies."},
+{c:"Ch.6 – Ethics & Underwriting",q:"An agent signs their name as witness on an application they did not personally witness. This is:",a:["Standard agent practice","Required if the applicant requests it","Fraud","Permitted if no adverse information is on the application"],ans:2,r:"Signing as witness without witnessing = fraud. Never acceptable."},
+{c:"Ch.3 – Provisions & Riders",q:"A policyowner wants the same face amount of term insurance for the maximum possible time with no further premiums from their lapsed whole life. They should select:",a:["Reduced paid-up","Cash surrender value","Extended term","Paid-up additions"],ans:2,r:"Extended term = same face amount, coverage for limited time, no premiums required."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Under field underwriting, if an agent becomes aware of material information not disclosed on the application, the agent should:",a:["Ignore it if the applicant did not bring it up","Report it to the insurer even if the applicant did not volunteer it","Advise the applicant to deny it","Submit the application and wait for the underwriter to discover it"],ans:1,r:"Agent must disclose all known material info — even if applicant omits it."},
+{c:"Ch.4 – Annuities",q:"The accumulation phase of an annuity is when:",a:["The annuity pays out income to the annuitant","The insurer calculates the exclusion ratio","The owner deposits money and it grows tax-deferred","The death benefit is distributed to beneficiaries"],ans:2,r:"Accumulation phase = deposits + tax-deferred growth."},
+{c:"Ch.2 – Policy Types",q:"Credit life insurance is best described as:",a:["Term insurance that pays off a loan if the borrower dies","A permanent policy with guaranteed cash value","A group policy that covers all employees","A variable product requiring a securities license"],ans:0,r:"Credit life insurance = decreasing term that pays off a loan balance if the borrower dies."},
+{c:"Ch.1 – TDI Regulations",q:"An agent's appointment must be filed by:",a:["The agent","The applicant","The insurer","TDI directly"],ans:2,r:"The insurer files and maintains the appointment; the insurer is responsible for the agent's conduct."},
+{c:"Ch.5 – Federal Tax",q:"A single premium whole life policy is likely to be classified as a MEC because:",a:["It is a term policy that expired","The entire premium is paid in one lump sum — failing the 7-pay test immediately","It was issued without a medical exam","It does not build cash value"],ans:1,r:"Single premium = entire premium paid at once — fails 7-pay test immediately, making it a MEC."},
+{c:"Ch.3 – Provisions & Riders",q:"Which provision requires both parties to a life insurance contract to fully and honestly disclose all material facts?",a:["Adhesion","Aleatory","Utmost good faith","Consideration"],ans:2,r:"Utmost good faith = full honest disclosure of all material facts by both parties."},
+{c:"Ch.4 – Annuities",q:"In a variable annuity, who bears the investment risk?",a:["The insurer","The policyowner/annuitant","The state guaranty fund","FINRA"],ans:1,r:"Variable annuity: policyowner bears the investment risk; cash value is in separate account sub-accounts."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Making false statements about a competitor insurer's financial condition is called:",a:["Twisting","Misrepresentation","Defamation","Sliding"],ans:2,r:"Defamation = making false statements about a competitor's financial condition or character."}
+];
+
+// ── VIRGINIA ───────────────────────────────────
+BANKS.VA = [
+{c:"Ch.1 – VA SCC Regulations",q:"Insurance in Virginia is regulated by:",a:["The Virginia Department of Insurance","The State Corporation Commission (SCC) Bureau of Insurance","The Governor's Office of Financial Regulation","The Virginia Insurance Commissioner elected by voters"],ans:1,r:"CRITICAL VA FACT: Insurance is regulated through the SCC Bureau of Insurance, NOT a standalone DOI. This is heavily tested."},
+{c:"Ch.1 – VA SCC Regulations",q:"Virginia insurance laws are primarily found in:",a:["Title 12.1 of the Code of Virginia","Title 38.2 of the Code of Virginia","Chapter 5 of the Virginia Administrative Code","The Virginia Financial Services Act"],ans:1,r:"Title 38.2 of the Code of Virginia is the primary source of Virginia insurance law."},
+{c:"Ch.1 – VA SCC Regulations",q:"A Virginia resident agent holding only a Life & Annuities license must complete how many CE hours every 2 years?",a:["8 hours","12 hours","16 hours","24 hours"],ans:2,r:"Virginia: single license type (including Life & Annuities + Health as one) = 16 CE hours per 2-year cycle."},
+{c:"Ch.1 – VA SCC Regulations",q:"Of the required CE hours in Virginia, how many must be in ethics?",a:["1 hour","2 hours","3 hours","5 hours"],ans:2,r:"3 of the required CE hours must be in ethics."},
+{c:"Ch.1 – VA SCC Regulations",q:"Before selling any annuity product in Virginia, an agent must complete:",a:["An 8-hour annuity best interest course","A one-time 4-hour Annuity Best Interest course","A 3-hour suitability webinar","No special training — the regular license is sufficient"],ans:1,r:"Virginia requires a one-time 4-hour Annuity Best Interest course before selling ANY annuity product."},
+{c:"Ch.1 – VA SCC Regulations",q:"The Virginia Life & Annuities exam contains how many scored questions?",a:["75 scored questions","90 scored questions","100 scored questions","110 scored questions"],ans:1,r:"Virginia Life & Annuities exam: 90 scorable questions (50 national + 40 state-specific) + pretest questions."},
+{c:"Ch.1 – VA SCC Regulations",q:"The passing score for the Virginia Life & Annuities exam is:",a:["65%","70%","75%","80%"],ans:1,r:"Virginia passing score = 70% on scorable questions."},
+{c:"Ch.1 – VA SCC Regulations",q:"An agent in Virginia must apply for a license within how many days of passing the exam?",a:["90 days","120 days","183 days","1 year"],ans:2,r:"Virginia requires the license application to be submitted within 183 calendar days of passing the exam."},
+{c:"Ch.1 – VA SCC Regulations",q:"The free-look period for a life insurance policy in Virginia is:",a:["10 days standard; 20 days for policyholders age 65+","10 days for all policies","30 days for all policies","10 days standard; 30 days for replacement policies"],ans:0,r:"Virginia free-look: 10 days standard; 20 days for seniors age 65+. This senior distinction is tested."},
+{c:"Ch.1 – VA SCC Regulations",q:"When an appointment is terminated for cause in Virginia, the insurer must notify the SCC within:",a:["10 days","15 days","30 days","60 days"],ans:2,r:"Insurer must notify the SCC Bureau of Insurance within 30 days of a for-cause termination."},
+{c:"Ch.1 – VA SCC Regulations",q:"Under Virginia's replacement regulations, the replacing insurer must notify the existing insurer within:",a:["1 business day","3 business days","5 business days","10 business days"],ans:1,r:"Replacing insurer must notify existing insurer within 3 business days of replacement."},
+{c:"Ch.1 – VA SCC Regulations",q:"An agent convinces a client to replace a policy using false comparisons to benefit themselves. Under Virginia's Unfair Trade Practices Act (Title 38.2, Chapter 5), this is:",a:["Churning","Rebating","Twisting","Sliding"],ans:2,r:"Twisting = replacing across companies using false or misleading comparisons. Illegal under Title 38.2."},
+{c:"Ch.1 – VA SCC Regulations",q:"Adding coverage to a policy without the client's knowledge or informed consent is called:",a:["Twisting","Defamation","Sliding","Churning"],ans:2,r:"Sliding = adding coverage without informed client consent. Illegal unfair trade practice."},
+{c:"Ch.1 – VA SCC Regulations",q:"Virginia does NOT require pre-licensing education for:",a:["Title insurance applicants","Standard Life & Annuities license applicants","Temporary license applicants","Surplus lines brokers"],ans:1,r:"Virginia does NOT require pre-licensing education for a standard Life & Annuities license. You can schedule at Prometric directly."},
+{c:"Ch.1 – VA SCC Regulations",q:"A Virginia agent must keep client records for a minimum of:",a:["2 years","3 years","5 years","7 years"],ans:2,r:"Agents must maintain records for at least 5 years."},
+{c:"Ch.2 – Policy Types",q:"Which type of life insurance provides pure death benefit protection for a specified period with NO cash value?",a:["Whole life","Universal life","Term life","Variable life"],ans:2,r:"Term insurance = temporary coverage, no cash value accumulation."},
+{c:"Ch.2 – Policy Types",q:"Decreasing term life insurance is most commonly used to cover a:",a:["Business keyperson","Mortgage or installment loan","Retirement fund shortfall","College education fund"],ans:1,r:"Decreasing term mirrors a declining mortgage or loan balance."},
+{c:"Ch.2 – Policy Types",q:"Whole life insurance is best described as:",a:["Temporary coverage with no savings component","Permanent protection with guaranteed cash value growth","Flexible premium coverage linked to market indexes","A securities product requiring a FINRA license"],ans:1,r:"Whole life = permanent coverage + guaranteed cash value + level premiums."},
+{c:"Ch.2 – Policy Types",q:"Survivorship life (second-to-die) insurance is most commonly used for:",a:["Replacing income for a surviving spouse","Funding estate taxes after both spouses have died","Covering a key employee","Paying off a home mortgage"],ans:1,r:"Second-to-die is designed to pay estate taxes after both spouses die."},
+{c:"Ch.2 – Policy Types",q:"Universal life insurance differs from whole life primarily because UL offers:",a:["Guaranteed cash value growth and fixed premiums","Coverage that terminates at age 65","Flexible premiums and an adjustable death benefit","Investment in separate account sub-accounts"],ans:2,r:"UL's defining features: flexible premiums and an adjustable death benefit."},
+{c:"Ch.2 – Policy Types",q:"Indexed Universal Life (IUL) differs from standard UL in that IUL:",a:["Invests directly in the stock market","Has no cash value component","Credits interest based on a market index with a floor and cap","Requires a securities license to sell"],ans:2,r:"IUL credits interest linked to a market index — with a 0% floor and cap for protection."},
+{c:"Ch.2 – Policy Types",q:"Variable life insurance requires the selling agent to hold:",a:["A Virginia life license only","A property and casualty license","A state life license plus a FINRA securities license","No additional licensing"],ans:2,r:"Variable products are securities — require state insurance license PLUS FINRA (Series 6 or 7)."},
+{c:"Ch.2 – Policy Types",q:"In a variable life policy, the cash value is held in:",a:["The insurer's general account","A bank trust account","Separate account sub-accounts","A guaranteed investment contract"],ans:2,r:"Variable cash value is held in separate account sub-accounts, NOT the insurer's general account."},
+{c:"Ch.3 – Provisions & Riders",q:"The grace period for a life insurance policy in Virginia is:",a:["10 days","20 days","31 days","60 days"],ans:2,r:"Virginia life insurance grace period = 31 days."},
+{c:"Ch.3 – Provisions & Riders",q:"The incontestability clause in Virginia prevents the insurer from contesting after:",a:["1 year","2 years","3 years","5 years"],ans:1,r:"Virginia incontestability = 2 years from policy issue date."},
+{c:"Ch.3 – Provisions & Riders",q:"The suicide clause in Virginia life insurance policies excludes suicide coverage for the first:",a:["1 year","2 years","3 years","6 months"],ans:1,r:"Virginia suicide exclusion = 2 years from policy issue date."},
+{c:"Ch.3 – Provisions & Riders",q:"A policyowner uses lapsed whole life cash value to buy the same face amount for a limited time. This is:",a:["Reduced paid-up","Cash surrender value","Extended term","Paid-up additions"],ans:2,r:"Extended term = same face amount, coverage for limited time, no premiums required."},
+{c:"Ch.3 – Provisions & Riders",q:"A policyowner wants a smaller permanent policy requiring no more premium payments. This is:",a:["Extended term","Cash surrender value","Reduced paid-up","Fixed period settlement"],ans:2,r:"Reduced paid-up = smaller permanent policy, no more premiums required."},
+{c:"Ch.3 – Provisions & Riders",q:"Which dividend option purchases small amounts of additional paid-up permanent insurance?",a:["Cash","Reduce premium","Accumulate at interest","Paid-up additions (PUA)"],ans:3,r:"PUA = most efficient dividend use; increases both cash value and death benefit."},
+{c:"Ch.3 – Provisions & Riders",q:"The Waiver of Premium rider waives future premiums if the insured:",a:["Dies","Reaches age 65","Becomes totally disabled","Retires from employment"],ans:2,r:"Waiver of premium activates upon total disability."},
+{c:"Ch.3 – Provisions & Riders",q:"The Accidental Death Benefit rider pays an additional benefit only if:",a:["The insured dies from any cause","The insured is hospitalized before death","Death results from an accident","The insured is under age 65 at death"],ans:2,r:"ADB rider only pays for accidental death — not illness."},
+{c:"Ch.3 – Provisions & Riders",q:"An irrevocable beneficiary designation requires whose consent to make changes?",a:["The insurer only","The policyowner only","The beneficiary must consent to any change","A court order"],ans:2,r:"Irrevocable beneficiary must consent to any change."},
+{c:"Ch.4 – Annuities",q:"An annuity is designed primarily to protect against:",a:["Premature death","Disability","Property loss","Outliving your income — longevity risk"],ans:3,r:"Annuities address longevity risk — running out of money while still alive."},
+{c:"Ch.4 – Annuities",q:"The accumulation phase of an annuity is when:",a:["The annuity pays out income to the annuitant","The insurer calculates the exclusion ratio","The owner deposits money and it grows tax-deferred","The death benefit is distributed"],ans:2,r:"Accumulation phase = deposits + tax-deferred growth."},
+{c:"Ch.4 – Annuities",q:"A Single Premium Immediate Annuity (SPIA) begins income payments:",a:["At age 65 regardless of when purchased","Within 12 months of purchasing the annuity","After a 5-year accumulation period","Only after the annuitant retires"],ans:1,r:"SPIA = immediate; payments start within 12 months."},
+{c:"Ch.4 – Annuities",q:"A Fixed Indexed Annuity (FIA) with a participation rate of 80% means the annuitant is credited with:",a:["80% of any index loss","80% of the index gain","Nothing if the index falls","80% of the insurer's portfolio gain"],ans:1,r:"80% participation rate = credited 80% of whatever the index gains."},
+{c:"Ch.4 – Annuities",q:"Annuity withdrawals before age 59½ are subject to a federal penalty of:",a:["5%","10%","15%","20%"],ans:1,r:"10% federal penalty applies to annuity gain withdrawn before age 59½."},
+{c:"Ch.4 – Annuities",q:"The 1035 Exchange allows which of the following?",a:["Annuity to life insurance","Life insurance to annuity","Bank CD to annuity","Savings account to life insurance"],ans:1,r:"Life insurance to annuity is a valid 1035 exchange. Annuity to life insurance is NOT."},
+{c:"Ch.5 – Federal Tax",q:"The death benefit paid to a named beneficiary of a life insurance policy is generally:",a:["Taxed as capital gains","Subject to ordinary income tax","Income-tax free under IRC Section 101(a)","Subject to a 10% penalty"],ans:2,r:"Death benefit income-tax free under IRC 101(a)."},
+{c:"Ch.5 – Federal Tax",q:"A policy loan against a whole life policy's cash value is:",a:["Always taxable","Tax-free as long as the policy remains in force","Subject to a 10% penalty","Deductible as a business expense"],ans:1,r:"Policy loans are NOT taxable as long as the policy stays in force."},
+{c:"Ch.5 – Federal Tax",q:"A Modified Endowment Contract (MEC) is created when:",a:["Cash value equals the death benefit","The policy is surrendered for more than cost basis","The policy fails the 7-pay test","The policy is converted from term to permanent"],ans:2,r:"MEC = fails the 7-pay test; too much premium paid in the first 7 policy years."},
+{c:"Ch.5 – Federal Tax",q:"Roth IRA qualified withdrawals in retirement are:",a:["Taxed as ordinary income","Subject to a 10% penalty","Completely tax-free","Taxed as capital gains"],ans:2,r:"Roth IRA qualified withdrawals = completely tax-free."},
+{c:"Ch.5 – Federal Tax",q:"Traditional IRA required minimum distributions (RMDs) must begin at age:",a:["59½","65","70½","73"],ans:3,r:"Traditional IRA RMDs begin at age 73 per the SECURE 2.0 Act."},
+{c:"Ch.5 – Federal Tax",q:"Employer-paid group life insurance premiums are income-tax free to the employee up to:",a:["$25,000","$50,000","$100,000","$250,000"],ans:1,r:"Group life employer premium = tax-free to employee up to $50,000. Excess is imputed income."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Insurable interest in a life insurance policy must exist:",a:["At the time of the insured's death","At the time of every premium payment","At the time of application","At the time of the claim filing"],ans:2,r:"Insurable interest required at time of APPLICATION."},
+{c:"Ch.6 – Ethics & Underwriting",q:"If no insurable interest exists in a life insurance contract, the contract is:",a:["Voidable at the insured's option","A wagering contract and is void","Valid but unenforceable for 2 years","Automatically converted to term"],ans:1,r:"No insurable interest = wagering contract = void."},
+{c:"Ch.6 – Ethics & Underwriting",q:"The MIB (Medical Information Bureau) is used primarily to:",a:["Set premium rates","Identify misrepresentation on prior insurance applications","Provide actuarial tables to agents","Verify agent license status"],ans:1,r:"MIB flags prior misrepresentation on previous insurance applications."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Under Virginia's unfair trade practices, 'defamation' refers to:",a:["Adding coverage without consent","Replacing policies across companies with false comparisons","Making false statements about a competitor's financial condition","Offering a cash gift to induce a purchase"],ans:2,r:"Defamation = making false statements about a competitor's financial condition or character."},
+{c:"Ch.6 – Ethics & Underwriting",q:"An agent signs their name as witness on an application they did not personally witness. This is:",a:["Standard agent practice","Required if the applicant requests it","Fraud","Permitted if no adverse information is on the application"],ans:2,r:"Signing as witness without witnessing = fraud."},
+{c:"Ch.6 – Ethics & Underwriting",q:"An insurance contract is 'aleatory' because:",a:["It is written entirely by one party","Only the insurer is legally bound","The values exchanged are unequal and depend on an uncertain event","It cannot be cancelled once issued"],ans:2,r:"Aleatory = unequal exchange depending on chance (the loss event)."},
+{c:"Ch.7 – Business Insurance",q:"A keyperson life insurance policy names which party as the beneficiary?",a:["The key employee's family","The key employee themselves","The business","The insurer"],ans:2,r:"Business is the policyowner AND beneficiary on a keyperson policy."},
+{c:"Ch.7 – Business Insurance",q:"Keyperson insurance premiums paid by a business are:",a:["Tax-deductible as a business expense","Not tax-deductible","Deductible only if the policy is term insurance","Deductible up to $50,000 per year"],ans:1,r:"Keyperson insurance premiums are NOT deductible."},
+{c:"Ch.7 – Business Insurance",q:"In a cross-purchase buy-sell agreement:",a:["The business buys policies on all owners","Each partner purchases a policy on the other partners","A trustee holds all the policies","Only the majority owner purchases policies"],ans:1,r:"Cross-purchase: each partner owns policies on the other partners."},
+{c:"Ch.7 – Business Insurance",q:"In an entity purchase (stock redemption) buy-sell agreement:",a:["Partners own policies on each other","Each partner holds their own policy","The business entity owns policies on all owner-insureds","Policies are held in trust"],ans:2,r:"Entity/stock redemption: the business owns and pays for all the policies."},
+{c:"Ch.7 – Business Insurance",q:"Under a Section 162 executive bonus plan, the premium bonus paid to an executive is:",a:["Tax-free to the executive","Taxable income to the executive but tax-deductible to the employer","Deductible to both employer and executive","Paid directly to the insurer without tax consequences"],ans:1,r:"Section 162 bonus: taxable to executive, deductible to employer as compensation."},
+{c:"Ch.8 – VA-Specific Rules",q:"The Virginia Life, Accident and Sickness Insurance Guaranty Association protects policyholders of:",a:["All insurance carriers including foreign insurers","Insolvent Virginia-licensed life insurance companies","Only mutual insurance companies","Only companies regulated by FINRA"],ans:1,r:"The VA Guaranty Association protects policyholders when a Virginia-licensed life insurer becomes insolvent."},
+{c:"Ch.8 – VA-Specific Rules",q:"Under Virginia's annuity suitability requirements, before recommending an annuity, an agent must:",a:["Have the client take a financial literacy test","Have reasonable grounds to believe the annuity is suitable based on the client's financial profile","Only verify the client's age","Obtain written approval from the SCC"],ans:1,r:"Virginia requires agents to have reasonable grounds (suitability) before recommending any annuity product."},
+{c:"Ch.8 – VA-Specific Rules",q:"Group life insurance in Virginia most commonly uses which type of base policy?",a:["Whole life — permanent for each employee","Annually renewable term (ART)","Universal life","Single premium whole life"],ans:1,r:"Group life is typically annually renewable term (ART) with the employer as policyowner."},
+{c:"Ch.8 – VA-Specific Rules",q:"Life & Annuities and Health are treated as which type of license for CE purposes in Virginia?",a:["Two separate licenses requiring 32 total hours","A single license requiring 16 total CE hours","Two separate licenses each requiring 24 hours","A single license requiring only 8 hours"],ans:1,r:"Virginia treats Life & Annuities + Health as a SINGLE license for CE purposes — 16 hours total."},
+{c:"Ch.3 – Provisions & Riders",q:"The policy reinstatement provision in Virginia allows a lapsed policy to be restored within:",a:["1 year","2 years","3 years","5 years"],ans:2,r:"Reinstatement window is typically 3 years from the date of lapse."},
+{c:"Ch.3 – Provisions & Riders",q:"To reinstate a lapsed policy, the policyowner must generally:",a:["Simply request reinstatement in writing","Pay back premiums plus interest and provide evidence of insurability","Pay only the current premium","Pass a new medical exam only"],ans:1,r:"Reinstatement requires back premiums + interest + evidence of insurability."},
+{c:"Ch.2 – Policy Types",q:"A 20-pay life policy means:",a:["The policy expires after 20 years","The death benefit decreases over 20 years","Premiums are paid for 20 years and the policy remains in force for life","Premiums increase every 20 years"],ans:2,r:"20-Pay Life = paid up after 20 years; coverage lasts for life."},
+{c:"Ch.5 – Federal Tax",q:"IRC Section 7702 is important for life insurance because it:",a:["Sets the estate tax rate on proceeds","Defines what qualifies as life insurance for favorable tax treatment","Sets the maximum death benefit per policy","Establishes agent licensing requirements"],ans:1,r:"IRC 7702 defines what qualifies as life insurance for favorable federal tax treatment."},
+{c:"Ch.1 – VA SCC Regulations",q:"Virginia's license renewal is tied to:",a:["A fixed date of January 1 each year","The last day of the agent's birth month every two years","The date the exam was passed","The date of first appointment"],ans:1,r:"Virginia license renewal due by the last day of the agent's birth month every two years."},
+{c:"Ch.6 – Ethics & Underwriting",q:"The principle requiring both parties to an insurance contract to fully disclose all material facts is called:",a:["Adhesion","Aleatory","Utmost good faith","Consideration"],ans:2,r:"Utmost good faith = full honest disclosure of all material facts by both parties."},
+{c:"Ch.4 – Annuities",q:"Which is NOT a valid 1035 exchange?",a:["Life insurance to life insurance","Life insurance to annuity","Annuity to annuity","Annuity to life insurance"],ans:3,r:"Annuity to life insurance is NOT a valid 1035 exchange."},
+{c:"Ch.2 – Policy Types",q:"In a UL policy, Option A (Level Death Benefit) means:",a:["The death benefit equals the face amount plus cash value","The death benefit stays level; cash value offsets the pure insurance amount","The death benefit doubles on accidental death","The death benefit is indexed to inflation"],ans:1,r:"Option A = level death benefit; cash value offsets the pure insurance portion — lowering the insurer's net amount at risk."},
+{c:"Ch.3 – Provisions & Riders",q:"Under the assignment provision, a collateral assignment:",a:["Permanently transfers all ownership rights to a third party","Temporarily transfers specific rights to a lender as security for a loan","Changes the beneficiary to a creditor permanently","Converts the policy to a term policy"],ans:1,r:"Collateral assignment = temporary transfer of specific rights for a loan. Not permanent."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Which of the following best describes the agent's role as a fiduciary?",a:["The agent must maximize commission revenue for the agency","The agent must act in the insurance company's best interest at all times","The agent must act in the client's best interest, handling premiums and information with trust and care","The agent is only responsible for delivering the policy after issuance"],ans:2,r:"Fiduciary = agent acts in client's best interest at all times."},
+{c:"Ch.7 – Business Insurance",q:"In a split-dollar endorsement method arrangement, who owns the life insurance policy?",a:["The employee","A trust","The employer","The insurer"],ans:2,r:"Endorsement method: employer owns the policy and endorses a portion of the death benefit to the employee."},
+{c:"Ch.2 – Policy Types",q:"A participating whole life policy pays dividends because:",a:["The insurer's actual experience was better than projected","The stock market performed well","The policyholder made an additional contribution","The insured reached age 65"],ans:0,r:"Par policy dividends come from better-than-expected mortality/expense/interest results."},
+{c:"Ch.1 – VA SCC Regulations",q:"Virginia requires agents to notify the SCC Bureau of Insurance of any change in information within:",a:["10 days","30 days","60 days","90 days"],ans:1,r:"Agents must notify the SCC of any change (address, etc.) within 30 days."},
+{c:"Ch.5 – Federal Tax",q:"A whole life policy's cash value grows:",a:["Tax-free and can be withdrawn tax-free at any time","Tax-deferred — no annual taxation while inside the policy","As ordinary income each year","Exempt from all taxation including at death"],ans:1,r:"Cash value grows tax-deferred inside the policy — no annual income tax while accumulating."},
+{c:"Ch.3 – Provisions & Riders",q:"Dividends from a participating life insurance policy that do NOT exceed the total premiums paid are:",a:["Taxable as ordinary income","Tax-free — treated as a return of premium","Subject to capital gains tax","Deferred until the policy matures"],ans:1,r:"Life insurance dividends = return of premium; NOT taxable unless they exceed total premiums paid."},
+{c:"Ch.2 – Policy Types",q:"The employer is the policyowner in which type of life insurance?",a:["Individual whole life","Variable universal life","Group life insurance","Credit life insurance"],ans:2,r:"Group life: employer is the policyowner; employees are the insureds."},
+{c:"Ch.3 – Provisions & Riders",q:"Under the conversion privilege in a group life policy, a departing employee may convert to an individual policy within:",a:["10 days","21 days","31 days","60 days"],ans:2,r:"Group life conversion right = 31 days from separation from the group."},
+{c:"Ch.2 – Policy Types",q:"A policy that builds cash value linked to a stock index but does NOT allow the policyholder to lose principal due to market downturns is a:",a:["Variable Universal Life (VUL)","Traditional Universal Life","Fixed Indexed Universal Life (IUL)","Participating Whole Life"],ans:2,r:"IUL = index-linked growth + 0% floor (no principal loss from market declines)."},
+{c:"Ch.1 – VA SCC Regulations",q:"Offering a client something of value not specified in the policy as an inducement to purchase is called:",a:["Twisting","Rebating","Sliding","Defamation"],ans:1,r:"Rebating = offering anything of value not in the policy as an inducement. Illegal in Virginia."}
+];
+
+// ── GEORGIA ────────────────────────────────────
+BANKS.GA = [
+{c:"Ch.1 – GA OCI Regulations",q:"Georgia's Insurance Commissioner is:",a:["Appointed by the Governor","Elected by voters statewide","Appointed by the state legislature","Appointed by the Lieutenant Governor"],ans:1,r:"CRITICAL GA FACT: Georgia is one of only ~12 states with an ELECTED Insurance Commissioner. This is tested."},
+{c:"Ch.1 – GA OCI Regulations",q:"Georgia insurance laws are primarily found in:",a:["Title 40 of the Official Code of Georgia","Title 33 of the Official Code of Georgia Annotated (O.C.G.A.)","Chapter 120-2 of the Georgia Administrative Code","The Georgia Insurance Commission Rules"],ans:1,r:"Georgia insurance law is in Title 33 of the O.C.G.A. State-specific exam questions often cite specific chapters (33-6, 33-25, etc.)"},
+{c:"Ch.1 – GA OCI Regulations",q:"Georgia REQUIRES pre-licensing education for a standard life insurance license. The requirement is:",a:["20 hours of approved coursework","40 hours of approved coursework (reduced to 8 hours by 2024 rulemaking)","60 hours of approved coursework","No hours required — self-study only"],ans:1,r:"Georgia requires pre-licensing education. Recent OCI rulemaking lowered it to 8 hours per line, but the exam still tests that pre-licensing IS required."},
+{c:"Ch.1 – GA OCI Regulations",q:"The passing score for the Georgia life insurance exam is:",a:["65%","70%","75%","80%"],ans:1,r:"Georgia passing score = 70%."},
+{c:"Ch.1 – GA OCI Regulations",q:"After failing the Georgia exam 3 times, a candidate must wait:",a:["24 hours","30 days","60 days","90 days"],ans:2,r:"After 3 failures, Georgia requires a 60-day waiting period before the next attempt."},
+{c:"Ch.1 – GA OCI Regulations",q:"The Georgia life insurance exam is administered by:",a:["Prometric","PSI","Pearson VUE","The OCI directly"],ans:2,r:"Georgia uses Pearson VUE as its exam provider."},
+{c:"Ch.1 – GA OCI Regulations",q:"How many CE hours does a Georgia life insurance agent need every 2 years?",a:["12 hours","16 hours","20 hours","24 hours"],ans:3,r:"Georgia requires 24 CE hours per 2-year renewal cycle."},
+{c:"Ch.1 – GA OCI Regulations",q:"Of the required Georgia CE hours, how many must be in ethics?",a:["1 hour","2 hours","3 hours","5 hours"],ans:2,r:"3 of the 24 CE hours must be dedicated to ethics in Georgia."},
+{c:"Ch.1 – GA OCI Regulations",q:"Georgia's unfair trade practices are primarily governed by:",a:["O.C.G.A. Chapter 33-1","O.C.G.A. Chapter 33-6","O.C.G.A. Chapter 33-25","O.C.G.A. Chapter 33-23"],ans:1,r:"O.C.G.A. Chapter 33-6 covers unfair trade practices in Georgia."},
+{c:"Ch.1 – GA OCI Regulations",q:"Under Georgia law, the grace period for a life insurance policy is at least:",a:["20 days","30 days","31 days","60 days"],ans:1,r:"Georgia O.C.G.A. 33-25-3 requires a grace period of at least 30 days."},
+{c:"Ch.1 – GA OCI Regulations",q:"The free-look period for a life insurance policy delivered in Georgia is:",a:["10 days","14 days","20 days","30 days"],ans:0,r:"Georgia free-look period = 10 days under O.C.G.A. 33-25-6."},
+{c:"Ch.1 – GA OCI Regulations",q:"The incontestability clause in Georgia requires a policy to become incontestable after:",a:["1 year","2 years","3 years","5 years"],ans:1,r:"Georgia O.C.G.A. 33-25-3 requires a 2-year incontestability period."},
+{c:"Ch.1 – GA OCI Regulations",q:"Georgia's replacement of life insurance policies is governed by:",a:["O.C.G.A. 33-6","O.C.G.A. 33-23","Regulation 120-2-24","Regulation 120-2-11"],ans:2,r:"Georgia Regulation 120-2-24 governs replacement of life insurance policies."},
+{c:"Ch.1 – GA OCI Regulations",q:"An agent replaces a policy using false comparisons to benefit themselves. Under Georgia Chapter 33-6, this is:",a:["Churning","Rebating","Twisting","Sliding"],ans:2,r:"Twisting = replacing using false or misleading comparisons. Illegal under O.C.G.A. Chapter 33-6."},
+{c:"Ch.1 – GA OCI Regulations",q:"Repeatedly replacing policies within the same company to generate new commissions is called:",a:["Twisting","Sliding","Defamation","Churning"],ans:3,r:"Churning = replacing within the same company for commissions. Illegal under Georgia law."},
+{c:"Ch.2 – Policy Types",q:"Which type of life insurance provides coverage for a specific period with NO cash value?",a:["Whole life","Universal life","Term life","Variable life"],ans:2,r:"Term insurance = temporary coverage, no cash value accumulation."},
+{c:"Ch.2 – Policy Types",q:"Decreasing term life insurance is most commonly used to cover a:",a:["Business keyperson","Mortgage or installment loan","Retirement fund shortfall","College education fund"],ans:1,r:"Decreasing term mirrors a declining mortgage or loan balance."},
+{c:"Ch.2 – Policy Types",q:"Whole life insurance is best described as:",a:["Temporary coverage with no savings component","Permanent protection with guaranteed cash value growth","Flexible premium coverage linked to market indexes","A securities product requiring a FINRA license"],ans:1,r:"Whole life = permanent + guaranteed cash value + level premiums."},
+{c:"Ch.2 – Policy Types",q:"Universal life insurance differs from whole life primarily because UL offers:",a:["Guaranteed cash value growth and fixed premiums","Coverage that terminates at age 65","Flexible premiums and an adjustable death benefit","Investment in separate account sub-accounts"],ans:2,r:"UL's defining features: flexible premiums and adjustable death benefit."},
+{c:"Ch.2 – Policy Types",q:"Indexed Universal Life (IUL) credits interest based on a market index. The FLOOR of 0% means:",a:["The policy lapses if the index returns 0%","The policyholder cannot lose cash value due to index declines","The cap rate is set at 0%","The participation rate is 0%"],ans:1,r:"A 0% floor means no negative crediting — cash value is protected from index losses."},
+{c:"Ch.2 – Policy Types",q:"Variable life insurance requires the selling agent to hold:",a:["A Georgia life license only","A property and casualty license","A state life license plus a FINRA securities license","No additional licensing"],ans:2,r:"Variable products require state insurance license PLUS FINRA (Series 6 or 7)."},
+{c:"Ch.2 – Policy Types",q:"Survivorship life (second-to-die) insurance is most commonly used for:",a:["Replacing income for a surviving spouse","Funding estate taxes after both spouses have died","Covering a key employee","Paying off a home mortgage"],ans:1,r:"Second-to-die is designed to pay estate taxes after both spouses die."},
+{c:"Ch.2 – Policy Types",q:"In a variable life policy, the cash value is held in:",a:["The insurer's general account","A bank trust account","Separate account sub-accounts","A guaranteed investment contract"],ans:2,r:"Variable cash value is held in separate account sub-accounts, NOT the insurer's general account."},
+{c:"Ch.3 – Provisions & Riders",q:"A policyowner uses lapsed whole life cash value to purchase the same face amount of coverage for a limited time. This nonforfeiture option is called:",a:["Reduced paid-up","Cash surrender value","Extended term","Paid-up additions"],ans:2,r:"Extended term = same face amount, coverage for limited time, no premiums required."},
+{c:"Ch.3 – Provisions & Riders",q:"A policyowner wants a smaller permanent policy with no more premium payments. This nonforfeiture option is called:",a:["Extended term","Cash surrender value","Reduced paid-up","Fixed period settlement"],ans:2,r:"Reduced paid-up = smaller permanent policy, no more premiums required."},
+{c:"Ch.3 – Provisions & Riders",q:"Under Georgia O.C.G.A. 33-25-3, a lapsed life insurance policy may be reinstated within how many years?",a:["1 year","2 years","3 years","5 years"],ans:2,r:"Georgia allows reinstatement within 3 years from the date of lapse."},
+{c:"Ch.3 – Provisions & Riders",q:"To reinstate a lapsed policy in Georgia, the policyowner must:",a:["Simply request reinstatement in writing","Pay back premiums plus interest and provide evidence of insurability","Pay only the current premium","Pass a new medical exam only"],ans:1,r:"Reinstatement requires back premiums + interest + evidence of insurability."},
+{c:"Ch.3 – Provisions & Riders",q:"The Waiver of Premium rider waives future premiums if the insured:",a:["Dies","Reaches age 65","Becomes totally disabled","Retires from employment"],ans:2,r:"Waiver of premium activates upon total disability."},
+{c:"Ch.3 – Provisions & Riders",q:"The Guaranteed Insurability Option (GIO) allows the insured to:",a:["Purchase additional coverage at any time","Purchase additional coverage at specified dates/events without evidence of insurability","Increase the death benefit with no additional premium","Convert to a different type of policy at any age"],ans:1,r:"GIO = purchase more coverage at specified dates/life events only; no medical exam required."},
+{c:"Ch.3 – Provisions & Riders",q:"Which dividend option purchases small amounts of additional paid-up permanent insurance?",a:["Cash","Reduce premium","Accumulate at interest","Paid-up additions (PUA)"],ans:3,r:"PUA = most efficient dividend use; increases both cash value and death benefit."},
+{c:"Ch.3 – Provisions & Riders",q:"An irrevocable beneficiary designation requires whose consent to make changes?",a:["The insurer only","The policyowner only","The beneficiary must consent to any change","A court order"],ans:2,r:"Irrevocable beneficiary must consent to any change."},
+{c:"Ch.4 – Annuities",q:"An annuity is designed primarily to protect against:",a:["Premature death","Disability","Property loss","Outliving your income — longevity risk"],ans:3,r:"Annuities address longevity risk — running out of money while still alive."},
+{c:"Ch.4 – Annuities",q:"A Single Premium Immediate Annuity (SPIA) begins income payments:",a:["At age 65 regardless of when purchased","Within 12 months of purchasing the annuity","After a 5-year accumulation period","Only after the annuitant retires"],ans:1,r:"SPIA = immediate; payments start within 12 months."},
+{c:"Ch.4 – Annuities",q:"Annuity withdrawals before age 59½ are subject to a federal penalty of:",a:["5%","10%","15%","20%"],ans:1,r:"10% federal penalty applies to annuity gain withdrawn before age 59½."},
+{c:"Ch.4 – Annuities",q:"The 1035 Exchange allows which of the following?",a:["Annuity to life insurance","Life insurance to annuity","Bank CD to annuity","Savings account to life insurance"],ans:1,r:"Life insurance to annuity is a valid 1035 exchange. Annuity to life insurance is NOT."},
+{c:"Ch.4 – Annuities",q:"Which annuity settlement option provides the highest monthly payment with no guarantee period?",a:["Life with 10-year certain","Joint and full survivor","Straight life (life only)","Fixed period"],ans:2,r:"Straight life = highest payment; stops completely at annuitant death."},
+{c:"Ch.5 – Federal Tax",q:"The death benefit paid to a named beneficiary of a life insurance policy is generally:",a:["Taxed as capital gains","Subject to ordinary income tax","Income-tax free under IRC Section 101(a)","Subject to a 10% penalty"],ans:2,r:"Death benefit income-tax free under IRC 101(a)."},
+{c:"Ch.5 – Federal Tax",q:"A Modified Endowment Contract (MEC) is created when:",a:["Cash value equals the death benefit","The policy is surrendered for more than cost basis","The policy fails the 7-pay test","The policy is converted from term to permanent"],ans:2,r:"MEC = fails the 7-pay test; too much premium paid in the first 7 policy years."},
+{c:"Ch.5 – Federal Tax",q:"Roth IRA qualified withdrawals in retirement are:",a:["Taxed as ordinary income","Subject to a 10% penalty","Completely tax-free","Taxed as capital gains"],ans:2,r:"Roth IRA qualified withdrawals = completely tax-free."},
+{c:"Ch.5 – Federal Tax",q:"Traditional IRA required minimum distributions (RMDs) must begin at age:",a:["59½","65","70½","73"],ans:3,r:"Traditional IRA RMDs begin at age 73 per the SECURE 2.0 Act."},
+{c:"Ch.5 – Federal Tax",q:"A policy loan against a whole life policy's cash value is:",a:["Always taxable","Tax-free as long as the policy remains in force","Subject to a 10% penalty","Deductible as a business expense"],ans:1,r:"Policy loans are NOT taxable as long as the policy stays in force."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Insurable interest in a life insurance policy must exist:",a:["At the time of the insured's death","At the time of every premium payment","At the time of application","At the time of the claim filing"],ans:2,r:"Georgia O.C.G.A. Chapter 33-24 requires insurable interest at time of APPLICATION."},
+{c:"Ch.6 – Ethics & Underwriting",q:"If no insurable interest exists in a life insurance contract, the contract is:",a:["Voidable at the insured's option","A wagering contract and is void","Valid but unenforceable for 2 years","Automatically converted to term"],ans:1,r:"No insurable interest = wagering contract = void."},
+{c:"Ch.6 – Ethics & Underwriting",q:"The MIB (Medical Information Bureau) is used primarily to:",a:["Set premium rates","Identify misrepresentation on prior insurance applications","Provide actuarial tables to agents","Verify agent license status"],ans:1,r:"MIB flags prior misrepresentation on previous insurance applications."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Under field underwriting, if an agent becomes aware of material information not disclosed on the application, the agent should:",a:["Ignore it if the applicant did not bring it up","Report it to the insurer even if the applicant did not volunteer it","Advise the applicant to deny it","Submit the application and wait for the underwriter to discover it"],ans:1,r:"Agent must disclose all known material info — even if applicant omits it."},
+{c:"Ch.6 – Ethics & Underwriting",q:"An insurance contract is 'aleatory' because:",a:["It is written entirely by one party","Only the insurer is legally bound","The values exchanged are unequal and depend on an uncertain event","It cannot be cancelled once issued"],ans:2,r:"Aleatory = unequal exchange depending on chance (the loss event)."},
+{c:"Ch.7 – Business Insurance",q:"A keyperson life insurance policy names which party as the beneficiary?",a:["The key employee's family","The key employee themselves","The business","The insurer"],ans:2,r:"Business is the policyowner AND beneficiary on a keyperson policy."},
+{c:"Ch.7 – Business Insurance",q:"Keyperson insurance premiums paid by a business are:",a:["Tax-deductible as a business expense","Not tax-deductible","Deductible only if the policy is term insurance","Deductible up to $50,000 per year"],ans:1,r:"Keyperson insurance premiums are NOT deductible to the business."},
+{c:"Ch.7 – Business Insurance",q:"In a cross-purchase buy-sell agreement:",a:["The business buys policies on all owners","Each partner purchases a policy on the other partners","A trustee holds all the policies","Only the majority owner purchases policies"],ans:1,r:"Cross-purchase: each partner owns policies on the other partners."},
+{c:"Ch.7 – Business Insurance",q:"Under a Section 162 executive bonus plan, the premium bonus paid to an executive is:",a:["Tax-free to the executive","Taxable income to the executive but tax-deductible to the employer","Deductible to both employer and executive","Paid directly to the insurer without tax consequences"],ans:1,r:"Section 162 bonus: taxable to executive, deductible to employer as compensation."},
+{c:"Ch.1 – GA OCI Regulations",q:"Under Georgia law, insurable interest in life insurance is regulated primarily under:",a:["O.C.G.A. Chapter 33-6","O.C.G.A. Chapter 33-24","O.C.G.A. Chapter 33-25","O.C.G.A. Chapter 33-1"],ans:1,r:"O.C.G.A. Chapter 33-24 covers insurable interest requirements in Georgia."},
+{c:"Ch.1 – GA OCI Regulations",q:"Georgia's Life and Health Insurance Guaranty Association protects against:",a:["Agent fraud and misrepresentation","Insurer insolvency — protecting policyholders of insolvent Georgia-licensed insurers","Market conduct violations","Only property and casualty losses"],ans:1,r:"The Georgia Life and Health Insurance Guaranty Association protects policyholders when a licensed insurer becomes insolvent."},
+{c:"Ch.2 – Policy Types",q:"A 20-pay life policy means:",a:["The policy expires after 20 years","The death benefit decreases over 20 years","Premiums are paid for 20 years and the policy remains in force for life","Premiums increase every 20 years"],ans:2,r:"20-Pay Life = paid up after 20 years; coverage lasts for life."},
+{c:"Ch.2 – Policy Types",q:"The employer is the policyowner in which type of life insurance?",a:["Individual whole life","Variable universal life","Group life insurance","Credit life insurance"],ans:2,r:"Group life: employer is the policyowner; employees are the insureds."},
+{c:"Ch.3 – Provisions & Riders",q:"Under the conversion privilege in a group life policy, a departing employee may convert within:",a:["10 days","21 days","31 days","60 days"],ans:2,r:"Group life conversion right = 31 days from separation."},
+{c:"Ch.3 – Provisions & Riders",q:"The Accidental Death Benefit rider pays an additional benefit only if:",a:["The insured dies from any cause","The insured is hospitalized before death","Death results from an accident","The insured is under age 65 at death"],ans:2,r:"ADB rider only pays for accidental death — not illness."},
+{c:"Ch.5 – Federal Tax",q:"IRC Section 7702 is important for life insurance because it:",a:["Sets the estate tax rate on proceeds","Defines what qualifies as life insurance for favorable tax treatment","Sets the maximum death benefit per policy","Establishes agent licensing requirements"],ans:1,r:"IRC 7702 defines what qualifies as life insurance for favorable federal tax treatment."},
+{c:"Ch.5 – Federal Tax",q:"Employer-paid group life insurance premiums are income-tax free to the employee up to:",a:["$25,000","$50,000","$100,000","$250,000"],ans:1,r:"Group life employer premium = tax-free to employee up to $50,000."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Which of the following best describes the agent's fiduciary duty?",a:["The agent must maximize commission revenue for the agency","The agent must act in the insurance company's best interest at all times","The agent must act in the client's best interest, handling premiums and information with care","The agent is only responsible for delivering the policy"],ans:2,r:"Fiduciary = agent acts in client's best interest at all times."},
+{c:"Ch.1 – GA OCI Regulations",q:"Georgia's life insurance advertising and solicitation regulation is found in:",a:["Regulation 120-2-24","Regulation 120-2-11","O.C.G.A. Chapter 33-6","O.C.G.A. Chapter 33-23"],ans:1,r:"Georgia Regulation 120-2-11 governs life insurance advertising and solicitation."},
+{c:"Ch.4 – Annuities",q:"The exclusion ratio for annuity payments refers to:",a:["The percentage of index gain excluded from death benefit","The portion of each annuity payment excluded from taxable income — representing return of after-tax cost basis","The amount excluded from surrender charges","The cap rate on fixed indexed annuities"],ans:1,r:"Exclusion ratio = non-taxable portion of annuity payment (return of after-tax cost basis)."},
+{c:"Ch.3 – Provisions & Riders",q:"Which provision prevents the insurer from using misrepresentation in the original application to void a policy in force for more than 2 years?",a:["Grace period","Reinstatement clause","Incontestability clause","Free-look provision"],ans:2,r:"Incontestability clause: after 2 years, insurer cannot contest for misrepresentation."},
+{c:"Ch.2 – Policy Types",q:"A policy that builds cash value linked to a stock market index but protects principal from market losses is a:",a:["Variable Universal Life (VUL)","Traditional Universal Life","Fixed Indexed Universal Life (IUL)","Participating Whole Life"],ans:2,r:"IUL = index-linked growth + 0% floor (no principal loss from market declines)."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Making false statements about a competitor insurer's financial condition is called:",a:["Twisting","Misrepresentation","Defamation","Sliding"],ans:2,r:"Defamation = making false statements about a competitor's financial condition or character."},
+{c:"Ch.1 – GA OCI Regulations",q:"Adding coverage to a policy without the client's knowledge or informed consent is called:",a:["Twisting","Defamation","Sliding","Churning"],ans:2,r:"Sliding = adding coverage without informed client consent."},
+{c:"Ch.3 – Provisions & Riders",q:"Under the misstatement of age provision, if the insured's age was understated:",a:["The policy is cancelled","The insurer sues for fraud","The death benefit is adjusted to what the premium would have purchased at the correct age","All premiums are refunded"],ans:2,r:"Misstatement of age: benefit adjusted — policy is NOT cancelled."}
+];
+
+// ── FLORIDA ────────────────────────────────────
+BANKS.FL = [
+{c:"Ch.1 – FL DFS Regulations",q:"Florida life insurance is regulated by the:",a:["Florida Office of Insurance Regulation (OIR) under the Department of Financial Services (DFS)","Florida Department of Insurance","Florida State Corporation Commission","Florida Banking and Insurance Commission"],ans:0,r:"CRITICAL FL FACT: The DFS (Department of Financial Services) and OIR (Office of Insurance Regulation) jointly regulate Florida insurance. This dual-agency structure is tested."},
+{c:"Ch.1 – FL DFS Regulations",q:"The Florida 2-14 license is known as the:",a:["Health only license","Life, Health, and Variable Annuity Agent license","Life (Including Annuities and Variable Contracts) Agent license","General Lines Agent license"],ans:2,r:"The 2-14 license = Life (Including Annuities and Variable Contracts) Agent license — the most common BTG license in Florida."},
+{c:"Ch.1 – FL DFS Regulations",q:"Florida requires pre-licensing education before taking the 2-14 life insurance exam. How many hours are required?",a:["20 hours","40 hours","60 hours","No pre-licensing is required"],ans:1,r:"Florida requires 40 hours of approved pre-licensing education for the 2-14 Life license, including 3 hours of ethics."},
+{c:"Ch.1 – FL DFS Regulations",q:"The Florida 2-14 Life exam contains how many scored questions?",a:["75 scored questions","85 scored questions","100 scored questions","150 scored questions"],ans:1,r:"Florida 2-14 exam = 85 scored questions + 15 pretest questions = 100 total. Time: 120 minutes."},
+{c:"Ch.1 – FL DFS Regulations",q:"The passing score for the Florida 2-14 exam is:",a:["65% (55 correct)","70% (60 correct)","75% (64 correct)","80% (68 correct)"],ans:1,r:"Florida passing score = 70% on scored questions (60 out of 85 for the 2-14 exam)."},
+{c:"Ch.1 – FL DFS Regulations",q:"After passing the Florida insurance exam, a candidate must apply for their license within:",a:["90 days","6 months","1 year","2 years"],ans:2,r:"Florida passing score is valid for 1 year. The candidate must complete licensing within 12 months."},
+{c:"Ch.1 – FL DFS Regulations",q:"Florida allows a maximum of how many attempts to pass the same exam in a 12-month period?",a:["3 attempts","5 attempts","7 attempts","Unlimited attempts"],ans:1,r:"Florida limits candidates to 5 attempts on the same exam type within a 12-month period."},
+{c:"Ch.1 – FL DFS Regulations",q:"The free-look period for a life insurance policy in Florida (effective for policies issued after January 1, 2009) is:",a:["10 days","14 days","20 days","30 days"],ans:1,r:"Florida free-look = 14 days under the Seibel Act (extended from 10 days). Variable life policies do NOT have a free-look period."},
+{c:"Ch.1 – FL DFS Regulations",q:"The grace period for a life insurance policy in Florida is at least:",a:["20 days","30 days","31 days","60 days"],ans:1,r:"Florida F.S. 627.453 requires a grace period of not less than 30 days."},
+{c:"Ch.1 – FL DFS Regulations",q:"Florida CE requirements for agents licensed LESS than 6 years are:",a:["16 hours every 2 years including 3 hours ethics","20 hours every 2 years including 4 hours Law & Ethics","24 hours every 2 years including 4 hours Law & Ethics Update","30 hours every 2 years including 5 hours ethics"],ans:2,r:"Florida agents licensed less than 6 years: 24 CE hours per 2-year cycle including 4 hours of Law & Ethics Update."},
+{c:"Ch.1 – FL DFS Regulations",q:"Florida CE requirements for agents licensed 6 or MORE years are:",a:["16 hours every 2 years","20 hours every 2 years including 4 hours Law & Ethics Update","24 hours every 2 years","30 hours every 2 years"],ans:1,r:"Florida agents licensed 6+ years: CE reduces to 20 hours per 2-year cycle, still including 4 hours of Law & Ethics Update."},
+{c:"Ch.1 – FL DFS Regulations",q:"Florida insurance agent licenses are:",a:["Renewed every 2 years with a renewal fee","Renewed annually","Perpetual — no renewal; only CE maintenance is required","Valid for 5 years then must be retested"],ans:2,r:"Florida licenses are PERPETUAL — there is no renewal or renewal fee. Agents only need to complete CE every 2 years."},
+{c:"Ch.1 – FL DFS Regulations",q:"An agent convinces a client to replace a policy using false comparisons to benefit themselves. This is:",a:["Churning","Rebating","Twisting","Sliding"],ans:2,r:"Twisting = replacing using false or misleading comparisons. Illegal under Florida's Unfair Trade Practices Act."},
+{c:"Ch.1 – FL DFS Regulations",q:"Internally replacing a client's policy within the same company through misrepresentation is called:",a:["Twisting","Sliding","Defamation","Churning"],ans:3,r:"Churning = replacing within the same company using misrepresentation to generate new commissions."},
+{c:"Ch.1 – FL DFS Regulations",q:"The Florida incontestability clause prevents the insurer from contesting a policy after:",a:["1 year","2 years","3 years","5 years"],ans:1,r:"Florida incontestability = 2 years from policy issue date."},
+{c:"Ch.2 – Policy Types",q:"Which type of life insurance provides coverage for a specific period with NO cash value?",a:["Whole life","Universal life","Term life","Variable life"],ans:2,r:"Term insurance = temporary coverage, no cash value accumulation."},
+{c:"Ch.2 – Policy Types",q:"Decreasing term life insurance is most commonly used to cover a:",a:["Business keyperson","Mortgage or installment loan","Retirement fund shortfall","College education fund"],ans:1,r:"Decreasing term mirrors a declining mortgage or loan balance."},
+{c:"Ch.2 – Policy Types",q:"Whole life insurance is best described as:",a:["Temporary coverage with no savings component","Permanent protection with guaranteed cash value growth","Flexible premium coverage linked to market indexes","A securities product requiring a FINRA license"],ans:1,r:"Whole life = permanent + guaranteed cash value + level premiums."},
+{c:"Ch.2 – Policy Types",q:"Universal life insurance differs from whole life primarily because UL offers:",a:["Guaranteed cash value growth and fixed premiums","Coverage that terminates at age 65","Flexible premiums and an adjustable death benefit","Investment in separate account sub-accounts"],ans:2,r:"UL's defining features: flexible premiums and adjustable death benefit."},
+{c:"Ch.2 – Policy Types",q:"Indexed Universal Life (IUL) credits interest based on a market index. The FLOOR of 0% means:",a:["The policy lapses if the index returns 0%","The policyholder cannot lose cash value due to index declines","The cap rate is set at 0%","The participation rate is 0%"],ans:1,r:"A 0% floor means no negative crediting — cash value is protected from index losses."},
+{c:"Ch.2 – Policy Types",q:"Variable life insurance requires the selling agent to hold:",a:["A Florida 2-14 life license only","A 2-20 property and casualty license","A 2-14 or 2-15 license PLUS a FINRA securities license","No additional licensing"],ans:2,r:"Florida variable life = requires life license + FINRA securities license (Series 6 or 7). In Florida this is the 2-14 variable contracts license."},
+{c:"Ch.2 – Policy Types",q:"In a variable life policy, the cash value is held in:",a:["The insurer's general account","A bank trust account","Separate account sub-accounts","A guaranteed investment contract"],ans:2,r:"Variable cash value is held in separate account sub-accounts, NOT the insurer's general account."},
+{c:"Ch.2 – Policy Types",q:"Survivorship life (second-to-die) insurance is most commonly used for:",a:["Replacing income for a surviving spouse","Funding estate taxes after both spouses have died","Covering a key employee","Paying off a home mortgage"],ans:1,r:"Second-to-die is designed to pay estate taxes after both spouses die."},
+{c:"Ch.3 – Provisions & Riders",q:"A policyowner uses lapsed whole life cash value to purchase the same face amount for a limited time. This nonforfeiture option is:",a:["Reduced paid-up","Cash surrender value","Extended term","Paid-up additions"],ans:2,r:"Extended term = same face amount, coverage for limited time, no premiums required."},
+{c:"Ch.3 – Provisions & Riders",q:"A policyowner wants a smaller permanent policy with no more premium payments. This nonforfeiture option is:",a:["Extended term","Cash surrender value","Reduced paid-up","Fixed period settlement"],ans:2,r:"Reduced paid-up = smaller permanent policy, no more premiums required."},
+{c:"Ch.3 – Provisions & Riders",q:"The Waiver of Premium rider waives future premiums if the insured:",a:["Dies","Reaches age 65","Becomes totally disabled","Retires from employment"],ans:2,r:"Waiver of premium activates upon total disability."},
+{c:"Ch.3 – Provisions & Riders",q:"The Accidental Death Benefit rider pays an additional benefit only if:",a:["The insured dies from any cause","The insured is hospitalized before death","Death results from an accident","The insured is under age 65 at death"],ans:2,r:"ADB rider only pays for accidental death — not illness."},
+{c:"Ch.3 – Provisions & Riders",q:"The Guaranteed Insurability Option (GIO) allows the insured to:",a:["Purchase additional coverage at any time","Purchase additional coverage at specified dates/events without evidence of insurability","Increase the death benefit with no additional premium","Convert to a different type of policy at any age"],ans:1,r:"GIO = purchase more coverage at specified dates/life events only; no medical exam required."},
+{c:"Ch.3 – Provisions & Riders",q:"An irrevocable beneficiary designation requires whose consent to make changes?",a:["The insurer only","The policyowner only","The beneficiary must consent to any change","A court order"],ans:2,r:"Irrevocable beneficiary must consent to any change."},
+{c:"Ch.3 – Provisions & Riders",q:"Which dividend option purchases small amounts of additional paid-up permanent insurance?",a:["Cash","Reduce premium","Accumulate at interest","Paid-up additions (PUA)"],ans:3,r:"PUA = most efficient dividend use; increases both cash value and death benefit."},
+{c:"Ch.3 – Provisions & Riders",q:"To reinstate a lapsed policy, the policyowner must generally:",a:["Simply request reinstatement in writing","Pay back premiums plus interest and provide evidence of insurability","Pay only the current premium","Pass a new medical exam only"],ans:1,r:"Reinstatement requires back premiums + interest + evidence of insurability."},
+{c:"Ch.4 – Annuities",q:"An annuity is designed primarily to protect against:",a:["Premature death","Disability","Property loss","Outliving your income — longevity risk"],ans:3,r:"Annuities address longevity risk — running out of money while still alive."},
+{c:"Ch.4 – Annuities",q:"A Single Premium Immediate Annuity (SPIA) begins income payments:",a:["At age 65 regardless of when purchased","Within 12 months of purchasing the annuity","After a 5-year accumulation period","Only after the annuitant retires"],ans:1,r:"SPIA = immediate; payments start within 12 months."},
+{c:"Ch.4 – Annuities",q:"Annuity withdrawals before age 59½ are subject to a federal penalty of:",a:["5%","10%","15%","20%"],ans:1,r:"10% federal penalty applies to annuity gain withdrawn before age 59½."},
+{c:"Ch.4 – Annuities",q:"The 1035 Exchange allows which of the following?",a:["Annuity to life insurance","Life insurance to annuity","Bank CD to annuity","Savings account to life insurance"],ans:1,r:"Life insurance to annuity is a valid 1035 exchange. Annuity to life insurance is NOT."},
+{c:"Ch.4 – Annuities",q:"Which annuity settlement option provides the highest monthly payment with no guarantee period?",a:["Life with 10-year certain","Joint and full survivor","Straight life (life only)","Fixed period"],ans:2,r:"Straight life = highest payment; stops completely at annuitant death."},
+{c:"Ch.4 – Annuities",q:"The accumulation phase of an annuity is when:",a:["The annuity pays out income to the annuitant","The insurer calculates the exclusion ratio","The owner deposits money and it grows tax-deferred","The death benefit is distributed"],ans:2,r:"Accumulation phase = deposits + tax-deferred growth."},
+{c:"Ch.5 – Federal Tax",q:"The death benefit paid to a named beneficiary of a life insurance policy is generally:",a:["Taxed as capital gains","Subject to ordinary income tax","Income-tax free under IRC Section 101(a)","Subject to a 10% penalty"],ans:2,r:"Death benefit income-tax free under IRC 101(a)."},
+{c:"Ch.5 – Federal Tax",q:"A Modified Endowment Contract (MEC) is created when:",a:["Cash value equals the death benefit","The policy is surrendered for more than cost basis","The policy fails the 7-pay test","The policy is converted from term to permanent"],ans:2,r:"MEC = fails the 7-pay test; too much premium paid in the first 7 policy years."},
+{c:"Ch.5 – Federal Tax",q:"Roth IRA qualified withdrawals in retirement are:",a:["Taxed as ordinary income","Subject to a 10% penalty","Completely tax-free","Taxed as capital gains"],ans:2,r:"Roth IRA qualified withdrawals = completely tax-free."},
+{c:"Ch.5 – Federal Tax",q:"Traditional IRA required minimum distributions (RMDs) must begin at age:",a:["59½","65","70½","73"],ans:3,r:"Traditional IRA RMDs begin at age 73 per the SECURE 2.0 Act."},
+{c:"Ch.5 – Federal Tax",q:"Employer-paid group life insurance premiums are income-tax free to the employee up to:",a:["$25,000","$50,000","$100,000","$250,000"],ans:1,r:"Group life employer premium = tax-free to employee up to $50,000."},
+{c:"Ch.5 – Federal Tax",q:"IRC Section 7702 is important for life insurance because it:",a:["Sets the estate tax rate on proceeds","Defines what qualifies as life insurance for favorable tax treatment","Sets the maximum death benefit per policy","Establishes agent licensing requirements"],ans:1,r:"IRC 7702 defines what qualifies as life insurance for favorable federal tax treatment."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Insurable interest in a life insurance policy must exist:",a:["At the time of the insured's death","At the time of every premium payment","At the time of application","At the time of the claim filing"],ans:2,r:"Florida requires insurable interest at time of APPLICATION."},
+{c:"Ch.6 – Ethics & Underwriting",q:"If no insurable interest exists in a life insurance contract, the contract is:",a:["Voidable at the insured's option","A wagering contract and is void","Valid but unenforceable for 2 years","Automatically converted to term"],ans:1,r:"No insurable interest = wagering contract = void."},
+{c:"Ch.6 – Ethics & Underwriting",q:"The MIB (Medical Information Bureau) is used primarily to:",a:["Set premium rates","Identify misrepresentation on prior insurance applications","Provide actuarial tables to agents","Verify agent license status"],ans:1,r:"MIB flags prior misrepresentation on previous insurance applications."},
+{c:"Ch.6 – Ethics & Underwriting",q:"An insurance contract is 'aleatory' because:",a:["It is written entirely by one party","Only the insurer is legally bound","The values exchanged are unequal and depend on an uncertain event","It cannot be cancelled once issued"],ans:2,r:"Aleatory = unequal exchange depending on chance (the loss event)."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Which of the following best describes the agent's fiduciary duty?",a:["The agent must maximize commission revenue for the agency","The agent must act in the insurance company's best interest at all times","The agent must act in the client's best interest, handling premiums and information with care","The agent is only responsible for delivering the policy"],ans:2,r:"Fiduciary = agent acts in client's best interest at all times."},
+{c:"Ch.7 – Business Insurance",q:"A keyperson life insurance policy names which party as the beneficiary?",a:["The key employee's family","The key employee themselves","The business","The insurer"],ans:2,r:"Business is the policyowner AND beneficiary on a keyperson policy."},
+{c:"Ch.7 – Business Insurance",q:"Keyperson insurance premiums paid by a business are:",a:["Tax-deductible as a business expense","Not tax-deductible","Deductible only if the policy is term insurance","Deductible up to $50,000 per year"],ans:1,r:"Keyperson insurance premiums are NOT deductible to the business."},
+{c:"Ch.7 – Business Insurance",q:"In a cross-purchase buy-sell agreement:",a:["The business buys policies on all owners","Each partner purchases a policy on the other partners","A trustee holds all the policies","Only the majority owner purchases policies"],ans:1,r:"Cross-purchase: each partner owns policies on the other partners."},
+{c:"Ch.7 – Business Insurance",q:"Under a Section 162 executive bonus plan, the premium bonus paid to an executive is:",a:["Tax-free to the executive","Taxable income to the executive but tax-deductible to the employer","Deductible to both employer and executive","Paid directly to the insurer without tax consequences"],ans:1,r:"Section 162 bonus: taxable to executive, deductible to employer as compensation."},
+{c:"Ch.1 – FL DFS Regulations",q:"Under Florida law, which statement about Stranger-Owned Life Insurance (STOLI) is TRUE?",a:["STOLI is a legitimate estate planning tool in Florida","STOLI policies are specifically prohibited because they violate insurable interest requirements","STOLI is permitted if the insured provides written consent","STOLI requires a special license from the DFS"],ans:1,r:"Florida specifically prohibits STOLI arrangements because they are wagering contracts that violate insurable interest laws."},
+{c:"Ch.1 – FL DFS Regulations",q:"Adding coverage to a policy without the client's knowledge or informed consent is called:",a:["Twisting","Defamation","Sliding","Churning"],ans:2,r:"Sliding = adding coverage without informed client consent. Illegal in Florida."},
+{c:"Ch.2 – Policy Types",q:"A 20-pay life policy means:",a:["The policy expires after 20 years","The death benefit decreases over 20 years","Premiums are paid for 20 years and the policy remains in force for life","Premiums increase every 20 years"],ans:2,r:"20-Pay Life = paid up after 20 years; coverage lasts for life."},
+{c:"Ch.2 – Policy Types",q:"The employer is the policyowner in which type of life insurance?",a:["Individual whole life","Variable universal life","Group life insurance","Credit life insurance"],ans:2,r:"Group life: employer is the policyowner; employees are the insureds."},
+{c:"Ch.3 – Provisions & Riders",q:"Under the conversion privilege in a group life policy, a departing employee may convert within:",a:["10 days","21 days","31 days","60 days"],ans:2,r:"Group life conversion right = 31 days from separation."},
+{c:"Ch.3 – Provisions & Riders",q:"Under the misstatement of age provision, if the insured's age was understated:",a:["The policy is cancelled","The insurer sues for fraud","The death benefit is adjusted to what the premium would have purchased at the correct age","All premiums are refunded"],ans:2,r:"Misstatement of age: benefit adjusted — policy is NOT cancelled."},
+{c:"Ch.1 – FL DFS Regulations",q:"Florida's Florida Life and Health Insurance Guaranty Association provides protection when:",a:["An agent commits fraud against a policyholder","A licensed Florida insurer becomes insolvent","An agent fails to remit premiums to the insurer","A policyholder misrepresents their health on an application"],ans:1,r:"The FL Life and Health Insurance Guaranty Association protects policyholders when a licensed Florida insurer becomes insolvent."},
+{c:"Ch.3 – Provisions & Riders",q:"The Accelerated Death Benefit rider allows:",a:["The beneficiary to collect early if the insured is over 75","A terminally ill insured to access a portion of the death benefit while still alive","Premium payments to be accelerated for early paid-up status","The insurer to cancel the policy early"],ans:1,r:"Accelerated Death Benefit = living benefit for terminal illness; reduces the death benefit paid at death."},
+{c:"Ch.4 – Annuities",q:"The exclusion ratio for annuity payments refers to:",a:["The percentage of index gain excluded from death benefit","The portion of each annuity payment excluded from taxable income — representing return of after-tax cost basis","The amount excluded from surrender charges","The cap rate on fixed indexed annuities"],ans:1,r:"Exclusion ratio = non-taxable portion of annuity payment (return of after-tax cost basis)."},
+{c:"Ch.3 – Provisions & Riders",q:"Which provision prevents the insurer from using misrepresentation in the original application to void a policy in force for more than 2 years?",a:["Grace period","Reinstatement clause","Incontestability clause","Free-look provision"],ans:2,r:"Incontestability clause: after 2 years, insurer cannot contest for misrepresentation."},
+{c:"Ch.2 – Policy Types",q:"A policy that builds cash value linked to a stock market index but protects principal from market losses is a:",a:["Variable Universal Life (VUL)","Traditional Universal Life","Fixed Indexed Universal Life (IUL)","Participating Whole Life"],ans:2,r:"IUL = index-linked growth + 0% floor (no principal loss from market declines)."},
+{c:"Ch.1 – FL DFS Regulations",q:"Florida requires agents to complete an Annuity Best Interest training before selling annuities. This is:",a:["An 8-hour one-time requirement","A one-time 4-hour requirement","A 3-hour annual requirement","No special training required in Florida"],ans:1,r:"Florida requires a one-time 4-hour Annuity Best Interest course before selling annuity products, similar to other states."},
+{c:"Ch.1 – FL DFS Regulations",q:"Under Florida replacement rules, when replacing a life insurance policy, the agent must provide the client with:",a:["A Notice Regarding Replacement","A Policy Summary Form only","A Comparison and Summary Statement","A TDI Disclosure Certificate"],ans:2,r:"Florida replacement rules require a written Comparison and Summary Statement when replacing life insurance policies."},
+{c:"Ch.5 – Federal Tax",q:"A policy loan against a whole life policy's cash value is:",a:["Always taxable","Tax-free as long as the policy remains in force","Subject to a 10% penalty","Deductible as a business expense"],ans:1,r:"Policy loans are NOT taxable as long as the policy stays in force."},
+{c:"Ch.6 – Ethics & Underwriting",q:"Making false statements about a competitor insurer's financial condition is called:",a:["Twisting","Misrepresentation","Defamation","Sliding"],ans:2,r:"Defamation = making false statements about a competitor's financial condition."},
+{c:"Ch.6 – Ethics & Underwriting",q:"An agent signs their name as witness on an application they did not personally witness. This is:",a:["Standard agent practice","Required if the applicant requests it","Fraud","Permitted if no adverse information is on the application"],ans:2,r:"Signing as witness without witnessing = fraud."},
+{c:"Ch.2 – Policy Types",q:"A participating whole life policy pays dividends because:",a:["The insurer's actual experience was better than projected","The stock market performed well","The policyholder made an additional contribution","The insured reached age 65"],ans:0,r:"Par policy dividends come from better-than-expected mortality/expense/interest results."},
+{c:"Ch.3 – Provisions & Riders",q:"Dividends from a participating life insurance policy that do NOT exceed the total premiums paid are:",a:["Taxable as ordinary income","Tax-free — treated as a return of premium","Subject to capital gains tax","Deferred until the policy matures"],ans:1,r:"Life insurance dividends = return of premium; NOT taxable unless they exceed total premiums paid."}
+];
+
+// ════════════════════════════════════════════════
+// APP STATE
+// ════════════════════════════════════════════════
+let selectedState = null;
+let questions = [];
+let currentQ = 0;
+let answers = {};
+let flagged = new Set();
+let correct = 0;
+let wrong = 0;
+let timerInterval = null;
+let secondsLeft = 7200;
+
+const STATE_NAMES = {TX:'Texas',VA:'Virginia',GA:'Georgia',FL:'Florida'};
+const STATE_TIMES = {TX:9000,VA:7200,GA:9000,FL:7200};
+
+function selectState(st) {
+  selectedState = st;
+  document.querySelectorAll('.state-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-'+st).classList.add('selected');
+  document.getElementById('start-btn').classList.add('active');
+  document.getElementById('topbar-state-label').textContent = STATE_NAMES[st] + ' Exam';
+}
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function startExam() {
+  if (!selectedState) return;
+  questions = shuffle([...BANKS[selectedState]]).slice(0, 100);
+  currentQ = 0;
+  answers = {};
+  flagged = new Set();
+  correct = 0;
+  wrong = 0;
+  secondsLeft = STATE_TIMES[selectedState];
+
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('exam-screen').style.display = 'block';
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('exam-badge').textContent = selectedState;
+
+  startTimer();
+  renderQuestion();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    const h = Math.floor(secondsLeft/3600);
+    const m = Math.floor((secondsLeft%3600)/60);
+    const s = secondsLeft%60;
+    const el = document.getElementById('timer');
+    el.textContent = `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if(secondsLeft <= 300) el.classList.add('warning');
+    if(secondsLeft <= 0) { clearInterval(timerInterval); showResults(); }
+  }, 1000);
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const total = questions.length;
+  const pct = Math.round((currentQ/total)*100);
+
+  document.getElementById('q-chapter').textContent = q.c;
+  document.getElementById('q-counter').textContent = `QUESTION ${currentQ+1}`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('prog-label').textContent = `Question ${currentQ+1} of ${total}`;
+  document.getElementById('prog-pct').textContent = pct+'%';
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('flag-btn').className = 'flag-btn' + (flagged.has(currentQ) ? ' flagged' : '');
+
+  const prevBtn = document.getElementById('prev-btn');
+  prevBtn.disabled = currentQ === 0;
+
+  // Choices
+  const container = document.getElementById('choices');
+  container.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  const answered = answers[currentQ] !== undefined;
+
+  q.a.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'choice';
+    if (answered) {
+      div.classList.add('answered');
+      if (i === q.ans) div.classList.add('correct');
+      else if (i === answers[currentQ] && i !== q.ans) div.classList.add('wrong');
+    } else {
+      div.onclick = () => selectAnswer(i);
+    }
+    div.innerHTML = `<div class="choice-letter">${letters[i]}</div><div class="choice-text">${opt}</div>`;
+    container.appendChild(div);
+  });
+
+  // Rationale
+  const ratBox = document.getElementById('rationale-box');
+  if (answered) {
+    ratBox.style.display = 'block';
+    const isRight = answers[currentQ] === q.ans;
+    ratBox.innerHTML = `<b>${isRight ? '✓ Correct!' : '✗ Incorrect.'}</b> ${q.r}`;
+  } else {
+    ratBox.style.display = 'none';
+  }
+
+  // Live score
+  const answered_count = Object.keys(answers).length;
+  document.getElementById('live-score').textContent = `${correct} / ${answered_count}`;
+
+  // Next btn label
+  const nextBtn = document.getElementById('next-btn');
+  if (currentQ === total-1) {
+    nextBtn.textContent = 'Finish →';
+  } else {
+    nextBtn.textContent = 'Next →';
+  }
+
+  // Skip btn
+  document.getElementById('skip-btn').style.display = answered ? 'none' : 'block';
+}
+
+function selectAnswer(idx) {
+  if (answers[currentQ] !== undefined) return;
+  answers[currentQ] = idx;
+  const q = questions[currentQ];
+  if (idx === q.ans) correct++;
+  else wrong++;
+  renderQuestion();
+}
+
+function toggleFlag() {
+  if (flagged.has(currentQ)) flagged.delete(currentQ);
+  else flagged.add(currentQ);
+  document.getElementById('flag-btn').className = 'flag-btn' + (flagged.has(currentQ) ? ' flagged' : '');
+}
+
+function nextQ() {
+  if (currentQ >= questions.length - 1) { showResults(); return; }
+  currentQ++;
+  document.getElementById('question-area').style.animation = 'none';
+  requestAnimationFrame(() => {
+    document.getElementById('question-area').style.animation = 'slideIn 0.28s ease';
+    renderQuestion();
+  });
+}
+
+function prevQ() {
+  if (currentQ <= 0) return;
+  currentQ--;
+  renderQuestion();
+}
+
+function skipQ() {
+  if (currentQ >= questions.length - 1) { showResults(); return; }
+  currentQ++;
+  renderQuestion();
+}
+
+function showResults() {
+  clearInterval(timerInterval);
+  document.getElementById('exam-screen').style.display = 'none';
+  document.getElementById('results-screen').style.display = 'block';
+
+  const total = questions.length;
+  const answered = Object.keys(answers).length;
+  const skipped = total - answered;
+  const pct = Math.round((correct/total)*100);
+  const pass = pct >= 70;
+
+  document.getElementById('res-grade').textContent = pct+'%';
+  document.getElementById('res-pct').textContent = `${correct} of ${total} correct`;
+  document.getElementById('res-correct').textContent = correct;
+  document.getElementById('res-wrong').textContent = wrong;
+  document.getElementById('res-skipped').textContent = skipped;
+  document.getElementById('res-verdict').textContent = pass ? '✓ PASSING SCORE' : '✗ BELOW PASSING — REVIEW & RETRY';
+  document.getElementById('res-verdict').className = 'results-verdict ' + (pass ? 'pass' : 'fail');
+
+  setTimeout(() => {
+    document.getElementById('score-bar').style.width = pct+'%';
+  }, 200);
+
+  // Build breakdown — missed only
+  const breakdown = document.getElementById('breakdown-list');
+  breakdown.innerHTML = '<h3>Review — Missed & Skipped</h3>';
+
+  let missedCount = 0;
+  questions.forEach((q, i) => {
+    const userAns = answers[i];
+    const missed = userAns === undefined || userAns !== q.ans;
+    if (!missed) return;
+    missedCount++;
+    const div = document.createElement('div');
+    div.className = 'breakdown-item';
+    const isWrong = userAns !== undefined && userAns !== q.ans;
+    div.innerHTML = `
+      <div class="breakdown-dot ${isWrong ? 'wrong' : 'correct'}" style="background:${userAns===undefined?'#aaa':''}" ></div>
+      <div>
+        <div class="breakdown-text"><b>Q${i+1}:</b> ${q.q}</div>
+        <div class="breakdown-correct-ans">✓ ${q.a[q.ans]}</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:2px">${q.r}</div>
+      </div>`;
+    breakdown.appendChild(div);
+  });
+
+  if (missedCount === 0) {
+    breakdown.innerHTML += '<p style="color:var(--green);font-weight:600;padding:12px 0">Perfect score — no missed questions!</p>';
+  }
+
+  window.scrollTo(0, 0);
+}
+
+function retakeExam() {
+  startExam();
+}
+
+function goHome() {
+  clearInterval(timerInterval);
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('exam-screen').style.display = 'none';
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('topbar-state-label').textContent = '';
+  // Reset selection
+  document.querySelectorAll('.state-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('start-btn').classList.remove('active');
+  selectedState = null;
+}
+</script>
+</body>
+</html>
