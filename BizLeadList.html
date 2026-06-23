@@ -627,6 +627,87 @@ function dcpLogCall(id){var tk=dcpGetTk(id);if(tk.status==='fresh'){dcp_tk[id]=O
 function dcpCopyPhone(p,btn){var flash=function(){btn.textContent='Copied!';btn.style.background='#16a34a';btn.style.color='#fff';setTimeout(function(){btn.textContent='Copy';btn.style.background='';btn.style.color='';},1500);};if(navigator.clipboard){navigator.clipboard.writeText(p).then(flash).catch(function(){var t=document.createElement('textarea');t.value=p;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);flash();});}else{var t=document.createElement('textarea');t.value=p;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);flash();}}
 function dcpMUrl(r){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.a+', '+r.c+', TX '+r.z);}
 function dcpPHref(p){return 'tel:'+p.replace(/[^0-9+]/g,'');}
+
+function buildDcpExecScript(r, agentName) {
+  var city = esc(r.c);
+  var opener1A = "Hi, I'm " + agentName + " with Built To Grow Financial Group. We work with business owners who just opened in the area. Noticed you recently got started and wanted to stop in, introduce myself, and see if protecting the business is something on your radar. Do you have 5 minutes?";
+  var openerPhone = "Hi, may I speak with the owner? Hi, this is " + agentName + " with Built To Grow Financial Group. I'm not calling to sell you anything today \u2014 we work specifically with business owners in the " + city + " area. We have an Executive Broker who works exclusively with business owners on protecting what they've built \u2014 key person coverage, business overhead protection, and living benefits. Do you have just 60 seconds?";
+  var opener = r.t === '1A' ? opener1A : openerPhone;
+
+  function obj(q, strategy, ans) {
+    return '<div class=\"es-obj\"><div class=\"es-obj-q\">' + q + '<span>\u25bc</span></div>' +
+           '<div class=\"es-obj-a\"><div class=\"es-obj-strategy\">' + strategy + '</div>' +
+           '<div class=\"es-obj-text\">' + ans + '</div></div></div>';
+  }
+
+  return '<div class=\"exec-script-hdr\">' +
+    '<span class=\"exec-script-title\">\u261e Executive Broker Call Script</span>' +
+    '<span class=\"exec-script-toggle\">\u25bc</span>' +
+  '</div>' +
+  '<div class=\"exec-script-body\">' +
+    '<div class=\"es-step\">' +
+      '<div class=\"es-step-lbl\">1 \u2014 Open the Call</div>' +
+      '<div class=\"es-text\">&ldquo;' + opener + '&rdquo;</div>' +
+      '<div class=\"es-tip\">Lead with credibility. If busy: &ldquo;When is a better time today or tomorrow?&rdquo;</div>' +
+    '</div>' +
+    '<div class=\"es-step\">' +
+      '<div class=\"es-step-lbl\">2 \u2014 Qualify \u2014 Find the Gap</div>' +
+      '<div class=\"es-text\">&ldquo;<strong>What type of coverage do you currently have for your business in case of a qualifying incident</strong> \u2014 something like a heart attack, critical injury, or a serious accident?&rdquo;</div>' +
+      '<div class=\"es-tip\">Follow up: &ldquo;<strong>Does your current policy have living benefits?</strong> If you had a critical illness tomorrow, would your policy pay you a benefit while you\u2019re still living \u2014 to protect your income and keep the business running?&rdquo;</div>' +
+    '</div>' +
+    '<div class=\"es-step\">' +
+      '<div class=\"es-step-lbl\">3 \u2014 Build Interest</div>' +
+      '<div class=\"es-text\">&ldquo;Most business owners have <strong>some form of coverage</strong> but nothing that specifically protects the business if they\u2019re the one who goes down. Health insurance pays the hospital \u2014 it doesn\u2019t replace your income or keep your business afloat. Our Executive Broker takes <strong>30 minutes</strong> \u2014 no obligation, no pressure, just clarity.&rdquo;</div>' +
+    '</div>' +
+    '<div class=\"es-step\">' +
+      '<div class=\"es-step-lbl\">4 \u2014 Set the Appointment</div>' +
+      '<div class=\"es-text\">&ldquo;<strong>Does earlier or later in the week work better for you?</strong> Perfect \u2014 I\u2019m sending a quick link right now so you can pick the exact time. Takes 30 seconds.&rdquo;</div>' +
+      '<div class=\"es-tip\">Always offer two options \u2014 never ask IF, ask WHEN.</div>' +
+    '</div>' +
+    '<a class=\"es-calendly-btn\" href=\"https://calendly.com/hilltreon/30min\" target=\"_blank\" rel=\"noopener\">&#128197; Book Executive Broker \u2014 30 Min</a>' +
+    '<div class=\"es-obj-section\">' +
+      '<div class=\"es-obj-toggle\">Objection Responses \u2014 Use Only If Needed</div>' +
+      '<div class=\"es-obj-list\">' +
+        obj(
+          '"I already have coverage" / "Not interested"',
+          'Probe \u2014 surface the gap',
+          '&ldquo;Totally understand. Quick question \u2014 <strong>does your current coverage have living benefits?</strong> If you had a heart attack tomorrow, would your policy pay you while you\u2019re still alive \u2014 to cover your income and keep the business running? Most owners aren\u2019t sure \u2014 which is exactly why a 30-minute conversation is worth it.&rdquo;'
+        ) +
+        obj(
+          '"I don\u2019t have time"',
+          'Reframe \u2014 respect time, anchor value',
+          '&ldquo;I completely respect that. That\u2019s why our Executive Broker keeps it to <strong>30 minutes flat</strong>. Is there a day this week \u2014 even a lunch break or end of day \u2014 where 30 minutes is realistic? I\u2019ll send the link and you pick the slot.&rdquo;'
+        ) +
+        obj(
+          '"I can\u2019t afford it" / "Business is tight"',
+          'Seed \u2014 reframe around risk of nothing',
+          '&ldquo;<strong>If business is tight and something happened to you tomorrow</strong> \u2014 a car wreck, a heart attack \u2014 what happens to the business without your income? The conversation isn\u2019t about spending money you don\u2019t have. It\u2019s about knowing what you\u2019re exposed to. That costs nothing.&rdquo;'
+        ) +
+        obj(
+          '"Send me some information first"',
+          'Reframe \u2014 personalization beats brochures',
+          '&ldquo;I can do that \u2014 and I will. But the information that matters most is specific to <strong>your business and your situation</strong>. What our broker does in 30 minutes is more valuable than anything I could email. Can I send the booking link? You pick the time \u2014 no hard feelings if it\u2019s not a fit.&rdquo;'
+        ) +
+        obj(
+          '"I already have a financial advisor"',
+          'Probe \u2014 find the lane gap',
+          '&ldquo;That\u2019s great. Quick question \u2014 <strong>did they specifically address business overhead protection and living benefits in case of a critical illness or injury?</strong> Most advisors are great at retirement and investments \u2014 business protection is a different lane. Our broker works exclusively in that lane.&rdquo;'
+        ) +
+        obj(
+          '"What exactly are you selling?"',
+          'Direct \u2014 transparency builds trust',
+          '&ldquo;Straight answer \u2014 we work in life insurance, specifically policies with <strong>living benefits</strong>. The policy pays YOU while you\u2019re still alive if you\u2019re hit with a critical illness or major injury. We also look at key person protection \u2014 if you go down, does the business survive? No sales pitch on the call \u2014 just a real assessment. Worth 30 minutes?&rdquo;'
+        ) +
+        obj(
+          '"I need to talk to my spouse / partner"',
+          'Bring them in',
+          '&ldquo;Absolutely \u2014 <strong>bring them to the call</strong>. Our broker loves having both decision makers in the room. Is there a time this week that works for both of you? I\u2019ll send the link right now.&rdquo;'
+        ) +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
 function dcpMakeCard(r){
   var tk=dcpGetTk(r.i);var isExp=r.i===dcp_expId;var isDone=tk.done||tk.status==='appt-set'||tk.status==='not-interested';
   var card=document.createElement('div');card.className='dcp-card'+(isExp?' dcp-exp':'')+(isDone?' dcp-done':'');
@@ -659,10 +740,24 @@ function dcpMakeCard(r){
   var sb=document.createElement('button');sb.className='dcp-save-btn';sb.textContent='Save Notes';sb.addEventListener('click',function(){dcpSaveNotes(r.i);});
   var sm=document.createElement('span');sm.className='dcp-saved';sm.id='dcpsm'+r.i;
   nr.appendChild(sb);nr.appendChild(sm);detail.appendChild(nr);
-  var scr=document.createElement('div');scr.className='dcp-script';
-  var sLbl=document.createElement('div');sLbl.className='dcp-script-lbl';sLbl.textContent=r.t==='1A'?'Walk-In Opener':'Phone Opener';
-  var sTxt=document.createElement('div');sTxt.className='dcp-script-txt';sTxt.textContent='\u201c'+dcpGetScript(r.t)+'\u201d';
-  scr.appendChild(sLbl);scr.appendChild(sTxt);detail.appendChild(scr);
+  var scr=document.createElement('div');scr.className='exec-script';
+  scr.innerHTML=buildDcpExecScript(r,'Treon');
+  scr.querySelector('.exec-script-hdr').addEventListener('click',function(){
+    scr.classList.toggle('open');
+    var tog=scr.querySelector('.exec-script-toggle');
+    tog.textContent=scr.classList.contains('open')?'\u25b2':'\u25bc';
+  });
+  scr.querySelectorAll('.es-obj-q').forEach(function(q){
+    q.addEventListener('click',function(e){e.stopPropagation();q.parentElement.classList.toggle('open');});
+  });
+  scr.querySelector('.es-obj-toggle').addEventListener('click',function(e){
+    e.stopPropagation();
+    var tog=scr.querySelector('.es-obj-toggle');
+    var lst=scr.querySelector('.es-obj-list');
+    tog.classList.toggle('open');
+    lst.classList.toggle('open');
+  });
+  detail.appendChild(scr);
   card.appendChild(top);card.appendChild(detail);return card;
 }
 function dcpRender(){
@@ -773,10 +868,24 @@ function dcp3MakeCard(r){
   var sb=document.createElement('button');sb.className='dcp-save-btn';sb.textContent='Save Notes';sb.addEventListener('click',function(){dcp3SaveNotes(r.i);});
   var sm=document.createElement('span');sm.className='dcp-saved';sm.id='dcp3sm'+r.i;
   nr.appendChild(sb);nr.appendChild(sm);detail.appendChild(nr);
-  var scr=document.createElement('div');scr.className='dcp-script';
-  var sLbl=document.createElement('div');sLbl.className='dcp-script-lbl';sLbl.textContent=r.t==='1A'?'Walk-In Opener':'Phone Opener';
-  var sTxt=document.createElement('div');sTxt.className='dcp-script-txt';sTxt.textContent='“'+dcpGetScript(r.t)+'”';
-  scr.appendChild(sLbl);scr.appendChild(sTxt);detail.appendChild(scr);
+  var scr=document.createElement('div');scr.className='exec-script';
+  scr.innerHTML=buildDcpExecScript(r,'Aaron');
+  scr.querySelector('.exec-script-hdr').addEventListener('click',function(){
+    scr.classList.toggle('open');
+    var tog=scr.querySelector('.exec-script-toggle');
+    tog.textContent=scr.classList.contains('open')?'\u25b2':'\u25bc';
+  });
+  scr.querySelectorAll('.es-obj-q').forEach(function(q){
+    q.addEventListener('click',function(e){e.stopPropagation();q.parentElement.classList.toggle('open');});
+  });
+  scr.querySelector('.es-obj-toggle').addEventListener('click',function(e){
+    e.stopPropagation();
+    var tog=scr.querySelector('.es-obj-toggle');
+    var lst=scr.querySelector('.es-obj-list');
+    tog.classList.toggle('open');
+    lst.classList.toggle('open');
+  });
+  detail.appendChild(scr);
   card.appendChild(top);card.appendChild(detail);return card;
 }
 function dcp3Render(){
@@ -883,10 +992,24 @@ function dcp2MakeCard(r){
   var sb=document.createElement('button');sb.className='dcp-save-btn';sb.textContent='Save Notes';sb.addEventListener('click',function(){dcp2SaveNotes(r.i);});
   var sm=document.createElement('span');sm.className='dcp-saved';sm.id='dcp2sm'+r.i;
   nr.appendChild(sb);nr.appendChild(sm);detail.appendChild(nr);
-  var scr=document.createElement('div');scr.className='dcp-script';
-  var sLbl=document.createElement('div');sLbl.className='dcp-script-lbl';sLbl.textContent=r.t==='1A'?'Walk-In Opener':'Phone Opener';
-  var sTxt=document.createElement('div');sTxt.className='dcp-script-txt';sTxt.textContent='“'+dcpGetScript(r.t)+'”';
-  scr.appendChild(sLbl);scr.appendChild(sTxt);detail.appendChild(scr);
+  var scr=document.createElement('div');scr.className='exec-script';
+  scr.innerHTML=buildDcpExecScript(r,'David');
+  scr.querySelector('.exec-script-hdr').addEventListener('click',function(){
+    scr.classList.toggle('open');
+    var tog=scr.querySelector('.exec-script-toggle');
+    tog.textContent=scr.classList.contains('open')?'\u25b2':'\u25bc';
+  });
+  scr.querySelectorAll('.es-obj-q').forEach(function(q){
+    q.addEventListener('click',function(e){e.stopPropagation();q.parentElement.classList.toggle('open');});
+  });
+  scr.querySelector('.es-obj-toggle').addEventListener('click',function(e){
+    e.stopPropagation();
+    var tog=scr.querySelector('.es-obj-toggle');
+    var lst=scr.querySelector('.es-obj-list');
+    tog.classList.toggle('open');
+    lst.classList.toggle('open');
+  });
+  detail.appendChild(scr);
   card.appendChild(top);card.appendChild(detail);return card;
 }
 function dcp2Render(){
