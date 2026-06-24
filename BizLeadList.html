@@ -367,7 +367,18 @@ function saveTk(){try{localStorage.setItem('btg_bll4',JSON.stringify(tracking));
 function getTk(id){return tracking[id]||{status:'fresh',notes:'',ts:0};}
 function toggleCard(id){expandedId=(expandedId===id)?null:id;render();}
 function logCall(id){const tk=getTk(id);tracking[id]={...tk,status:tk.status==='fresh'?'called':tk.status,ts:Date.now()};saveTk();}
-function setStatus(id,status){tracking[id]={...getTk(id),status};saveTk();render();}
+function setStatus(id,status){
+  tracking[id]={...getTk(id),status};saveTk();
+  // Patch card in-place: update dot, status buttons, worked class
+  var cardEl=document.getElementById('card-'+id);if(!cardEl)return;
+  var tk=getTk(id);
+  if(isWorked(status))cardEl.classList.add('worked');else cardEl.classList.remove('worked');
+  var dot=cardEl.querySelector('.sdot');if(dot){dot.className='sdot s-'+status;dot.title=status;}
+  cardEl.querySelectorAll('.sbtn').forEach(function(btn){
+    var m=btn.className.match(/sb-(\S+)/);if(m){if(status===m[1])btn.classList.add('on');else btn.classList.remove('on');}
+  });
+  updateStats();
+}
 function saveNotes(id){const el=document.getElementById('n'+id);if(!el)return;tracking[id]={...getTk(id),notes:el.value};saveTk();const m=document.getElementById('sm'+id);if(m){m.textContent='Saved!';setTimeout(()=>{m.textContent='';},2000);}}
 function copyNum(id){
   const r=DATA.find(x=>x.i===id);if(!r)return;
@@ -590,7 +601,7 @@ var DCP_TIER_LABEL={'1A':'T-1A','1B':'T-1B','2':'T-2','3':'T-3','4':'T-4'};
 var DCP_TIER_SHORT={'1A':'Walk-In','1B':'Local Call','2':'Tier 2','3':'Tier 3','4':'Tier 4'};
 var DCP_TIER_ORDER=['1A','1B','2','3','4'];
 var dcp_day=1,dcp_expId=null,dcp_tk={};
-function dcpSave(){try{localStorage.setItem('btg_dcp2',JSON.stringify(dcp_tk));}catch(e){}dcpRender();}
+function dcpSave(){try{localStorage.setItem('btg_dcp2',JSON.stringify(dcp_tk));}catch(e){}}
 function dcpLoad(){try{var s=localStorage.getItem('btg_dcp2');if(s)dcp_tk=JSON.parse(s);}catch(e){}}
 function dcpGetTk(id){return dcp_tk[id]||{status:'fresh',notes:'',ts:0,done:false};}
 function dcpIsWorked(s){return['called','no-answer','contacted','appt-set','not-interested','follow-up'].indexOf(s)>-1;}
@@ -619,14 +630,35 @@ function dcpStats(){
     else{banner.className='dcp-done-banner';}
   }
 }
-function dcpSetStatus(id,status){dcp_tk[id]=Object.assign({},dcpGetTk(id),{status:status});dcpSave();}
+function dcpSetStatus(id,status){dcp_tk[id]=Object.assign({},dcpGetTk(id),{status:status});dcpSave();dcpPatchCard(id,dcpGetTk(id),'');}
 function dcpSaveNotes(id){var el=document.getElementById('dcpn'+id);if(!el)return;dcp_tk[id]=Object.assign({},dcpGetTk(id),{notes:el.value});dcpSave();var m=document.getElementById('dcpsm'+id);if(m){m.textContent='Saved!';setTimeout(function(){m.textContent='';},2000);}}
-function dcpToggleCheck(id,e){e.stopPropagation();var tk=dcpGetTk(id);var done=!tk.done;var status=done&&tk.status==='fresh'?'called':tk.status;dcp_tk[id]=Object.assign({},tk,{done:done,status:status,ts:done?Date.now():tk.ts});dcpSave();}
+function dcpToggleCheck(id,e){e.stopPropagation();var tk=dcpGetTk(id);var done=!tk.done;var status=done&&tk.status==='fresh'?'called':tk.status;dcp_tk[id]=Object.assign({},tk,{done:done,status:status,ts:done?Date.now():tk.ts});dcpSave();dcpPatchCard(id,dcpGetTk(id),'');}
 function dcpToggleCard(id){dcp_expId=(dcp_expId===id)?null:id;dcpRender();}
-function dcpLogCall(id){var tk=dcpGetTk(id);if(tk.status==='fresh'){dcp_tk[id]=Object.assign({},tk,{status:'called',ts:Date.now()});dcpSave();}}
+function dcpLogCall(id){var tk=dcpGetTk(id);if(tk.status==='fresh'){dcp_tk[id]=Object.assign({},tk,{status:'called',ts:Date.now()});dcpSave();dcpPatchCard(id,dcpGetTk(id),'');}}
 function dcpCopyPhone(p,btn){var flash=function(){btn.textContent='Copied!';btn.style.background='#16a34a';btn.style.color='#fff';setTimeout(function(){btn.textContent='Copy';btn.style.background='';btn.style.color='';},1500);};if(navigator.clipboard){navigator.clipboard.writeText(p).then(flash).catch(function(){var t=document.createElement('textarea');t.value=p;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);flash();});}else{var t=document.createElement('textarea');t.value=p;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);flash();}}
 function dcpMUrl(r){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.a+', '+r.c+', TX '+r.z);}
 function dcpPHref(p){return 'tel:'+p.replace(/[^0-9+]/g,'');}
+
+
+function dcpPatchCard(id, tk, prefix) {
+  var cardEl = document.getElementById((prefix||'')+'card-'+id);
+  if (!cardEl) return;
+  var isDone = tk.done || tk.status==='appt-set' || tk.status==='not-interested';
+  // done class
+  if (isDone) cardEl.classList.add('dcp-done');
+  else cardEl.classList.remove('dcp-done');
+  // checkmark
+  var chk = cardEl.querySelector('.dcp-chk');
+  if (chk) { chk.className='dcp-chk'+(isDone?' on':''); chk.textContent=isDone?'\u2713':''; }
+  // status dot
+  var dot = cardEl.querySelector('.dcp-sdot');
+  if (dot) { dot.className='dcp-sdot dcp-s-'+tk.status; dot.title=tk.status; }
+  // status buttons
+  cardEl.querySelectorAll('.dcp-sbtn').forEach(function(btn) {
+    var s = btn.className.match(/dcp-sb-(\S+)/);
+    if (s) { if (tk.status===s[1]) btn.classList.add('on'); else btn.classList.remove('on'); }
+  });
+}
 
 function buildDcpExecScript(r, agentName) {
   var city = esc(r.c);
@@ -798,7 +830,7 @@ function agentOpen(who){
 
 // ===== DAVID CALL PLANNER (dcp3_) =====
 var dcp3_day=1,dcp3_expId=null,dcp3_tk={};
-function dcp3Save(){try{localStorage.setItem('btg_dcp_david',JSON.stringify(dcp3_tk));}catch(e){}dcp3Render();}
+function dcp3Save(){try{localStorage.setItem('btg_dcp_david',JSON.stringify(dcp3_tk));}catch(e){}}
 function dcp3Load(){try{var s=localStorage.getItem('btg_dcp_david');if(s)dcp3_tk=JSON.parse(s);}catch(e){}}
 function dcp3GetTk(id){return dcp3_tk[id]||{status:'fresh',notes:'',ts:0,done:false};}
 function dcp3IsWorked(s){return['called','no-answer','contacted','appt-set','not-interested','follow-up'].indexOf(s)>-1;}
@@ -828,11 +860,11 @@ function dcp3Stats(){
   var banner=document.getElementById('dcp3-done-banner');
   if(banner){if(leads.length>0&&left===0){banner.className='dcp-done-banner show';var dt=document.getElementById('dcp3-done-text');if(dt)dt.textContent='Crushed it — '+worked+' worked, '+appts+' appt'+(appts!==1?'s':'')+' set.';}else{banner.className='dcp-done-banner';}}
 }
-function dcp3SetStatus(id,status){dcp3_tk[id]=Object.assign({},dcp3GetTk(id),{status:status});dcp3Save();}
+function dcp3SetStatus(id,status){dcp3_tk[id]=Object.assign({},dcp3GetTk(id),{status:status});dcp3Save();dcpPatchCard(id,dcp3GetTk(id),'dcp3');}
 function dcp3SaveNotes(id){var el=document.getElementById('dcp3n'+id);if(!el)return;dcp3_tk[id]=Object.assign({},dcp3GetTk(id),{notes:el.value});dcp3Save();var m=document.getElementById('dcp3sm'+id);if(m){m.textContent='Saved!';setTimeout(function(){m.textContent='';},2000);}}
-function dcp3ToggleCheck(id,e){e.stopPropagation();var tk=dcp3GetTk(id);var done=!tk.done;var status=done&&tk.status==='fresh'?'called':tk.status;dcp3_tk[id]=Object.assign({},tk,{done:done,status:status,ts:done?Date.now():tk.ts});dcp3Save();}
+function dcp3ToggleCheck(id,e){e.stopPropagation();var tk=dcp3GetTk(id);var done=!tk.done;var status=done&&tk.status==='fresh'?'called':tk.status;dcp3_tk[id]=Object.assign({},tk,{done:done,status:status,ts:done?Date.now():tk.ts});dcp3Save();dcpPatchCard(id,dcp3GetTk(id),'dcp3');}
 function dcp3ToggleCard(id){dcp3_expId=(dcp3_expId===id)?null:id;dcp3Render();}
-function dcp3LogCall(id){var tk=dcp3GetTk(id);if(tk.status==='fresh'){dcp3_tk[id]=Object.assign({},tk,{status:'called',ts:Date.now()});dcp3Save();}}
+function dcp3LogCall(id){var tk=dcp3GetTk(id);if(tk.status==='fresh'){dcp3_tk[id]=Object.assign({},tk,{status:'called',ts:Date.now()});dcp3Save();dcpPatchCard(id,dcp3GetTk(id),'dcp3');}}
 function dcp3CopyPhone(p,btn){var flash=function(){btn.textContent='Copied!';btn.style.background='#16a34a';btn.style.color='#fff';setTimeout(function(){btn.textContent='Copy';btn.style.background='';btn.style.color='';},1500);};if(navigator.clipboard){navigator.clipboard.writeText(p).then(flash).catch(function(){var t=document.createElement('textarea');t.value=p;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);flash();});}else{var t=document.createElement('textarea');t.value=p;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);flash();}}
 function dcp3MUrl(r){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.a+', '+r.c+', TX '+r.z);}
 function dcp3PHref(p){return 'tel:'+p.replace(/[^0-9+]/g,'');}
@@ -924,7 +956,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 // ===== AGENT 2 CALL PLANNER =====
 var dcp2_day=1,dcp2_expId=null,dcp2_tk={};
-function dcp2Save(){try{localStorage.setItem('btg_dcp2_agent2',JSON.stringify(dcp2_tk));}catch(e){}dcp2Render();}
+function dcp2Save(){try{localStorage.setItem('btg_dcp2_agent2',JSON.stringify(dcp2_tk));}catch(e){}}
 function dcp2Load(){try{var s=localStorage.getItem('btg_dcp2_agent2');if(s)dcp2_tk=JSON.parse(s);}catch(e){}}
 function dcp2GetTk(id){return dcp2_tk[id]||{status:'fresh',notes:'',ts:0,done:false};}
 function dcp2IsWorked(s){return['called','no-answer','contacted','appt-set','not-interested','follow-up'].indexOf(s)>-1;}
@@ -952,11 +984,11 @@ function dcp2Stats(){
     else{banner.className='dcp-done-banner';}
   }
 }
-function dcp2SetStatus(id,status){dcp2_tk[id]=Object.assign({},dcp2GetTk(id),{status:status});dcp2Save();}
+function dcp2SetStatus(id,status){dcp2_tk[id]=Object.assign({},dcp2GetTk(id),{status:status});dcp2Save();dcpPatchCard(id,dcp2GetTk(id),'dcp2');}
 function dcp2SaveNotes(id){var el=document.getElementById('dcp2n'+id);if(!el)return;dcp2_tk[id]=Object.assign({},dcp2GetTk(id),{notes:el.value});dcp2Save();var m=document.getElementById('dcp2sm'+id);if(m){m.textContent='Saved!';setTimeout(function(){m.textContent='';},2000);}}
-function dcp2ToggleCheck(id,e){e.stopPropagation();var tk=dcp2GetTk(id);var done=!tk.done;var status=done&&tk.status==='fresh'?'called':tk.status;dcp2_tk[id]=Object.assign({},tk,{done:done,status:status,ts:done?Date.now():tk.ts});dcp2Save();}
+function dcp2ToggleCheck(id,e){e.stopPropagation();var tk=dcp2GetTk(id);var done=!tk.done;var status=done&&tk.status==='fresh'?'called':tk.status;dcp2_tk[id]=Object.assign({},tk,{done:done,status:status,ts:done?Date.now():tk.ts});dcp2Save();dcpPatchCard(id,dcp2GetTk(id),'dcp2');}
 function dcp2ToggleCard(id){dcp2_expId=(dcp2_expId===id)?null:id;dcp2Render();}
-function dcp2LogCall(id){var tk=dcp2GetTk(id);if(tk.status==='fresh'){dcp2_tk[id]=Object.assign({},tk,{status:'called',ts:Date.now()});dcp2Save();}}
+function dcp2LogCall(id){var tk=dcp2GetTk(id);if(tk.status==='fresh'){dcp2_tk[id]=Object.assign({},tk,{status:'called',ts:Date.now()});dcp2Save();dcpPatchCard(id,dcp2GetTk(id),'dcp2');}}
 function dcp2CopyPhone(p,btn){var flash=function(){btn.textContent='Copied!';btn.style.background='#16a34a';btn.style.color='#fff';setTimeout(function(){btn.textContent='Copy';btn.style.background='';btn.style.color='';},1500);};if(navigator.clipboard){navigator.clipboard.writeText(p).then(flash).catch(function(){var t=document.createElement('textarea');t.value=p;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);flash();});}else{var t=document.createElement('textarea');t.value=p;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);flash();}}
 function dcp2MUrl(r){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.a+', '+r.c+', TX '+r.z);}
 function dcp2PHref(p){return 'tel:'+p.replace(/[^0-9+]/g,'');}
