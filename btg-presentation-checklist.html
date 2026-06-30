@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="light">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>BTG Presentation Checklist</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f2f7;
+  --card: #ffffff;
+  --border: #e2e6f0;
+  --navy: #0b1f4a;
+  --navy2: #122560;
+  --gold: #e8a020;
+  --gold2: #f5b540;
+  --gold-soft: #fef6e4;
+  --green: #00a878;
+  --green2: #00c48c;
+  --green-soft: #e6f9f4;
+  --blue: #2563eb;
+  --blue-soft: #eff3fe;
+  --red: #e53e3e;
+  --red-soft: #fff0f0;
+  --amber: #d97706;
+  --amber-soft: #fffbeb;
+  --text: #131a2e;
+  --text2: #4a5270;
+  --text3: #8890a8;
+  --display: 'Syne', sans-serif;
+  --body: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--body);}
+body{padding-bottom:70px;}
+.hidden{display:none !important;}
+
+/* ── AUTH ── */
+.auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,var(--navy) 0%,var(--navy2) 100%);}
+.auth-card{background:#fff;border-radius:18px;padding:32px 28px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(11,31,74,0.3);}
+.auth-logo{font-family:var(--display);font-weight:800;font-size:22px;color:var(--navy);text-align:center;margin-bottom:2px;}
+.auth-sub{text-align:center;font-size:12px;color:var(--text3);margin-bottom:22px;letter-spacing:0.3px;}
+.auth-field{margin-bottom:14px;}
+.auth-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;display:block;}
+.auth-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--body);background:var(--bg);}
+.auth-input:focus{outline:none;border-color:var(--gold);}
+.auth-btn{width:100%;padding:13px;border:none;border-radius:10px;background:var(--navy);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;}
+.auth-btn:active{background:var(--navy2);}
+.auth-error{color:var(--red);font-size:12px;margin-top:10px;text-align:center;min-height:14px;}
+.auth-loading{text-align:center;padding:60px 20px;color:#fff;}
+.spinner{width:34px;height:34px;border:3px solid rgba(255,255,255,0.25);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── TOPBAR ── */
+header.topbar{background:var(--navy);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:40;border-bottom:3px solid var(--gold);box-shadow:0 2px 14px rgba(11,31,74,0.2);}
+.tb-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.tb-brand{display:flex;flex-direction:column;}
+.tb-brand .b1{font-family:var(--display);font-weight:800;font-size:16px;letter-spacing:0.3px;}
+.tb-brand .b2{font-size:9.5px;color:var(--gold2);letter-spacing:1.5px;font-weight:600;}
+.tb-title{font-size:12px;color:#c7d0ea;margin-top:2px;font-weight:500;}
+.back-link{color:#c7d0ea;text-decoration:none;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.back-link:active{opacity:0.7;}
+
+.mode-switch{display:flex;margin-top:12px;background:rgba(255,255,255,0.08);border-radius:10px;padding:4px;gap:4px;}
+.mode-btn{flex:1;border:none;background:transparent;color:#c7d0ea;padding:10px 6px;border-radius:7px;font-size:12.5px;font-weight:700;cursor:pointer;letter-spacing:0.2px;}
+.mode-btn.active{background:var(--gold);color:var(--navy);}
+
+.progress-wrap{padding:10px 2px 0;}
+.progress-bar{height:6px;background:rgba(255,255,255,0.12);border-radius:5px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0%;transition:width .25s ease;}
+.progress-label{font-size:10.5px;color:#c7d0ea;margin-top:5px;text-align:right;}
+
+.sync-pill{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#c7d0ea;margin-top:8px;}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green2);}
+.sync-dot.saving{background:var(--gold2);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+main{max-width:640px;margin:0 auto;padding:14px;}
+
+.client-card{background:var(--card);border-radius:14px;padding:13px 14px;margin-bottom:13px;box-shadow:0 1px 3px rgba(11,31,74,0.06);border:1px solid var(--border);}
+.client-card .row{display:flex;gap:10px;margin-bottom:9px;}
+.client-card .row:last-child{margin-bottom:0;}
+.client-card input{flex:1;min-width:0;border:none;border-bottom:2px solid var(--border);font-size:14px;padding:6px 2px;background:transparent;color:var(--text);font-family:var(--body);}
+.client-card input:focus{outline:none;border-bottom-color:var(--gold);}
+.field label{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:2px;font-weight:600;}
+.field{flex:1;min-width:0;}
+
+.setup-note{background:var(--gold-soft);border:1px solid #f0dba6;border-left:4px solid var(--gold);border-radius:10px;padding:10px 12px;margin-bottom:13px;font-size:12px;color:#8a5d10;font-style:italic;line-height:1.45;}
+
+.section{background:var(--card);border-radius:14px;margin-bottom:11px;overflow:hidden;box-shadow:0 1px 3px rgba(11,31,74,0.05);border:1px solid var(--border);}
+.section-head{background:var(--navy);color:#fff;padding:11px 14px;font-size:13px;font-weight:700;font-family:var(--display);letter-spacing:0.2px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.section-head .count{font-size:10px;color:var(--gold2);font-weight:700;font-family:var(--mono);}
+.section-body{padding:5px 14px 12px;}
+.section-body.collapsed{display:none;}
+
+.subhead{color:var(--red);font-weight:700;font-size:10.5px;letter-spacing:0.4px;text-transform:uppercase;margin:12px 0 4px;padding-top:4px;}
+.subhead:first-child{margin-top:8px;}
+
+.item{display:flex;align-items:flex-start;gap:10px;padding:9px 2px;border-bottom:1px solid #F0F1F6;cursor:pointer;user-select:none;}
+.item:last-child{border-bottom:none;}
+.check{flex-shrink:0;width:21px;height:21px;border-radius:6px;border:2px solid #C8CCD8;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s ease;background:#fff;}
+.item.checked .check{background:var(--green);border-color:var(--green);}
+.check svg{width:12px;height:12px;opacity:0;transition:opacity .12s ease;}
+.item.checked .check svg{opacity:1;}
+.item-text{flex:1;font-size:13.5px;line-height:1.4;color:var(--text);padding-top:1px;}
+.item.checked .item-text{color:var(--text3);text-decoration:line-through;text-decoration-color:#C8CCD8;}
+.item-note{font-size:11px;color:var(--text3);font-style:italic;margin-top:3px;line-height:1.35;}
+
+.script-box{background:var(--blue-soft);border-left:3px solid var(--blue);border-radius:8px;padding:9px 11px;margin:8px 0 10px;font-size:12px;font-style:italic;color:var(--navy);line-height:1.45;}
+
+.mini-fields{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px;padding-left:31px;}
+.mini-fields input{flex:1;min-width:90px;border:none;border-bottom:1.5px solid var(--border);font-size:12px;padding:4px 2px;background:transparent;color:var(--text);font-family:var(--body);}
+.mini-fields input:focus{outline:none;border-bottom-color:var(--gold);}
+.mini-fields .mf{display:flex;flex-direction:column;flex:1;min-width:95px;}
+.mini-fields .mf span{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:1px;font-weight:600;}
+
+.notes-area{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13px;font-family:var(--body);resize:vertical;min-height:70px;color:var(--text);background:#FBFBFD;}
+.notes-area:focus{outline:none;border-color:var(--gold);}
+.notes-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin:10px 0 5px;font-weight:700;}
+
+.jogger-grid{display:none;}
+.jogger-grid.open{display:block;}
+.jogger-cat{margin-bottom:10px;}
+.jogger-cat h4{font-size:10.5px;color:var(--navy);text-transform:uppercase;letter-spacing:0.4px;margin:0 0 4px;font-weight:800;}
+.jogger-cat .item{padding:6px 2px;}
+.jogger-cat .item-text{font-size:12.5px;}
+.jogger-cat .check{width:18px;height:18px;}
+
+.quote-line{text-align:center;font-style:italic;color:var(--amber);font-weight:700;font-size:12px;margin:14px 4px 4px;line-height:1.5;}
+
+.reset-row{display:flex;gap:8px;margin-top:16px;}
+.btn-secondary{flex:1;background:#fff;border:1.5px solid var(--border);color:var(--text3);padding:11px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--body);}
+.btn-secondary:active{background:#F3F4F8;}
+.btn-navy{flex:1;background:var(--navy);border:none;color:#fff;padding:11px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--body);}
+
+footer.app-footer{text-align:center;font-size:10px;color:var(--text3);padding:18px 16px 4px;line-height:1.6;}
+
+/* ── MY SESSIONS LIST ── */
+.sessions-bar{display:flex;gap:8px;margin-bottom:13px;}
+.sessions-btn{flex:1;background:#fff;border:1.5px solid var(--border);color:var(--navy);padding:11px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--body);display:flex;align-items:center;justify-content:center;gap:6px;}
+.sessions-panel{background:var(--card);border-radius:14px;border:1px solid var(--border);margin-bottom:13px;overflow:hidden;display:none;}
+.sessions-panel.open{display:block;}
+.sessions-panel-head{background:var(--bg);padding:10px 14px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border);}
+.session-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid #F0F1F6;cursor:pointer;}
+.session-row:last-child{border-bottom:none;}
+.session-row:active{background:#FAFAFC;}
+.session-row .sname{font-size:13.5px;font-weight:600;color:var(--text);}
+.session-row .smeta{font-size:11px;color:var(--text3);margin-top:2px;}
+.session-badge{font-size:9.5px;padding:3px 8px;border-radius:20px;font-weight:700;letter-spacing:0.3px;}
+.session-badge.in_progress{background:var(--gold-soft);color:var(--amber);}
+.session-badge.complete{background:var(--green-soft);color:var(--green);}
+.session-empty{padding:24px 14px;text-align:center;color:var(--text3);font-size:12.5px;}
+
+/* ── DIRECTOR FEED ── */
+.director-feed{background:var(--card);border-radius:14px;border:1px solid var(--border);margin-bottom:13px;overflow:hidden;}
+.director-feed-head{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:12px 14px;font-size:13px;font-weight:700;font-family:var(--display);display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.director-feed-body{padding:4px 0;}
+.feed-row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #F0F1F6;cursor:pointer;}
+.feed-row:last-child{border-bottom:none;}
+.feed-row:active{background:#FAFAFC;}
+.feed-avatar{width:32px;height:32px;border-radius:9px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;font-family:var(--display);}
+.feed-info{flex:1;min-width:0;}
+.feed-info .f1{font-size:13px;font-weight:600;color:var(--text);}
+.feed-info .f2{font-size:11px;color:var(--text3);margin-top:1px;}
+.feed-pct{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--navy);flex-shrink:0;}
+
+@media (max-width:380px){
+  .tb-brand .b1{font-size:14.5px;}
+  .item-text{font-size:13px;}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card" id="auth-card">
+    <div class="auth-logo">BUILT TO GROW</div>
+    <div class="auth-sub">Sign in with your BTG Portal credentials</div>
+    <div class="auth-field">
+      <label class="auth-label">Email</label>
+      <input class="auth-input" id="auth-email" type="email" placeholder="you@email.com">
+    </div>
+    <div class="auth-field">
+      <label class="auth-label">Password</label>
+      <input class="auth-input" id="auth-password" type="password" placeholder="••••••••">
+    </div>
+    <button class="auth-btn" onclick="signIn()">Sign In</button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<header class="topbar hidden" id="topbar">
+  <div class="tb-row">
+    <div class="tb-brand">
+      <div class="b1">BUILT TO GROW</div>
+      <div class="b2">FINANCIAL GROUP</div>
+      <div class="tb-title">Presentation Checklist</div>
+    </div>
+    <a class="back-link" href="tracker.html">← Portal</a>
+  </div>
+
+  <div class="mode-switch">
+    <button class="mode-btn active" data-mode="zoom" id="btnZoom" onclick="switchMode('zoom')">ZOOM</button>
+    <button class="mode-btn" data-mode="table" id="btnTable" onclick="switchMode('table')">KITCHEN TABLE</button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 of 0 complete</div>
+  </div>
+  <div class="sync-pill"><span class="sync-dot" id="syncDot"></span><span id="syncLabel">Synced</span></div>
+</header>
+
+<main class="hidden" id="content">
+
+  <div class="sessions-bar">
+    <button class="sessions-btn" onclick="toggleSessions()">📋 My Recent Clients</button>
+    <button class="sessions-btn" onclick="newSession()">＋ New Client</button>
+  </div>
+
+  <div class="sessions-panel" id="sessionsPanel">
+    <div class="sessions-panel-head">Your last 15 checklists</div>
+    <div id="sessionsList"></div>
+  </div>
+
+  <div class="director-feed hidden" id="directorFeed">
+    <div class="director-feed-head" onclick="toggleDirectorFeed()">
+      <span>🏢 Director Feed — All Agents</span>
+      <span id="feedToggleArrow">▾</span>
+    </div>
+    <div class="director-feed-body" id="directorFeedBody"></div>
+  </div>
+
+  <div class="client-card">
+    <div class="row">
+      <div class="field"><label>Client Name</label><input type="text" id="clientName" placeholder="—"></div>
+      <div class="field"><label>Date</label><input type="text" id="apptDate" placeholder="—"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Agent</label><input type="text" id="agentName" placeholder="—" readonly></div>
+      <div class="field"><label>Appt Time</label><input type="text" id="apptTime" placeholder="—"></div>
+    </div>
+  </div>
+
+  <div class="setup-note" id="setupNote"></div>
+
+  <div id="sectionsContainer"></div>
+
+  <div class="section">
+    <div class="section-head" id="joggerHead">
+      REFERRAL MEMORY JOGGER
+      <span class="count">use at close →</span>
+    </div>
+    <div class="section-body" id="joggerBody" style="display:none;">
+      <p style="font-size:12px;color:var(--text3);font-style:italic;margin-top:6px;">
+        Hand the phone to the client, or screen-share this section. Let them tap names as they think of people.
+      </p>
+      <div id="joggerGrid"></div>
+      <div class="quote-line">"Who do you know who just got married, had a baby, started a new job, or bought a house?"</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-body" style="padding-top:14px;">
+      <div class="notes-label">Session Notes</div>
+      <textarea class="notes-area" id="sessionNotes" placeholder="Type notes here..."></textarea>
+    </div>
+  </div>
+
+  <div class="reset-row">
+    <button class="btn-secondary" onclick="resetCurrent()">Clear This Checklist</button>
+    <button class="btn-navy" onclick="markComplete()">✓ Mark Complete</button>
+  </div>
+
+  <footer class="app-footer">
+    Built To Grow Financial Group · PHP Agency Playbook System<br>
+    Synced to your BTG Portal account
+  </footer>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  SUPABASE CONFIG (shared with BTG Portal)
+// ═══════════════════════════════════════════════════
+const SB_URL = 'https://dtksttiukhskxbcsbplt.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0a3N0dGl1a2hza3hiY3NicGx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MzYxNzIsImV4cCI6MjA5MDMxMjE3Mn0.ORJ7kYRHa4kCTJSTRYAzibFGwBDe8DI3oumn5caV5dI';
+
+let currentUser = null;
+let currentProfile = null;
+let currentMode = 'zoom';
+let activeChecklistId = null;
+let state = { checked: {}, fields: {} };
+let saveTimer = null;
+let allAgentsCache = [];
+
+function myUid(){ return currentUser?.user?.id || currentUser?.id || ''; }
+function normalizeSession(s){
+  if(!s) return s;
+  if(!s.user) s.user = {};
+  if(!s.user.id) s.user.id = s.id || s.sub || s.user?.sub || '';
+  return s;
+}
+
+let _refreshPromise = null;
+async function refreshSession(){
+  if(_refreshPromise) return _refreshPromise;
+  _refreshPromise = (async () => {
+    try{
+      const refreshToken = currentUser?.refresh_token;
+      if(!refreshToken) throw new Error('No refresh token');
+      const r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', {
+        method:'POST',
+        headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+        body: JSON.stringify({refresh_token: refreshToken})
+      });
+      const data = await r.json();
+      if(data.access_token){
+        currentUser = normalizeSession({...currentUser, ...data});
+        saveSession(currentUser);
+        return true;
+      }
+      return false;
+    }catch(e){ console.warn('Token refresh failed:', e); return false; }
+    finally{ _refreshPromise = null; }
+  })();
+  return _refreshPromise;
+}
+
+async function sbFetch(path, opts={}, _retry=true){
+  const token = currentUser?.access_token;
+  const r = await fetch(SB_URL + path, {
+    ...opts,
+    headers:{
+      'apikey': SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...(token ? {'Authorization': `Bearer ${token}`} : {}),
+      ...(opts.headers||{})
+    }
+  });
+  if(r.status === 401 && _retry){
+    const refreshed = await refreshSession();
+    if(refreshed) return sbFetch(path, opts, false);
+    clearSession(); currentUser = null;
+    location.reload();
+    return;
+  }
+  if(!r.ok && r.status !== 406){
+    const e = await r.json().catch(()=>({}));
+    throw new Error(e.message || r.statusText);
+  }
+  return r.status === 204 ? null : r.json().catch(()=>null);
+}
+
+async function sbAuth(path, body){
+  const r = await fetch(SB_URL + '/auth/v1' + path, {
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+function saveSession(s){ try{ localStorage.setItem('btg_session', JSON.stringify(s)); }catch(e){} }
+function loadSession(){ try{ return JSON.parse(localStorage.getItem('btg_session')); }catch(e){ return null; } }
+function clearSession(){ try{ localStorage.removeItem('btg_session'); }catch(e){} }
+
+function scheduleTokenRefresh(){
+  try{
+    if(!currentUser?.access_token) return;
+    const payload = JSON.parse(atob(currentUser.access_token.split('.')[1]));
+    const expiresAt = payload.exp * 1000;
+    const refreshAt = expiresAt - 5*60*1000;
+    const delay = Math.max(refreshAt - Date.now(), 10000);
+    setTimeout(async () => { await refreshSession(); scheduleTokenRefresh(); }, delay);
+  }catch(e){ console.warn('scheduleTokenRefresh:', e); }
+}
+
+async function signIn(){
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+  if(!email || !password){ errEl.textContent = 'Enter email and password.'; return; }
+  try{
+    const res = await sbAuth('/token?grant_type=password', { email, password });
+    if(res.access_token){
+      currentUser = normalizeSession(res);
+      saveSession(currentUser);
+      await initApp();
+    } else {
+      errEl.textContent = res.error_description || 'Sign in failed.';
+    }
+  }catch(e){
+    errEl.textContent = 'Connection error. Try again.';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  const saved = loadSession();
+  if(saved?.access_token){
+    currentUser = normalizeSession(saved);
+    await initApp();
+  }
+});
+
+async function initApp(){
+  try{
+    const uid = currentUser?.user?.id || currentUser?.id;
+    if(!uid){ clearSession(); currentUser = null; return; }
+    if(!currentUser.user) currentUser.user = {id: uid};
+
+    const profiles = await sbFetch(`/rest/v1/profiles?id=eq.${uid}&select=*`);
+    if(!profiles || profiles.length === 0){
+      document.getElementById('auth-error').textContent = 'Account not found. Contact your director.';
+      clearSession(); currentUser = null; return;
+    }
+    currentProfile = profiles[0];
+    if(!currentProfile.approved && !currentProfile.is_director){
+      document.getElementById('auth-error').textContent = 'Your account is pending director approval.';
+      clearSession(); currentUser = null; return;
+    }
+    showApp();
+    scheduleTokenRefresh();
+    document.getElementById('agentName').value = currentProfile.name || '';
+    if(currentProfile.is_director){
+      document.getElementById('directorFeed').classList.remove('hidden');
+      loadDirectorFeed();
+      loadAgentsCache();
+    }
+    await startNewOrResume();
+  }catch(e){
+    console.error('initApp error:', e);
+    document.getElementById('auth-error').textContent = 'Error loading account. Please try again.';
+    clearSession(); currentUser = null;
+  }
+}
+
+function showApp(){
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('topbar').classList.remove('hidden');
+  document.getElementById('content').classList.remove('hidden');
+}
+
+async function loadAgentsCache(){
+  try{
+    allAgentsCache = await sbFetch('/rest/v1/profiles?select=id,name,is_director') || [];
+  }catch(e){ console.warn(e); }
+}
+
+// ═══════════════════════════════════════════════════
+//  CHECKLIST DATA (Zoom + Kitchen Table content)
+// ═══════════════════════════════════════════════════
+const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+const data = {
+  zoom: {
+    setup: "ZOOM SETUP (before client joins): camera on, good lighting, screen share ready, FLS app/PDF open, mute notifications.",
+    sections: [
+      { title:"1. Intro — Building Rapport", blocks:[
+        {sub:"Family Background"},
+        {text:"Are you married?"},
+        {text:"Do you have any children?"},
+        {sub:"Career Background"},
+        {text:"What do you do for a living?"},
+        {text:"How long have you been with your current company?"},
+        {sub:"Financial Goals"},
+        {text:"Anything that keeps you up at night when it comes to your financial future?"},
+        {sub:"House Analogy (screen share visual if available)"},
+        {text:"Would you build a house without a roof?"},
+        {text:"Would you build a house without a foundation?"},
+        {text:"Life insurance covers both of those things!"},
+        {sub:"Why Are We Here?"},
+        {text:"What information can I provide your family today for our time together to be valuable?"}
+      ]},
+      { title:"2. Prequalification", blocks:[
+        {text:"Are all decision makers on the call?", note:"If spouse/partner needed, confirm camera is on or they're audible."},
+        {text:"Does your spouse need to be present before making any decisions?"},
+        {text:"If an additional decision maker is needed, reschedule the appointment."},
+        {text:"When are you looking to make a buying decision?"},
+        {text:"Who all are you looking to get life insurance protection on?"},
+        {text:"Do you have an idea of how much coverage you're looking for?"},
+        {text:"What is a comfortable monthly budget?"}
+      ]},
+      { title:"3. Data Gathering", blocks:[
+        {text:"Driver's license available?", note:"Have client hold it up to camera or type info in chat."},
+        {text:"Revoked / Suspended / DUI history?"},
+        {text:"SS# or ITIN available for each insured?"},
+        {text:"Medical conditions disclosed?"},
+        {text:"Any current illness that may prevent qualifying?"},
+        {text:"Existing life insurance coverage?"},
+        {fields:[["Carrier",""],["Coverage Amt",""],["Type",""]]},
+        {text:"Complete the FLS (screen share and fill together)"}
+      ]},
+      { title:"4. Presenting / Proposals", blocks:[
+        {script:"Walk through the proposal on screen share. Point the cursor to each section as you speak. Slow down on numbers."},
+        {text:"Death Benefit explained"},
+        {text:"Living Benefits explained"},
+        {text:"Cash Value explained"},
+        {text:"Bonus — Budget option presented"}
+      ]},
+      { title:"5. Close / Follow Up", blocks:[
+        {text:"Collect beneficiary information"},
+        {text:"Explain need for beneficiary understanding"},
+        {text:"Make a 3-way call with client", note:"Stay on Zoom and use phone on speaker, or carrier's e-app verbal consent line."},
+        {text:"Ask for referrals", note:"Use the Memory Jogger below — share screen or hand off."}
+      ]}
+    ]
+  },
+  table: {
+    setup: "IN-PERSON SETUP: bring laptop/tablet for FLS + proposal, printed Memory Jogger, pen, business cards, referral cards.",
+    sections: [
+      { title:"1. Intro — Building Rapport", blocks:[
+        {sub:"Family Background"},
+        {text:"Are you married?"},
+        {text:"Do you have any children?"},
+        {sub:"Career Background"},
+        {text:"What do you do for a living?"},
+        {text:"How long have you been with your current company?"},
+        {sub:"Financial Goals"},
+        {text:"Anything that keeps you up at night when it comes to your financial future?"},
+        {sub:"House Analogy (use a physical prop or sketch if helpful)"},
+        {text:"Would you build a house without a roof?"},
+        {text:"Would you build a house without a foundation?"},
+        {text:"Life insurance covers both of those things!"},
+        {sub:"Why Are We Here?"},
+        {text:"What information can I provide your family today for our time together to be valuable?"}
+      ]},
+      { title:"2. Prequalification", blocks:[
+        {text:"Are all decision makers at the table?", note:"Look around — is anyone missing from the kitchen table?"},
+        {text:"Does your spouse need to be present before making any decisions?"},
+        {text:"If an additional decision maker is needed, reschedule the appointment."},
+        {text:"When are you looking to make a buying decision?"},
+        {text:"Who all are you looking to get life insurance protection on?"},
+        {text:"Do you have an idea of how much coverage you're looking for?"},
+        {text:"What is a comfortable monthly budget?"}
+      ]},
+      { title:"3. Data Gathering", blocks:[
+        {text:"Driver's license available?", note:"Ask to see physical ID."},
+        {text:"Revoked / Suspended / DUI history?"},
+        {text:"SS# or ITIN available for each insured?"},
+        {text:"Medical conditions disclosed?"},
+        {text:"Any current illness that may prevent qualifying?"},
+        {text:"Existing life insurance coverage?"},
+        {fields:[["Carrier",""],["Coverage Amt",""],["Type",""]]},
+        {text:"Complete the FLS together at the table"}
+      ]},
+      { title:"4. Presenting / Proposals", blocks:[
+        {script:"Lay the proposal flat between you. Point with a pen to each line. Let them hold a copy."},
+        {text:"Death Benefit explained"},
+        {text:"Living Benefits explained"},
+        {text:"Cash Value explained"},
+        {text:"Bonus — Budget option presented"}
+      ]},
+      { title:"5. Close / Follow Up", blocks:[
+        {text:"Collect beneficiary information"},
+        {text:"Explain need for beneficiary understanding"},
+        {text:"Make a 3-way call with client", note:"Use your cell on speaker right there at the table."},
+        {text:"Ask for referrals", note:"Hand them the Memory Jogger below and a pen — let them write names as they think of people."}
+      ]}
+    ]
+  }
+};
+
+const jogger = [
+  {cat:"Your Own Family", items:["Father and Mother","Father-in-law / Mother-in-law","Grandparents","Children","Brothers & Sisters","Aunts and Uncles","Nieces and Nephews","Cousins"]},
+  {cat:"Closest Friends You See Regularly", items:["Friends and Neighbors","People you work with","Church members","Sunday school class members"]},
+  {cat:"Organizations or Clubs", items:["Civic groups, Rotary, Exchange, Jaycees","Political clubs","Lodge, Elks, Moose, etc.","Missionary societies, brotherhood groups","Merchants or farm organizations","School groups, boosters, alumni, PTA"]},
+  {cat:"Past Associations", items:["Schoolmates","Former co-workers","People in your hometown","Military cohorts"]},
+  {cat:"Those You Do Business With", items:["Doctor, lawyer, barber, merchant, grocer","Gas station attendant, dry cleaner, postal","Beauticians, jewelers, waiters/waitresses"]},
+  {cat:"Acquaintance Lists Already Available", items:["Christmas card list","Address book","Day timer / planner","List of fellow employees","Church directory"]},
+  {cat:"Decision Makers", items:["Business owners","Human Resources Directors","Office managers"]},
+  {cat:"People in Direct Sales", items:["Business/office machine salespeople","Insurance salespeople","Car salespeople"]}
+];
+
+// ═══════════════════════════════════════════════════
+//  SESSION / CHECKLIST RECORD MANAGEMENT
+// ═══════════════════════════════════════════════════
+function uid(){ return 'pc_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
+
+async function startNewOrResume(){
+  // Resume most recent in-progress checklist if one exists, else start fresh
+  try{
+    const rows = await sbFetch(`/rest/v1/presentation_checklists?owner_id=eq.${myUid()}&status=eq.in_progress&order=updated_at.desc&limit=1`) || [];
+    if(rows.length){
+      loadChecklistRecord(rows[0]);
+    } else {
+      newSession();
+    }
+  }catch(e){
+    console.warn('startNewOrResume:', e);
+    newSession();
+  }
+}
+
+function newSession(){
+  activeChecklistId = uid();
+  currentMode = 'zoom';
+  state = { checked:{}, fields:{} };
+  document.getElementById('clientName').value = '';
+  document.getElementById('apptDate').value = '';
+  document.getElementById('apptTime').value = '';
+  document.getElementById('sessionNotes').value = '';
+  document.getElementById('btnZoom').classList.add('active');
+  document.getElementById('btnTable').classList.remove('active');
+  render();
+  document.getElementById('sessionsPanel').classList.remove('open');
+}
+
+function loadChecklistRecord(row){
+  activeChecklistId = row.id;
+  currentMode = row.mode || 'zoom';
+  state.checked = (typeof row.checked_items === 'string' ? JSON.parse(row.checked_items||'{}') : row.checked_items) || {};
+  state.fields = (typeof row.field_values === 'string' ? JSON.parse(row.field_values||'{}') : row.field_values) || {};
+  document.getElementById('clientName').value = row.client_name || '';
+  document.getElementById('apptDate').value = row.appt_date || '';
+  document.getElementById('apptTime').value = row.appt_time || '';
+  document.getElementById('sessionNotes').value = row.notes || '';
+  document.getElementById('btnZoom').classList.toggle('active', currentMode==='zoom');
+  document.getElementById('btnTable').classList.toggle('active', currentMode==='table');
+  render();
+  document.getElementById('sessionsPanel').classList.remove('open');
+}
+
+function setSyncing(on){
+  const dot = document.getElementById('syncDot');
+  const label = document.getElementById('syncLabel');
+  if(on){ dot.classList.add('saving'); label.textContent = 'Saving…'; }
+  else { dot.classList.remove('saving'); label.textContent = 'Synced'; }
+}
+
+function queueSave(){
+  setSyncing(true);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(persistChecklist, 600);
+}
+
+async function persistChecklist(){
+  if(!activeChecklistId || !myUid()) return;
+  const payload = {
+    id: activeChecklistId,
+    owner_id: myUid(),
+    owner_name: currentProfile?.name || '',
+    client_name: document.getElementById('clientName').value,
+    appt_date: document.getElementById('apptDate').value,
+    appt_time: document.getElementById('apptTime').value,
+    mode: currentMode,
+    checked_items: state.checked,
+    field_values: state.fields,
+    notes: document.getElementById('sessionNotes').value,
+    updated_at: new Date().toISOString()
+  };
+  try{
+    await sbFetch(`/rest/v1/presentation_checklists?id=eq.${activeChecklistId}`, {
+      method:'PATCH',
+      headers:{'Prefer':'return=minimal,resolution=merge-duplicates'},
+      body: JSON.stringify(payload)
+    });
+    // If PATCH found nothing to update (new record), insert
+    const check = await sbFetch(`/rest/v1/presentation_checklists?id=eq.${activeChecklistId}&select=id`);
+    if(!check || check.length === 0){
+      await sbFetch('/rest/v1/presentation_checklists', {
+        method:'POST',
+        headers:{'Prefer':'return=minimal'},
+        body: JSON.stringify({...payload, status:'in_progress', created_at: new Date().toISOString()})
+      });
+    }
+  }catch(e){
+    console.error('persistChecklist error:', e);
+  }finally{
+    setSyncing(false);
+  }
+}
+
+async function markComplete(){
+  if(!activeChecklistId) return;
+  setSyncing(true);
+  try{
+    await sbFetch(`/rest/v1/presentation_checklists?id=eq.${activeChecklistId}`, {
+      method:'PATCH', headers:{'Prefer':'return=minimal'},
+      body: JSON.stringify({status:'complete', updated_at:new Date().toISOString()})
+    });
+    toastMsg('Checklist marked complete ✓');
+    setTimeout(newSession, 700);
+  }catch(e){ console.error(e); }
+  finally{ setSyncing(false); }
+}
+
+async function resetCurrent(){
+  if(!confirm('Clear all checked items, fields, and notes for this client?')) return;
+  state = { checked:{}, fields:{} };
+  document.getElementById('clientName').value = '';
+  document.getElementById('apptDate').value = '';
+  document.getElementById('apptTime').value = '';
+  document.getElementById('sessionNotes').value = '';
+  render();
+  if(activeChecklistId){
+    try{
+      await sbFetch(`/rest/v1/presentation_checklists?id=eq.${activeChecklistId}`, { method:'DELETE' });
+    }catch(e){ console.warn(e); }
+  }
+  newSession();
+}
+
+function toastMsg(msg){
+  let t = document.getElementById('toastEl');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'toastEl';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:11px 20px;border-radius:30px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(11,31,74,0.3);z-index:90;opacity:0;transition:all .25s ease;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  requestAnimationFrame(()=>{ t.style.opacity='1'; t.style.transform='translateX(-50%) translateY(0)'; });
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 2200);
+}
+
+// ═══════════════════════════════════════════════════
+//  MY RECENT SESSIONS LIST
+// ═══════════════════════════════════════════════════
+async function toggleSessions(){
+  const panel = document.getElementById('sessionsPanel');
+  panel.classList.toggle('open');
+  if(panel.classList.contains('open')){
+    await loadSessionsList();
+  }
+}
+
+async function loadSessionsList(){
+  const list = document.getElementById('sessionsList');
+  list.innerHTML = '<div class="session-empty">Loading…</div>';
+  try{
+    const rows = await sbFetch(`/rest/v1/presentation_checklists?owner_id=eq.${myUid()}&order=updated_at.desc&limit=15`) || [];
+    if(!rows.length){
+      list.innerHTML = '<div class="session-empty">No checklists yet. Tap "New Client" to start one.</div>';
+      return;
+    }
+    list.innerHTML = rows.map(r => {
+      const d = new Date(r.updated_at);
+      const dateStr = d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+      const modeLabel = r.mode === 'table' ? 'Kitchen Table' : 'Zoom';
+      return `
+        <div class="session-row" onclick='selectSession(${JSON.stringify(r.id)})'>
+          <div>
+            <div class="sname">${escapeHtml(r.client_name || 'Unnamed Client')}</div>
+            <div class="smeta">${modeLabel} · ${dateStr}</div>
+          </div>
+          <span class="session-badge ${r.status}">${r.status === 'complete' ? 'Complete' : 'In Progress'}</span>
+        </div>`;
+    }).join('');
+  }catch(e){
+    list.innerHTML = '<div class="session-empty">Could not load. Check connection.</div>';
+  }
+}
+
+async function selectSession(id){
+  try{
+    const rows = await sbFetch(`/rest/v1/presentation_checklists?id=eq.${id}&select=*`);
+    if(rows && rows[0]) loadChecklistRecord(rows[0]);
+  }catch(e){ console.error(e); }
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ═══════════════════════════════════════════════════
+//  DIRECTOR FEED
+// ═══════════════════════════════════════════════════
+function toggleDirectorFeed(){
+  const body = document.getElementById('directorFeedBody');
+  const arrow = document.getElementById('feedToggleArrow');
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  arrow.textContent = isOpen ? '▾' : '▴';
+}
+
+async function loadDirectorFeed(){
+  const body = document.getElementById('directorFeedBody');
+  body.innerHTML = '<div class="session-empty">Loading team activity…</div>';
+  try{
+    const rows = await sbFetch('/rest/v1/presentation_checklists?order=updated_at.desc&limit=20') || [];
+    if(!rows.length){
+      body.innerHTML = '<div class="session-empty">No checklists from any agent yet.</div>';
+      return;
+    }
+    body.innerHTML = rows.map(r => {
+      const initials = (r.owner_name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const checked = r.checked_items ? Object.values(typeof r.checked_items==='string'?JSON.parse(r.checked_items):r.checked_items).filter(Boolean).length : 0;
+      const total = countTotalItems(r.mode || 'zoom');
+      const pct = total ? Math.round((checked/total)*100) : 0;
+      const d = new Date(r.updated_at);
+      const dateStr = d.toLocaleDateString('en-US', {month:'short', day:'numeric'}) + ' ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+      const modeLabel = r.mode === 'table' ? 'Kitchen Table' : 'Zoom';
+      return `
+        <div class="feed-row" onclick='directorViewSession(${JSON.stringify(r.id)})'>
+          <div class="feed-avatar">${initials}</div>
+          <div class="feed-info">
+            <div class="f1">${escapeHtml(r.owner_name||'Agent')} → ${escapeHtml(r.client_name||'Unnamed Client')}</div>
+            <div class="f2">${modeLabel} · ${r.status==='complete'?'Complete':'In progress'} · ${dateStr}</div>
+          </div>
+          <div class="feed-pct">${pct}%</div>
+        </div>`;
+    }).join('');
+  }catch(e){
+    body.innerHTML = '<div class="session-empty">Could not load team activity.</div>';
+  }
+}
+
+function countTotalItems(mode){
+  let total = 0;
+  data[mode].sections.forEach(s => s.blocks.forEach(b => { if(b.text) total++; }));
+  return total;
+}
+
+async function directorViewSession(id){
+  try{
+    const rows = await sbFetch(`/rest/v1/presentation_checklists?id=eq.${id}&select=*`);
+    if(rows && rows[0]){
+      loadChecklistRecord(rows[0]);
+      toastMsg('Viewing ' + (rows[0].owner_name||'agent') + '\u2019s checklist (read-only view)');
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+  }catch(e){ console.error(e); }
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER CHECKLIST
+// ═══════════════════════════════════════════════════
+function itemKey(sectionIdx, blockIdx){ return sectionIdx + '_' + blockIdx; }
+
+function render(){
+  const container = document.getElementById('sectionsContainer');
+  container.innerHTML = '';
+  document.getElementById('setupNote').textContent = data[currentMode].setup;
+
+  data[currentMode].sections.forEach((section, sIdx) => {
+    const sec = document.createElement('div');
+    sec.className = 'section';
+
+    const head = document.createElement('div');
+    head.className = 'section-head';
+    head.innerHTML = `<span>${section.title}</span><span class="count" data-count="${sIdx}"></span>`;
+    head.addEventListener('click', () => {
+      const b = sec.querySelector('.section-body');
+      b.classList.toggle('collapsed');
+    });
+    sec.appendChild(head);
+
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'section-body';
+
+    section.blocks.forEach((block, bIdx) => {
+      if(block.sub){
+        const s = document.createElement('div');
+        s.className = 'subhead';
+        s.textContent = block.sub;
+        bodyEl.appendChild(s);
+      } else if(block.script){
+        const s = document.createElement('div');
+        s.className = 'script-box';
+        s.textContent = block.script;
+        bodyEl.appendChild(s);
+      } else if(block.fields){
+        const wrap = document.createElement('div');
+        wrap.className = 'mini-fields';
+        block.fields.forEach(([label]) => {
+          const mf = document.createElement('div');
+          mf.className = 'mf';
+          const fkey = currentMode + '_' + sIdx + '_' + label.replace(/\s/g,'');
+          const val = state.fields[fkey] || '';
+          mf.innerHTML = `<span>${label}</span><input type="text" data-fkey="${fkey}" value="${escapeHtml(val)}">`;
+          wrap.appendChild(mf);
+        });
+        bodyEl.appendChild(wrap);
+      } else if(block.text){
+        const key = itemKey(sIdx, bIdx);
+        const item = document.createElement('div');
+        item.className = 'item' + (state.checked[key] ? ' checked' : '');
+        item.innerHTML = `
+          <div class="check">${CHECK_SVG}</div>
+          <div class="item-text">${block.text}${block.note ? `<div class="item-note">${block.note}</div>` : ''}</div>
+        `;
+        item.addEventListener('click', () => {
+          state.checked[key] = !state.checked[key];
+          item.classList.toggle('checked');
+          updateProgress();
+          queueSave();
+        });
+        bodyEl.appendChild(item);
+      }
+    });
+
+    sec.appendChild(bodyEl);
+    container.appendChild(sec);
+  });
+
+  container.querySelectorAll('input[data-fkey]').forEach(el => {
+    el.addEventListener('input', () => {
+      state.fields[el.dataset.fkey] = el.value;
+      queueSave();
+    });
+  });
+
+  updateProgress();
+}
+
+function updateProgress(){
+  let total = 0, done = 0;
+  data[currentMode].sections.forEach((section, sIdx) => {
+    let sTotal=0, sDone=0;
+    section.blocks.forEach((block, bIdx) => {
+      if(block.text){
+        sTotal++; total++;
+        if(state.checked[itemKey(sIdx,bIdx)]){ sDone++; done++; }
+      }
+    });
+    const countEl = document.querySelector(`[data-count="${sIdx}"]`);
+    if(countEl) countEl.textContent = `${sDone}/${sTotal}`;
+  });
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${done} of ${total} complete`;
+}
+
+function switchMode(mode){
+  currentMode = mode;
+  document.getElementById('btnZoom').classList.toggle('active', mode==='zoom');
+  document.getElementById('btnTable').classList.toggle('active', mode==='table');
+  render();
+  queueSave();
+}
+
+// ═══════════════════════════════════════════════════
+//  MEMORY JOGGER (saved within same checklist record)
+// ═══════════════════════════════════════════════════
+function renderJogger(){
+  const grid = document.getElementById('joggerGrid');
+  grid.innerHTML = '';
+  jogger.forEach((cat, cIdx) => {
+    const catDiv = document.createElement('div');
+    catDiv.className = 'jogger-cat';
+    const h4 = document.createElement('h4');
+    h4.textContent = cat.cat;
+    catDiv.appendChild(h4);
+    cat.items.forEach((it, iIdx) => {
+      const key = 'jogger_' + cIdx + '_' + iIdx;
+      const item = document.createElement('div');
+      item.className = 'item' + (state.checked[key] ? ' checked' : '');
+      item.innerHTML = `<div class="check">${CHECK_SVG}</div><div class="item-text">${it}</div>`;
+      item.addEventListener('click', () => {
+        state.checked[key] = !state.checked[key];
+        item.classList.toggle('checked');
+        queueSave();
+      });
+      catDiv.appendChild(item);
+    });
+    grid.appendChild(catDiv);
+  });
+}
+
+document.getElementById('joggerHead').addEventListener('click', () => {
+  const body = document.getElementById('joggerBody');
+  body.style.display = body.style.display === 'block' ? 'none' : 'block';
+});
+
+['clientName','apptDate','apptTime','sessionNotes'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', queueSave);
+});
+
+renderJogger();
+</script>
+
+</body>
+</html>
